@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Putt Party </title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta charset="UTF-8">
+		<style>
+			body {
+				color: white;
+				padding: 0;
+				margin: 0;
+				font-size: 120%;
+				overflow: hidden;
+				background: #222;
+			}
+			button {
+				cursor: pointer;
+			}
+			#menu {
+				text-align: center;
+				background: #222;
+				height: 100vh;
+				width: 300vw;
+				position: absolute;
+				top: 0;
+				left: 0;
+				transition: 0.5s transform ease;
+			}
+				h1 {
+					width: 100vw;
+					line-height: 10vh;
+					padding: 0;
+					margin: 0;
+				}
+				#menuitem {
+					height: 90vh;
+					transition: 0.5s transform ease;
+				}
+				#menuitem > * {
+					width: calc(100vw - 10vmin);
+					height: calc(100% - 10vmin);
+					padding: 5vmin;
+					float: left;
+					position: relative;
+				}
+				.menushortcut {
+					font-size: 5vmin;
+					color: white;
+					width: 10vmin !important;
+					height: 10vmin;
+					padding: 1vmin !important;;
+					margin: 1vmin !important;
+					border: none;
+					background: none;
+					position: absolute;
+					bottom: 0;
+					transition: 0.5s transform ease;
+					user-select: none;
+				}
+				.menushortcut > a {
+					text-decoration: none;
+					pointer-events: none;
+				}
+				.menushortcut.active > a {
+					pointer-events: all !important;
+				}
+				.menushortcut:hover {
+					transform: rotate(20deg) scale(1.1);
+				}
+					.menushortcut.left   { left:  0 }
+					.menushortcut.right  { right: 0 }
+				#menusettings {
+					
+				}
+				#menugrid {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					grid-gap: 1vmin;
+					height: 100%;
+					padding: 2vmin;
+					overflow-y: scroll;
+				}
+				#menugrid > * {
+					border: none;
+					border-radius: 1vmin;
+					padding: 2vmin;
+				}
+				#menugrid > div {
+					text-align: left;
+				}
+				#menugrid > input {
+					text-align: right;
+				}
+				#menugrid > h6 {
+					grid-area: 1 span / 2 span;
+					margin: 0;
+					margin-top: 1vmin;
+					padding: 0;
+					font-weight: normal;
+					font-size: 120%;
+				}
+				#menumain > * {
+					text-align: center;
+					border: none;
+					border-radius: 1vmin;
+					padding: 2vmin;
+					margin: 2vmin;
+					width: 50vw;
+				}
+				#menueditor > iframe {
+					width: 100vw;
+					height: 100vh;
+					position: absolute;
+					top: -10vh;
+					left: 0;
+					border: none;
+				}
+				#game {
+					border: none;
+					position: absolute;
+					height: 100vh;
+					width: 100vw;
+					top: 0;
+					left: 0;
+				}
+		</style>
+	</head>
+	<body>
+		<iframe id="game"> </iframe>
+		<div id="menu">
+			 <h1> Putt Party </h1>
+			 <div id="menuitem" style="transform:translateX(-100vw)">
+			 	<div id="menusettings">
+					<div id="menugrid">
+						<h6> General </h6>
+						<div> Name </div> <input attr="0" oninput="settingsset()" type="text" placeholder="Noob1234">
+						<div> Color </div> <input attr="1" oninput="settingsset()" type="text" placeholder="FF0000">
+						<h6> Gameplay </h6>
+						<div> Sensitivity </div> <input attr="2" oninput="settingsset()" type="number">
+						<div> Arrow Distance </div> <input attr="3" oninput="settingsset()" type="number">
+						<h6> Rendering </h6>
+						<div> FoV </div> <input attr="4" oninput="settingsset()" type="number">
+						<div> Render Dis </div> <input attr="5" oninput="settingsset()" type="number">
+						<div> BG Color </div> <input attr="6" oninput="settingsset()" type="text" placeholder="00AAFF">
+						<h6> Peformance </h6>
+						<div> Max FPS </div> <input attr="7" oninput="settingsset()" type="number">
+						
+						<div> Fog </div> <input attr="8" oninput="settingsset()" type="checkbox">
+						<div> Lighting </div> <input attr="9" oninput="settingsset()" type="checkbox">
+						<div> Hi Poly Ball </div> <input attr="10" oninput="settingsset()" type="checkbox">
+						<div> Debug Mesh </div> <input attr="11" oninput="settingsset()" type="checkbox">
+					</div>
+					<button class="menushortcut left" onclick="settingsreset()"> <a disabled href=" " title="Reset"> ♻️ </a> </button>
+					<button class="menushortcut right" onclick="page(-1)"> <a disabled href=" " title="Settings"> ➡️ </a> </button>
+			 	</div>
+				<div id="menumain">
+					<input id="menuinput" oninput="input()" type="text" placeholder="Room Code"> <br>
+					<button onclick="play()" id="menubutton"> Create Room </button>
+					<button class="menushortcut left"  onclick="page(0)"> <a disabled href=" " title="Settings"> ⚙️ </a> </button>
+					<button class="menushortcut right" onclick="page(-2)"> <a disabled href=" " title="Settings"> 🖌️ </a> </button>
+				</div>
+				<div id="menueditor">
+					<iframe id="menuiframe"> </iframe>
+					<button class="menushortcut left" onclick="page(-1)"> <a disabled href=" " title="Settings"> ⬅️ </a> </button>
+					<button class="menushortcut active right"> <a disabled href="editor.html" target="_blank" title="Open in new tab"> ⬆️ </a> </button>
+				</div>
+			</div>
+		</div>
+		<script defer>
+			const e_menubutton = document.getElementById("menubutton");
+			const e_menuinput  = document.getElementById("menuinput");
+			const e_menuiframe = document.getElementById("menuiframe");
+			const e_menuitem   = document.getElementById("menuitem");
+			const e_menugrid   = document.getElementById("menugrid");
+			const e_menu       = document.getElementById("menu");
+			const e_game       = document.getElementById("game");
+			let settings = localStorage["s"];
+			let settingspopulated = false;
+			// settings
+			function settingsset() {
+				if (event.target.type === "checkbox") {
+					settings[event.target.getAttribute("attr")] = event.target.checked ? 1 : 0									
+				} else {
+					settings[event.target.getAttribute("attr")] = event.target.value
+				}
+				localStorage["s"] = settings.map(i => {
+					return window.encodeURIComponent(i);
+				}).join(",");
+			}
+			function settingsdefault() {
+				settings = [
+					"Noob" + Math.floor(Math.random() * 9999).toString().padStart(4, "0"),
+					Math.floor(Math.random() * (1 << 24)).toString(16).toUpperCase().padStart(6, "0"),
+					100,
+					100,
+					100,
+					100,
+					"00AAFF",
+					30,
+					1,
+					1,
+					1,
+					0
+				];
+			}
+			function settingspopulate() {
+				let count = 0;
+				Object.values(e_menugrid.children).forEach(i => {
+					let attr = i.getAttribute("attr");
+					if (attr === null) return;
+					if (i.type === "checkbox") {
+						i.checked = settings[attr] && settings[attr] !== "0" ? true : false;
+					} else {
+						i.value = settings[attr];
+					}
+					++count;
+				});
+				if (count !== settings.length) {
+					if (!confirm("Your settings seem to be invalid, press OK to reset them")) return;
+					settingsdefault();
+					settingspopulate();
+					settingssave();
+				}
+			}
+			function settingssave() {
+				localStorage["s"] = settings.map(i => {
+					return window.encodeURIComponent(i);
+				}).join(",");
+			}
+			function settingsreset() {
+				if (!confirm("This will reset all settings forever (a very long time)")) return;
+				settingsdefault();
+				settingspopulate();
+				settingssave();
+			}
+			// Events
+			function page(p) {
+				if (p === -2 && e_menuiframe.src.length === 0) {
+					e_menuiframe.src = "editor.html";
+				} else if (p == 0 && settingspopulated === false) {
+					settingspopulate();
+					settingspopulated = true;
+				}
+				e_menuitem.style.transform = `translateX(${p}00vw)`;
+			}
+			function input() {
+				if (event.target.value.length === 0) {
+					menubutton.innerHTML = "Create Room";
+				} else {
+					menubutton.innerHTML = "Join Room";
+				}
+			}
+			function play() {
+				let v = "./game.html";
+				if (e_menuinput.value) v += `?${menuinput.value}`;
+				if (event.ctrlKey) {
+					const e = document.createElement("a");
+					e.href = v;
+					e.target = "_blank";
+					e.click();
+					return;
+				}
+				e_game.src = v;
+				e_menu.style.transform = "translateY(-100vh)";
+			}
+			// Main
+			e_menuiframe.contentDocument.body.innerHTML = "<h2 style='margin:0;position:absolute;left:0;top:11vh;width:100vw;text-align:center;color:white'>Loading Editor</h2>"
+			e_game.contentDocument.body.innerHTML = "<h2 style='margin:0;position:absolute;left:0;top:11vh;width:100vw;text-align:center;color:white'>Loading Game</h2>"
+			if (settings === undefined) {
+				settingsdefault();
+				settingssave();
+			} else {
+				settings = settings.split(",").map(i => {
+					return window.decodeURIComponent(i);
+				});
+			}
+			window.onkeydown = () => {
+				if (event.key !== "Escape") return;
+				if (e_menu.style.transform.length === 0) {
+					if (e_game.src) e_menu.style.transform = "translateY(-100vh)";
+				} else {
+					e_menu.style.transform = "";
+				}
+			}
+			window.onmessage = () => {
+				if (!event.data.length) return;
+				if (event.data[0] === "GAME") {
+					console.log("hi")
+					if (e_menu.style.transform.length === 0) {
+						if (e_game.src) e_menu.style.transform = "translateY(-100vh)";
+					} else {
+						e_menu.style.transform = "";
+					}
+				} else if (event.data[0] === "EDITOR") {
+					let d = event.data[1];
+					if (e_game.src) {
+						window.setTimeout(() => {
+							e_game.contentWindow.postMessage(["MAIN", d]);
+						}, 50);
+					} else {
+						let v = "./game.html";
+						if (e_menuinput.value) v += `?${menuinput.value}`;
+						e_game.src = v;
+						window.setTimeout(() => {
+							e_game.contentWindow.postMessage(["MAIN", d]);
+						}, 2000);
+					}
+					e_menu.style.transform = "translateY(-100vh)";
+					
+				}
+			}
+		</script>
+	</body>
+</html

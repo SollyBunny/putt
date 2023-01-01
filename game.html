@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Putt Party </title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta charset="UTF-8">
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+				background: #222;
+			}
+			#can {
+				width: 100vw !important;
+				height: 100vh !important;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+			#playertext {
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100vw;
+				height: 100vh;
+				color: white;
+				pointer-events: none;
+				font-size: 150%;
+			}
+			#playertext > * {
+				margin-top: -6vmax;
+				text-anchor: middle;
+			}
+			#roomcodecontainer {
+				position: absolute;
+				top: 0;
+				right: 0;
+				background: rgba(22, 22, 22, 0.5);
+				border-radius: 0 0 0 1vmin;
+				padding: 1vmin;
+				color: white;
+				text-align: right !important;
+			}
+			#roomcode {
+				user-select: all;
+			}
+			#infocontainer {
+				position: absolute;
+				top: 0;
+				left: 0;
+				background: rgba(22, 22, 22, 0.5);
+				border-radius: 0 0 1vmin 0;
+				padding: 1vmin;
+				color: white;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+			}
+			#mapname {
+				grid-area: 1 span / 2 span;
+			}
+			#strokes, #hole {
+				text-align: center;
+			}
+
+		</style>
+	</head>
+	<body>
+		<div id="container">
+			<canvas id="can" oncontextmenu="event.preventDefault();"> Your browser doesn't support Canvas API </canvas>
+			<div id="playertext"> </div>
+		</div>
+		<div id="roomcodecontainer">
+			Room Code <br> <a onclick="navigator.clipboard.writeText(event.target.innerHTML);" href="#" id="roomcode"> ? </a>
+		</div>
+		<div id="infocontainer">
+			<div id="mapname"> ? </div>
+			<div> Stroke </div> <div id="strokes"> 0 </div>
+			<div> Hole   </div> <div id="hole">    0 </div>
+		</div>
+		<script src="lib/three.min.js"        > </script>
+		<script src="lib/three.ext.js"        > </script>
+		<script src="lib/cannon.min.js"       > </script>
+		<script src="lib/cannon.dbg.js"       > </script>
+		<script src="game/def.js"             > </script>
+		<script src="game/settings.js"        > </script>
+		<script src="game/classes/thing.js"   > </script>
+		<script src="game/classes/map.js"     > </script>
+		<script src="game/classes/player.js"  > </script>
+		<script src="game/classes/floor.js"   > </script>
+		<script src="game/classes/wall.js"    > </script>
+		<script src="game/classes/start.js"   > </script>
+		<script src="game/classes/hole.js"    > </script>
+		<script src="game/classes/jumppad.js" > </script>
+		<script src="game/classes/bumper.js"  > </script>
+		<script src="game/classes/spinner.js" > </script>
+		<script src="game/classes/square.js"  > </script>
+		<script src="game/classes/triangle.js"> </script>
+		<script src="game/classes/wind.js"    > </script>
+		<script src="game/multi.js"           > </script>
+		<script src="game/main.js"            > </script>
+	</body>
+</html>
