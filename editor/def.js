@@ -3,30 +3,36 @@ const Modifiers = {
 	TEXT     : 0,
 	SCALE    : 1,
 	MOVE     : 2,
-	SPIN     : 3,
-	BOUNCE   : 4,
-	VELOCITY : 5,
-	COLOR    : 6
+	EASEMOVE : 3,
+	SPIN     : 4,
+	BOUNCE   : 5,
+	VELOCITY : 6,
+	COLOR    : 7,
+	TELEPORT : 8
 };
 
 const Modifiersname = [
 	/* TEXT     : */ "Text",
 	/* SCALE    : */ "Scale",
 	/* MOVE     : */ "Move",
+	/* EASEMOVE : */ "Ease Move",
 	/* SPIN     : */ "Spin",
 	/* BOUNCE   : */ "Bounce",
 	/* VELOCITY : */ "Velocity",
 	/* COLOR    : */ "Color",
+	/* TELEPORT : */ "Teleport",
 ];
 
 const Modifiersdefault = [
 	/* TEXT     : */ "Hello World",
-	/* SCALE    : */ 1,
-	/* MOVE     : */ [1, 1, 1],
+	/* SCALE    : */ [2, 1, 2],
+	/* MOVE     : */ [1, 0, 0, 1],
+	/* EASEMOVE : */ [1, 0, 0, 1],
 	/* SPIN     : */ [0, 1, 0],
 	/* BOUNCE   : */ 5,
-	/* VELOCITY : */ [5, 0, 0],
-	/* COLOR    : */ "Color",	
+	/* VELOCITY : */ [0, 5, 0],
+	/* COLOR    : */ 0,	
+	/* TELEPORT : */ [0, 5, 0],
 ]
 
 const Types = {
@@ -52,23 +58,23 @@ const Types = {
 
 
 const Typesname = [
-	/* TEXT     : */ "Text",
-	/* FLOOR    : */ "Floor",
-	/* WALL     : */ "Bumpy Floor",
-	/* WALL     : */ "Wall",
-	/* HALFWALL : */ "Half Wall",
-	/* DECOR    : */ "Decor",
-	/* START    : */ "Start",
-	/* HOLE     : */ "Hole",
-	/* BOOSTER  : */ "Booster",
-	/* JUMPPAD  : */ "Jump Pad",
-	/* BUMPER   : */ "Bumper",
-	/* ISPINNER : */ "I Spinner",
-	/* TSPINNER : */ "T Spinner",
-	/* XSPINNER : */ "X Spinner",
-	/* TRIANGLE : */ "Triangle",
-	/* SQUARE   : */ "Square",
-	/* WIND     : */ "Wind",
+	/* TEXT       : */ "Text",
+	/* FLOOR      : */ "Floor",
+	/* BUMPYFLOOR : */ "Bumpy Floor",
+	/* WALL       : */ "Wall",
+	/* HALFWALL   : */ "Half Wall",
+	/* DECOR      : */ "Decor",
+	/* START      : */ "Start",
+	/* HOLE       : */ "Hole",
+	/* BOOSTER    : */ "Booster",
+	/* JUMPPAD    : */ "Jump Pad",
+	/* BUMPER     : */ "Bumper",
+	/* ISPINNER   : */ "I Spinner",
+	/* TSPINNER   : */ "T Spinner",
+	/* XSPINNER   : */ "X Spinner",
+	/* TRIANGLE   : */ "Triangle",
+	/* SQUARE     : */ "Square",
+	/* WIND       : */ "Wind",
 ];
 Typesname[Types.LAYERUP  ] = "Layer Up";
 Typesname[Types.LAYERDOWN] = "Layer Down";
@@ -79,3 +85,23 @@ Typesname[Types.LOAD     ] = "Load";
 Typesname[Types.SAVE     ] = "Save";
 Typesname[Types.SELECT   ] = "Select";
 Typesname[Types.PLAYER   ] = "Player";
+
+const Typesmodifiers = [
+	/* TEXT       : */ undefined,
+	/* FLOOR      : */ undefined,
+	/* BUMPYFLOOR : */ undefined,
+	/* WALL       : */ undefined,
+	/* HALFWALL   : */ undefined,
+	/* DECOR      : */ undefined,
+	/* START      : */ undefined,
+	/* HOLE       : */ undefined,
+	/* BOOSTER    : */ [Modifiers.VELOCITY, [5, 0, 0]],
+	/* JUMPPAD    : */ [Modifiers.VELOCITY, [0, 5, 0]],
+	/* BUMPER     : */ [Modifiers.BOUNCE, Modifiersdefault[Modifiers.BOUNCE]],
+	/* ISPINNER   : */ [Modifiers.SPIN, Modifiersdefault[Modifiers.SPIN]],
+	/* TSPINNER   : */ [Modifiers.SPIN, Modifiersdefault[Modifiers.SPIN]],
+	/* XSPINNER   : */ [Modifiers.SPIN, Modifiersdefault[Modifiers.SPIN]],
+	/* TRIANGLE   : */ [Modifiers.SPIN, Modifiersdefault[Modifiers.SPIN]],
+	/* SQUARE     : */ [Modifiers.SPIN, Modifiersdefault[Modifiers.SPIN]],
+	/* WIND       : */ undefined,
+]

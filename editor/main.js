@@ -59,7 +59,7 @@ window.onkeydown = () => {
 			else if (e_modifiercontainer.style.display === "block") e_palletecontainer.style.display = "none";
 			e_palletecontainer.style.display = "block";
 			return false;
-	} } else { switch (event.key) {
+	} } else { switch (k) {
 		case "escape":
 			if      (e_toolboxcontainer.style.display  === "block") e_toolboxcontainer.style.display  = "none";
 			else if (e_palletecontainer.style.display  === "block") e_palletecontainer.style.display  = "none";

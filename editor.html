@@ -35,6 +35,15 @@
 				padding: 1vmin;
 				border-radius: 1vmin;
 				border: none;
+				width: calc(100% - 2vmin);
+			}
+			.x {
+				position: absolute;
+				float: right !important;
+				background: none;
+				border: none;
+				color: white;
+				font-weight: 900;
 			}
 			.error {
 				background: #ef5555;
@@ -71,9 +80,14 @@
 						width: 100%;
 					}
 			h2, h3 {
+				text-align: center;
+			}
+			h2, h3, h4 {
 				margin: 0;
 				padding: 0;
-				text-align: center;
+			}
+			h4 {
+				float: left;
 			}
 			#top {
 				padding: 1vmin;
@@ -162,23 +176,52 @@
 					#rid:before {
 						content: "ID: ";
 					}
-					.pos {
+					.pos, .pos4, .poss {
 						width: 100%;
+						margin-bottom: 1px;
+						float: left;
 					}
-					.pos > *:first-child {
+					.pos > *:first-child, .pos4 > *:first-child {
 						border-radius: 1vmin 0 0 1vmin;
 					}
-					.pos > *:nth-child(2) {
+					.pos > *:nth-child(2), .pos4 > *:nth-child(2) {
 						border-radius: 0;
 						margin-left: 1px;
 						margin-right: 1px;
-						
 					}
-					.pos > *:nth-child(3) {
+					.pos4 > *:nth-child(3) {
+						border-radius: 0;
+						margin-right: 1px;						
+					}
+					.pos > *:nth-child(3), .pos4 > *:nth-child(4) {
 						border-radius: 0 1vmin 1vmin 0;
 					}
 					.pos > * {
 						float: left;
+						width: calc((90% - 5vmin) / 3);
+						margin: 0;
+					}
+					.pos4 > * {
+						float: left;
+						width: calc((90% - 7vmin) / 4);
+						margin: 0;
+					}
+					.poss > *:first-child {
+						border-radius: 1vmin 0 0 1vmin;
+					}
+					.poss > *:nth-child(2) {
+						border-radius: 0;
+						margin-left: 1px;
+						margin-right: 1px;
+					}
+					.poss > *:nth-child(3) {
+						float: unset !important;
+						border-radius: 0 1vmin 1vmin 0;
+					}
+					.poss > * {
+						float: left;
+					}
+					.poss > input {
 						width: calc(33% - 3vmin);
 						margin: 0;
 					}
@@ -311,12 +354,11 @@
 						<div id="rpos" class="pos"> 
 							<input type="number" oninput="posinput(0)">
 							<input type="number" oninput="posinput(1)">
-							<input type="number" oninput="posinput(2)"> </div> 
-						<div id="rmod" style="display:none"> </div> 
+							<input type="number" oninput="posinput(2)"> 
+						</div> 
+						<div id="rposs"></div> 
 					<h3> Modifiers </h3>
-						<div id="rmod">
-							
-						</div>
+						<div id="rmod"></div>
 						<button onclick="e_modifiercontainer.style.display='block'"> Add Modifier </button>
 				</div>
 			</div>
@@ -378,12 +420,14 @@
 		<div class="popup" id="modifiercontainer" style="display:none">
 			<div>
 				<h2> Add Modifier </h2>
-				<button onclick="modadd(Modifiers.TEXT)"    > Text     </button>
-				<button onclick="modadd(Modifiers.SCALE)"   > Scale    </button>
-				<button onclick="modadd(Modifiers.MOVE)"    > Move     </button>
-				<button onclick="modadd(Modifiers.SPIN)"    > Spin     </button>
-				<button onclick="modadd(Modifiers.TELEPORT)"> Teleport </button>
-				<button onclick="modadd(Modifiers.COLOR)"   > Color    </button>
+				<button onclick="modadd(Modifiers.TEXT)"    > Text      </button>
+				<button onclick="modadd(Modifiers.SCALE)"   > Scale     </button>
+				<button onclick="modadd(Modifiers.MOVE)"    > Move      </button>
+				<button onclick="modadd(Modifiers.EASEMOVE)"> Ease Move </button>
+				<button onclick="modadd(Modifiers.SPIN)"    > Spin      </button>
+				<button onclick="modadd(Modifiers.COLOR)"   > Color     </button>
+				<button onclick="modadd(Modifiers.TELEPORT)"> Teleport  </button>
+				
 			</div>
 		</div>
 	</div>

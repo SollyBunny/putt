@@ -4,38 +4,36 @@ function normalize() {
 	let start = undefined;
 	let o;
 	let hash = "";
-	for (let i = 0; i < objs.len; ++i) {
+	for (let i = 2; i < objs.length; ++i) {
 		if (objs[i][0] !== Types.START) continue;
 		start = objs[i][1];
 	}
 	if (start === undefined) start = [0, 0, 0];
 	for (let i = 2; i < objs.length; ++i) {
-		console.log(objs[i])
 		if (objs[i][1][0].length !== undefined) {
-			console.log(objs[i])
 			if (objs[i][1][0].length < 2) continue; // if obj is multi position and has less than 2 points, skip
 			o = [
-				objs[0],
+				objs[i][0],
 				[]
 			];
 			for (let m = 0; m < objs[i][1].length; ++m) {
-				o[1].push(
-					objs[i][m][0] - start[0],
-					objs[i][m][1] - start[1],
-					objs[i][m][2] - start[2],					
-				)
+				o[1].push([
+					objs[i][1][m][0] - start[0],
+					objs[i][1][m][1] - start[1],
+					objs[i][1][m][2] - start[2],					
+				]);
 			}
 		} else {
 			o = [
-				objs[0],
+				objs[i][0],
 				[
-					objs[1][0] - start[0],
-					objs[1][1] - start[1],
-					objs[1][2] - start[2],
+					objs[i][1][0] - start[0],
+					objs[i][1][1] - start[1],
+					objs[i][1][2] - start[2],
 				]
 			];
 		}
-		if (objs[2]) o.push(objs[2]);
+		if (objs[i][2]) o.push(objs[i][2]);
 		newobjs.push(o);
 		hash += JSON.stringify(o);
 	}
@@ -57,8 +55,8 @@ function load() {
 	}
 	history = []; // remove undo history
 	historyoff = 0;
-	offset = [e_svg.clientWidth, e_svg.clientHeight]; // center
-	objs = d;
+	render();
+	toolset(undefined, tool);
 }
 function svg() {
 	alert("Not implemented yet!");
@@ -152,8 +150,10 @@ function click() {
 					}
 				}
 			}
-			if (minnum && mindis < 10)
-				tooledit(minnum)
+			if (minnum && mindis < 10) {
+				tool = objs[minnum][0];
+				tooledit(minnum);
+			}
 			break;
 		case Types.PLAYER:
 			let c = prompt("HEX Color");
@@ -200,11 +200,12 @@ function click() {
 				[[Modifiers.TEXT, t]]
 			]);
 			render();
-			tooledit(objs.length - 1)
+			tooledit(objs.length - 1);
 			break;
 		case Types.START:
 		case Types.HOLE:
 		case Types.JUMPPAD:
+		case Types.BOOSTER:
 		case Types.BUMPER:
 		case Types.ISPINNER:
 		case Types.TSPINNER:
@@ -217,8 +218,11 @@ function click() {
 				tool,
 				[mouse[0], mouse[1], mouse[2]]
 			]);
+			if (Typesmodifiers[tool]) {
+				objs[objs.length - 1][2] = [ JSON.parse(JSON.stringify(Typesmodifiers[tool])) ];
+			}
 			render();
-			tooledit(objs.length - 1)
+			tooledit(objs.length - 1);
 			break;
 	}
 }
