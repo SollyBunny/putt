@@ -1,0 +1,37 @@
+Index:
+Nicer background
+MORE settings
+
+Editor:
+Physics Modifier Areas
+Polish UI
+Add placeholder to ToolKit inputs
+
+Game:
+Stroke / Hole counter
+Bounce / hole / fall sound
+Torture 1st person camera
+In floor only calculate normals for surfaces which need them (ie top ones)
+In wall, merge the  geometries into 1 mesh
+Try to cry less
+Triangle collider is a sphere currently
+Slopes activate collision every tick (thus sound goes wild)
+Use hash to save world as THREE.JS/CANNON.JS data to load faster
+Implement boosters, movers (tracks), text (again), fake players, teleporters, coloring
+Add physics objects to push around because why not?
+Seesaws
+Make lighting look nice
+Make fog same color as sky color
+
+Multiplayer:
+When all in hole go to next hole
+Count up scores
+Score card
+chat?
+
+General:
+Change all event handelers to passive (to avoid warns)
+Global theming (dark/light/coffee mode)
+Make global css and simplify my janky css in editor.html
+
+This project is extremley out of hand
