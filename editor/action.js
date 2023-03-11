@@ -53,6 +53,7 @@ function load() {
 		alert("Invalid JSON data");
 		return;
 	}
+	objs = d;
 	history = []; // remove undo history
 	historyoff = 0;
 	render();

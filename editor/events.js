@@ -33,7 +33,8 @@ function possdel(n) {
 	objs[sel][1].splice(n, 1);
 	render();
 	tooledit(sel);
-}function possdel(n) {
+}
+function possdel(n) {
 	if (!sel) return;
 	historyadd();
 	objs[sel][1].splice(n, 1);
@@ -147,12 +148,16 @@ function tooledit(id) {
 				case Modifiers.TELEPORT:
 					o += `<div class="pos"><input type="number" oninput="possinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" oninput="possinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"></div>`;
 					break;
+				case Modifiers.BOUNCE:
+					console.log("I ADDED A BOUNCE")
+					o += `<input type="text" value="${obj[2][i][1]}" oninput="modinput(i)">`;
+					break;				
 				case Modifiers.MOVE:
 				case Modifiers.EASEMOVE:
 					o += `<div class="pos4"><input type="number" oninput="possinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" oninput="possinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"><input type="number" oninput="possinput(${i},3)" value="${obj[2][i][1][3]}"></div>`;
 					break;
 				case Modifiers.COLOR:
-					o += `<input type="text" value="${obj[2][i][1].toString(16).toUpperCase().padStart(6, "0")} oninput="modinput(i)"`;
+					o += `<input type="text" value="${obj[2][i][1].toString(16).toUpperCase().padStart(6, "0")}" oninput="modinput(i)">`;
 					break;
 			}
 		}

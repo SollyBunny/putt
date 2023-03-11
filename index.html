@@ -8,7 +8,7 @@
 			@font-face {
 				font-family: "varela";
 				font-display: swap;
-				src: url("./assets/varela.woff2") format("woff2");
+				src: url("./putt/assets/varela.woff2") format("woff2");
 			}
 			* {
 				font-family: "varela";
@@ -170,7 +170,7 @@
 				<div id="menueditor">
 					<iframe id="menuiframe"> </iframe>
 					<button class="menushortcut left" onclick="page(-1)"> <a disabled href=" " title="Settings"> ⬅️ </a> </button>
-					<button class="menushortcut active right"> <a disabled href="editor.html" target="_blank" title="Open in new tab"> ⬆️ </a> </button>
+					<button class="menushortcut active right"> <a disabled href="putt/editor.html" target="_blank" title="Open in new tab"> ⬆️ </a> </button>
 				</div>
 			</div>
 		</div>
@@ -244,7 +244,7 @@
 			// Events
 			function page(p) {
 				if (p === -2 && e_menuiframe.src.length === 0) {
-					e_menuiframe.src = "editor.html";
+					e_menuiframe.src = "putt/editor.html";
 				} else if (p == 0 && settingspopulated === false) {
 					settingspopulate();
 					settingspopulated = true;
@@ -259,7 +259,7 @@
 				}
 			}
 			function play() {
-				let v = "./game.html";
+				let v = "./putt/game.html";
 				if (e_menuinput.value) v += `?${menuinput.value}`;
 				if (event.ctrlKey) {
 					const e = document.createElement("a");

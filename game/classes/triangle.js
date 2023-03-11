@@ -16,7 +16,7 @@ class Triangle extends Thing {
 	).rotateX(Math.PI / 2);
 	shape = new CANNON.Sphere(1); // TODO get an actuall triangle
 	constructor(pos) {
-		super(undefined, undefined, Types.Triangle);
+		super(Types.Triangle);
 		this.mesh = new THREE.Mesh(this.geometry);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.5;

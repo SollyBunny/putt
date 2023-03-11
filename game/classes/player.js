@@ -7,13 +7,15 @@ class Player extends Thing {
 		friction: 1,
 	});
 	constructor(name, color) {
-		super();
+		super(Types.PLAYER, undefined, undefined, name);
+		this.stroke = 0;
+		this.name  = name;
 		this.color = new THREE.Color(color);
-		if (Settings.LIGHTING) {
+		/*if (Settings.LIGHTING) {
 			this.light = new THREE.PointLight(this.color, 1);
 			this.light.decay = 2;
 			this.light.distance = 50;
-		}
+		}*/
 		this.mesh = new THREE.Mesh(
 			this.geometry,
 			new THREE.MeshLambertMaterial({
@@ -27,10 +29,6 @@ class Player extends Thing {
 			shape: this.shape,
 			material: this.physics
 		});
-		this.text = document.createElement("div");
-		this.text.innerHTML = name;
-		this.text.style.marginLeft = `-${name.length / 2}ch`;
-		playertext.appendChild(this.text);
 		this.body.position.y = 5;
 		this.body.parent = this;
 		this.type = Types.PLAYER;
@@ -52,17 +50,6 @@ class Player extends Thing {
 		this.sleepytime = 0;
 		this.lastsafe = new CANNON.Vec3();
 	}
-	add() {
-		world.addBody(this.body);
-		scene.add(this.mesh);
-		scene.add(this.light);
-	}
-	del() {
-		world.removeBody(this.body);
-		scene.remove(this.mesh);
-		scene.remove(this.light);
-		this.text.remove();
-	}
 	hole() {
 		this.ishole = true;
 		this.mesh.material.opacity = 0.5;
@@ -72,6 +59,7 @@ class Player extends Thing {
 		}
 	}
 	hit() {
+		this.stroke += 1;
 		Effects.HIT.play();
 	}
 	oncollide(e) {
@@ -82,7 +70,7 @@ class Player extends Thing {
 			let project = this.mesh.position.project(camera);
 			project.x = ( project.x + 1) / 2 * can.width;
 			project.y = (-project.y + 1) / 2 * can.height;
-			this.text.style.transform = `translate(${project.x}px,${project.y}px)`
+			this.text.style.transform = `translate(${project.x}px,${project.y}px)`;
 		this.mesh.position.x   = this.body.position.x;
 		this.mesh.position.y   = this.body.position.y;
 		this.mesh.position.z   = this.body.position.z;
@@ -91,11 +79,11 @@ class Player extends Thing {
 		this.mesh.quaternion.z = this.body.quaternion.y;
 		this.mesh.quaternion.w = this.body.quaternion.w;
 		this.body.allowSleep = false;
-		if (this.light) {
+		/*if (this.light) {
 			this.light.position.x = this.body.position.x;
 			this.light.position.y = this.body.position.y + 1;
 			this.light.position.z = this.body.position.z;
-		}
+		}*/
 		if (this.ishole) {
 		
 		} else if (this.body.position.y < -10) {

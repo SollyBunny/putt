@@ -46,7 +46,7 @@ class Hole extends Thing {
     ])).rotateX(Math.PI / 2);
     geometrycylinder = new THREE.CylinderGeometry(0.7, 0.7, 1.6, 20, 1, true);
 	constructor(pos) {
-		super(undefined, undefined, Types.HOLE);
+		super(Types.HOLE);
 		this.pos = pos;
 		this.mesh = new THREE.Object3D();
 		let mesh;
@@ -78,12 +78,10 @@ class Hole extends Thing {
 	onpush() {
 		this.material = this.parent.materials.HOLE.clone();
 		this.material.color = this.color[this.id];
-		console.log(this.material)
 		this.mesh.children[0].material = this.material;
 		this.mesh.children[1].material = this.material;
 		if (Settings.LIGHTING)
 			this.mesh.children[2].color    = this.color[this.id];
-		console.log("HOLE", this.id)
 	}
 	oncollide(e) {
 		e.body.parent.mesh.position.x = e.target.position.x;

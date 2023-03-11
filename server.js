@@ -2,17 +2,17 @@
 
 const Messages = {
 	ERROR     : 0,
-	CREATE    : 1,
-	JOINSYNC  : 2,
-	TICKSYNC  : 3,
-	JOIN      : 4,
-	LEAVE     : 5,
-	SYNC      : 6,
-	HOLE      : 7,
-	HIT       : 8,
-	NEWMAP    : 9,
+	MSG       : 1,
+	CREATE    : 2,
+	JOINSYNC  : 3,
+	TICKSYNC  : 4,
+	JOIN      : 5,
+	LEAVE     : 6,
+	SYNC      : 7,
+	HOLE      : 8,
+	HIT       : 9,
+	NEWMAP    : 10,
 };
-
 function random4chars() {
 	let result = "";
 	for (let i = 0; i < 5; ++i)
@@ -22,33 +22,13 @@ function random4chars() {
 random4chars.chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 const rooms = {};
-module.exports.join = (ws) => { // optional
+module.exports.open = ws => { // optional
 	ws.url.query = ws.url.query.split("&");
-	if (ws.url.query[0].length === 0) {
-		ws.room = random4chars(); // TODO collision check;
-		ws.room = rooms[ws.room] = {
-			code: ws.room,
-			players: [ ws ],
-			owner: ws,
-			tick: 0,
-			start: Date.now(),
-		};
+	if (ws.url.query[2]) ws.room = rooms[ws.url.query[2]];
+	if (ws.room) {
 		ws.id    = Date.now();
-		ws.name  = decodeURIComponent(ws.url.query[1]);
-		ws.color = parseInt(ws.url.query[2], 16);
-		ws.send(JSON.stringify([Messages.CREATE, ws.id, ws.room.code]));
-		console.log("Putt: Create", ws.ip, ws.room);
-	} else {
-		ws.room = rooms[ws.url.query[0]];
-		if (ws.room === undefined) {
-			ws.send(JSON.stringify([Messages.ERROR, "Invalid Room ID"]));
-			ws.close();
-			return;
-		}
-		ws.id    = Date.now();
-		ws.name  = decodeURIComponent(ws.url.query[1]);
-		ws.color = parseInt(ws.url.query[2], 16);
-		console.log(ws.color);
+		ws.name  = decodeURIComponent(ws.url.query[0]);
+		ws.color = parseInt(ws.url.query[1], 16);
 		ws.room.players.forEach(i => {
 			i.send(JSON.stringify([Messages.JOIN, ws.id, ws.name, ws.color]));
 		});
@@ -63,11 +43,44 @@ module.exports.join = (ws) => { // optional
 		ws.room.players.push(ws);
 		if (ws.room.owner === undefined) ws.room.owner = ws;
 		console.log("Putt: Join", ws.ip, ws.room);
+	} else {
+		ws.room = random4chars(); // TODO collision check;
+		ws.room = rooms[ws.room] = {
+			code: ws.room,
+			players: [ ws ],
+			owner: ws,
+			tick: 0,
+			start: Date.now(),
+		};
+		ws.id    = Date.now();
+		ws.name  = decodeURIComponent(ws.url.query[0]);
+		ws.color = parseInt(ws.url.query[1], 16);
+		ws.send(JSON.stringify([Messages.CREATE, ws.id, ws.room.code]));
+		if (ws.url.query[2]) // supplied room code, but it was invalid (NOTE: must come after CREATE message as alert blocks ws stream)
+			ws.send(JSON.stringify([Messages.ERROR, "Invalid room code, creating new room"]));
+		console.log("Putt: Create", ws.ip, ws.room);
 	}
 	
 };
+const updatelist = new Float32Array(14);
 module.exports.msg = (ws, msg) => {
-	console.log("msg", ws.ip);//, msg)
+	console.log("hi", msg[0])
+	if (msg[0] !== "[") { // SYNC message
+		try {
+			msg = new Float32Array(msg.buffer, msg.byteOffset, 13);
+			updatelist.set(msg, 0);
+		} catch (e) {
+			return;
+		}
+		updatelist[13] = ws.id;
+		ws.room.players.forEach(i => {
+			if (i.id === ws.id) return;
+			i.send(updatelist);
+		});
+		return;
+	}
+	msg = JSON.parse(msg);
+	console.log("msg", msg)
 	switch (msg[0]) {
 		case Messages.SYNC:
 			ws.room.players.forEach(i => {
@@ -132,7 +145,6 @@ module.exports.close = (ws) => { // optional
 	}
 };
 setInterval(() => {
-	console.log("Putt: Tick Sync")
 	Object.values(rooms).forEach(i => {
 		i.tick = Date.now() - i.start;
 		i.players.forEach(m => {

@@ -27,14 +27,11 @@ e_draw.onpointercancel = () => {
 	dragstart = undefined;
 };
 e_draw.onpointerup = () => {
-	if (dragdone) {
-		e_draw.releasePointerCapture(event.pointerId);
-	} else {
-		dragstart = undefined;
-		click();
-		return;	
-	}
 	dragstart = undefined;
+	if (dragdone)
+		e_draw.releasePointerCapture(event.pointerId);
+	else
+		click();
 };
 e_draw.onpointermove = () => {
 	if (!dragdone) {

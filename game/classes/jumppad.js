@@ -2,7 +2,7 @@ class Jumppad extends Thing {
 	geometry = new THREE.BoxGeometry(2, 0.1, 2);
 	shape = new CANNON.Box(new CANNON.Vec3(1, 0.1, 1));
 	constructor(pos) {
-		super(undefined, undefined, Types.Jumppad);
+		super(Types.Jumppad);
 		this.mesh = new THREE.Mesh(this.geometry);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.1;
@@ -17,8 +17,5 @@ class Jumppad extends Thing {
 	}
 	onpush() {
 		this.mesh.material = this.parent.materials.SG;
-	}
-	oncollide(e) {
-		e.body.velocity.y = 5;
 	}
 }

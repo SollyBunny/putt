@@ -16,7 +16,7 @@ let mouse = [0, 0, 0];
 const e_draw = document.getElementById("draw");
 const e_svg  = document.getElementById("svg");
 
-let tool = SELECT;
+let tool = Types.SELECT;
 let sel  = undefined;
 
 const objsdefault = [

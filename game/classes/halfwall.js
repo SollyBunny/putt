@@ -1,6 +1,6 @@
-class Wall extends Thing {
+class Halfwall extends Thing {
 	constructor(pos) {
-		super(Types.WALL);
+		super(Types.HALFWALL);
 		this.mesh = new THREE.Object3D();
 		this.body = [];
 		let mesh, geometry, points, faces;
@@ -28,7 +28,7 @@ class Wall extends Thing {
 			);
 			mesh.position.x -= geometry.parameters.depth * Math.sin(mesh.rotation.y) / 2
 			mesh.position.z -= geometry.parameters.depth * Math.cos(mesh.rotation.y) / 2
-			mesh.position.y -= 49;
+			mesh.position.y -= 49.5;
 			this.mesh.add(mesh);
 			let faces = [];
 			for (let m = 0; m < geometry.index.count / 3; ++m) {

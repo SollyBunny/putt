@@ -1,16 +1,15 @@
 class Floor extends Thing {
 	constructor(pos, data) {
-		super(undefined, undefined, Types.FLOOR)
+		super(Types.FLOOR)
 		let points = [];
 		for (let i = 0; i < pos.length; ++i) {
 			points.push(new THREE.Vector3(pos[i][0], pos[i][1], pos[i][2]));
-			pos[i][1] -= 60;
-			points.push(new THREE.Vector3(pos[i][0], pos[i][1], pos[i][2]));
+			points.push(new THREE.Vector3(pos[i][0], -100, pos[i][2]));
 		}
 		this.geometry = new ConvexGeometry(points);
 		this.geometry.computeBoundingBox();
 		let x, z; // x used as flag
-		for (let i = 1; i < data.length; ++i) {
+		for (let i = 2; i < data.length; ++i) {
 			if (
 				data[i][0] !== Types.HOLE ||
 				data[i][1][1] !== pos[0][1] + 60 ||
@@ -38,7 +37,6 @@ class Floor extends Thing {
 				if (Math.round(this.geometry.attributes.position.array[i * 3 + 1] % 1 * 10) === 5) { // If this point's y pos has 0.5 added to it, then it is a point from the circle
 					this.geometry.attributes.position.array[i * 3 + 1] -= 60.5; // Reset position of circle point
 					points.push(i);
-
 				}
 			}
 			// Filter out faces made of circle points (to create hole)
