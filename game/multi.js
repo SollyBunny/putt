@@ -53,9 +53,11 @@ let playersindex = {};
 		ws.send(Multi.updatelist.buffer);
 	}
 	Multi.hit = () => {
+		if (ws.readyState !== WebSocket.OPEN) return;
 		ws.send(JSON.stringify([ Messages.HIT ]));
 	};
 	Multi.hole = () => {
+		if (ws.readyState !== WebSocket.OPEN) return;
 		ws.send(JSON.stringify([ Messages.HOLE ]));
 	}
 	Multi.error = false;
