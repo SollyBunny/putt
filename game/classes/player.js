@@ -60,10 +60,10 @@ class Player extends Thing {
 	}
 	hit() {
 		this.stroke += 1;
-		Effects.HIT.play();
+		try { Effects.HIT.play(); } catch (e) {}
 	}
 	oncollide(e) {
-		Effects.BOUNCE.play();
+		try { Effects.BOUNCE.play(); } catch (e) {}
 	}
 	onupdate() {
 		// Project to 2d
@@ -86,7 +86,7 @@ class Player extends Thing {
 		}*/
 		if (this.ishole) {
 		
-		} else if (this.body.position.y < -10) {
+		} else if (this.body.position.y < -15) {
 			this.body.position.x = this.lastsafe.x;
 			this.body.position.y = this.lastsafe.y + 5;
 			this.body.position.z = this.lastsafe.z;
