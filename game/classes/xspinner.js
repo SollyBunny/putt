@@ -33,9 +33,14 @@ class Xspinner extends Thing {
 		this.body = new CANNON.Body({
 			mass: 0,
 			position: new CANNON.Vec3(pos[0], pos[1] + 0.5, pos[2]),
-			shape: this.shape,
 			material: Physics.WALL
-		});
+		}).addShape(
+			this.shape
+		).addShape(
+			this.shape,
+			undefined,
+			new CANNON.Quaternion(0, 2 ** 0.5 / 2, 0, 2 ** 0.5 / 2)
+		);
 	}
 	onpush() {
 		this.mesh.material = this.parent.materials.FG;

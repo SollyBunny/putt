@@ -23,6 +23,7 @@ class Floor extends Thing {
 		}
 		let faces = [];
 		if (x !== undefined) { // there is a hole
+			console.log("hole")
 			for (let i = 0; i < 20; ++i) { // Generate 20 points on a circle
 				points.push(new THREE.Vector3(
 					x + Math.sin(Math.PI * 2 * (i / 20)) * 0.7,

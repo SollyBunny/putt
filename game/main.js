@@ -95,6 +95,8 @@ camera.follow = player; // what the camera will follow
 let debug;
 if (Settings.DEBUGMESH) {
 	debug = new CannonDebugRenderer(scene, world);
+	debug._material.color.set(0xFF0000);
+	debug._material.wireframeLinewidth = 15;
 }
 
 // Frame

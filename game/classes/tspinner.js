@@ -19,7 +19,8 @@ class Tspinner extends Thing {
 			bevelSegments: 5,
 		}
 	).rotateX(Math.PI / 2);
-	shape = new CANNON.Box(new CANNON.Vec3(0.4, 0.5, 1.4));
+	shapea = new CANNON.Box(new CANNON.Vec3(0.4, 0.5, 1.4));
+	shapeb = new CANNON.Box(new CANNON.Vec3(0.6, 0.5, 0.4));
 	constructor(pos) {
 		super(Types.TSPINNER);
 		this.mesh = new THREE.Mesh(this.geometry);
@@ -29,9 +30,14 @@ class Tspinner extends Thing {
 		this.body = new CANNON.Body({
 			mass: 0,
 			position: new CANNON.Vec3(pos[0], pos[1] + 0.5, pos[2]),
-			shape: this.shape,
 			material: Physics.WALL
-		});
+		}).addShape(
+			this.shapea
+		).addShape(
+			this.shapeb,
+			new CANNON.Vec3(0.9, 0, 0),
+			undefined
+		);
 	}
 	onpush() {
 		this.mesh.material = this.parent.materials.FG;

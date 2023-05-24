@@ -1,9 +1,9 @@
 class Triangle extends Thing {
 	geometry = new THREE.ExtrudeGeometry(
 		new THREE.Shape([
-			new THREE.Vector2(-0.8, -0.8),
+			new THREE.Vector2(-0.6, -0.8),
 			new THREE.Vector2( 0.8, -0.8),
-			new THREE.Vector2( 0.8,  0.8),
+			new THREE.Vector2( 0.8,  0.6),
 		]),
 		{
 			steps: 1,
@@ -14,7 +14,41 @@ class Triangle extends Thing {
 			bevelSegments: 5,
 		}
 	).rotateX(Math.PI / 2);
-	shape = new CANNON.Sphere(1); // TODO get an actuall triangle
+	//shape = new CANNON.Sphere(1); // TODO get an actuall triangle
+	shape = new CANNON.ConvexPolyhedron([
+		// Bottom face
+		new CANNON.Vec3(-1, -0.5, -1),
+		new CANNON.Vec3( 1, -0.5, -1),
+		new CANNON.Vec3( 1, -0.5,  1),
+		// Top face
+		new CANNON.Vec3(-1, 0.5, -1),
+		new CANNON.Vec3( 1, 0.5, -1),
+		new CANNON.Vec3( 1, 0.5,  1),
+	], [
+		// Bottom face
+		[0, 1, 2],
+		// Top face
+		[3, 4, 5],
+		// // Side A
+		// [0, 1, 4],
+		// [4, 3, 0],
+		// // Side B
+		// [2, 5, 3],
+		// [3, 0, 2]
+		// // Side C
+		// [1, 2, 5],
+		// [5, 4, 1]
+		// Side A
+		[4, 1, 0],
+		[0, 3, 4],
+		// Side B
+		[2, 5, 3],
+		[3, 0, 2],
+		// Side C
+		[5, 2, 1],
+		[1, 4, 5]
+		
+	]);
 	constructor(pos) {
 		super(Types.Triangle);
 		this.mesh = new THREE.Mesh(this.geometry);

@@ -15,7 +15,7 @@ let playersindex = {};
 	try {
 		ws = new WebSocket(`wss://${document.location.host}/putt/server.js?${encodeURIComponent(Settings.NAME)}&${Settings.COLOR}` + (roomcode ? `&${roomcode}` : ""));
 	} catch (e) {
-		throw e;
+		console.error(e);
 		alert("Your browser does not support Websocket, this game will not work");
 	}
 
@@ -93,7 +93,6 @@ let playersindex = {};
 			return;
 		};
 		msg = JSON.parse(msg.data);
-		console.log(msg)
 		switch (msg[0]) {
 			case Messages.ERROR:
 				alert("Error: " + msg[1]);
