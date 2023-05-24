@@ -8,11 +8,11 @@ class Floor extends Thing {
 		}
 		this.geometry = new ConvexGeometry(points);
 		this.geometry.computeBoundingBox();
-		let x, z; // x used as flag
+		let x = undefined, z; // x used as flag
 		for (let i = 2; i < data.length; ++i) {
 			if (
 				data[i][0] !== Types.HOLE ||
-				data[i][1][1] !== pos[0][1] + 60 ||
+				data[i][1][1] !== pos[0][1] ||
 				this.geometry.boundingBox.min.x > data[i][1][0] ||
 				this.geometry.boundingBox.max.x < data[i][1][0] ||
 				this.geometry.boundingBox.min.z > data[i][1][2] ||
@@ -20,10 +20,20 @@ class Floor extends Thing {
 			) continue;
 			x = data[i][1][0];
 			z = data[i][1][2];
+			break;
 		}
 		let faces = [];
-		if (x !== undefined) { // there is a hole
-			console.log("hole")
+		if (x === undefined) {
+			this.geometry = mergeVertices(this.geometry, 0);
+			faces = []; // Generate faces for physics
+			for (let i = 0; i < this.geometry.index.count / 3; ++i) {
+				faces.push([
+					this.geometry.index.array[i * 3    ],
+					this.geometry.index.array[i * 3 + 1],
+					this.geometry.index.array[i * 3 + 2],
+				]);
+			}
+		} else { // there is a hole
 			for (let i = 0; i < 20; ++i) { // Generate 20 points on a circle
 				points.push(new THREE.Vector3(
 					x + Math.sin(Math.PI * 2 * (i / 20)) * 0.7,
@@ -36,7 +46,7 @@ class Floor extends Thing {
 			// Find all the points from the circle in the new geometry
 			for (let i = 0; i < this.geometry.attributes.position.count; ++i) {
 				if (Math.round(this.geometry.attributes.position.array[i * 3 + 1] % 1 * 10) === 5) { // If this point's y pos has 0.5 added to it, then it is a point from the circle
-					this.geometry.attributes.position.array[i * 3 + 1] -= 60.5; // Reset position of circle point
+					this.geometry.attributes.position.array[i * 3 + 1] -= 120.5; // Reset position of circle point
 					points.push(i);
 				}
 			}
@@ -61,16 +71,6 @@ class Floor extends Thing {
 			}
 			this.geometry.index.array = new Uint16Array(newpoints); // set new points in mesh
 			this.geometry.index.count = this.geometry.index.array.length; // set new length
-		} else {
-			this.geometry = mergeVertices(this.geometry, 0);
-			faces = []; // Generate faces for physics
-			for (let i = 0; i < this.geometry.index.count / 3; ++i) {
-				faces.push([
-					this.geometry.index.array[i * 3    ],
-					this.geometry.index.array[i * 3 + 1],
-					this.geometry.index.array[i * 3 + 2],
-				]);
-			}
 		}
 		points = []; // Format geometry points to CANNON.Vec3 for physics
 		for (let i = 0; i < this.geometry.attributes.position.count; ++i) {
