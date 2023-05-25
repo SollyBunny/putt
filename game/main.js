@@ -97,6 +97,7 @@ if (Settings.DEBUGMESH) {
 	debug = new CannonDebugRenderer(scene, world);
 	debug._material.color.set(0xFF0000);
 	debug._material.wireframeLinewidth = 15;
+	debug._material.linewidth = 15;
 }
 
 // Frame
