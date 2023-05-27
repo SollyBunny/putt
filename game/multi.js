@@ -1,6 +1,10 @@
-let ws;
-let roomcode;
-let playersindex = {};
+import Settings from "./settings.js";
+import { Messages } from "./def.js";
+import { place } from "./main.js";
+
+export let ws;
+export let roomcode;
+export let playersindex = {};
 
 // Roomcode check
 	const e_roomcode = document.getElementById("roomcode");
@@ -20,7 +24,7 @@ let playersindex = {};
 	}
 
 // main
-	Multi = {};
+	let Multi = {};
 	Multi.newmap = data => {
 		if (ws.readyState === WebSocket.CLOSED) return;
 		if (ws.readyState === WebSocket.CONNECTING) {
@@ -33,23 +37,32 @@ let playersindex = {};
 			data
 		]));
 	}
+	Multi.ready = () => {
+		if (ws.readyState !== WebSocket.OPEN)
+			ws.onopen = () => {
+				console.log("Connected")
+				ws.send(Messages.READY.toString());
+			}
+		else
+			ws.send(Messages.READY.toString());
+	}
 	Multi.updatelist = new Float32Array(13);
 	Multi.update = () => {
 		if (ws.readyState !== WebSocket.OPEN) return;
-		if (player.body.sleepState === 2) return;
-		Multi.updatelist[0] = player.body.position.x;
-		Multi.updatelist[1] = player.body.position.y;
-		Multi.updatelist[2] = player.body.position.z;
-		Multi.updatelist[3] = player.body.velocity.x;
-		Multi.updatelist[4] = player.body.velocity.y;
-		Multi.updatelist[5] = player.body.velocity.z;
-		Multi.updatelist[6] = player.body.angularVelocity.x;
-		Multi.updatelist[7] = player.body.angularVelocity.y;
-		Multi.updatelist[8] = player.body.angularVelocity.z;
-		Multi.updatelist[9] = player.body.quaternion.x;
-		Multi.updatelist[10] = player.body.quaternion.y;
-		Multi.updatelist[11] = player.body.quaternion.z;
-		Multi.updatelist[12] = player.body.quaternion.w;
+		if (place.player.body.sleepState === 2) return;
+		Multi.updatelist[0]  = place.player.body.position.x;
+		Multi.updatelist[1]  = place.player.body.position.y;
+		Multi.updatelist[2]  = place.player.body.position.z;
+		Multi.updatelist[3]  = place.player.body.velocity.x;
+		Multi.updatelist[4]  = place.player.body.velocity.y;
+		Multi.updatelist[5]  = place.player.body.velocity.z;
+		Multi.updatelist[6]  = place.player.body.angularVelocity.x;
+		Multi.updatelist[7]  = place.player.body.angularVelocity.y;
+		Multi.updatelist[8]  = place.player.body.angularVelocity.z;
+		Multi.updatelist[9]  = place.player.body.quaternion.x;
+		Multi.updatelist[10] = place.player.body.quaternion.y;
+		Multi.updatelist[11] = place.player.body.quaternion.z;
+		Multi.updatelist[12] = place.player.body.quaternion.w;
 		ws.send(Multi.updatelist.buffer);
 	}
 	Multi.hit = () => {
@@ -62,13 +75,13 @@ let playersindex = {};
 	}
 	Multi.error = false;
 	ws.onopen = () => {
-		console.log("Connected")
+		console.log("Connected");
 	};
 	ws.onclose = () => {
 		if (Multi.error) return;
 		alert("Connection Closed!");
 	}
-	ws.onmessage = (msg) => {
+	ws.onmessage = msg => {
 		let p;
 		if (msg.data[0] !== "[") {
 			msg.data.arrayBuffer().then(data => {
@@ -106,32 +119,30 @@ let playersindex = {};
 				break;
 			case Messages.CREATE:
 				console.log("Create", msg[1]);
-				player.id = msg[1];
-				playersindex[player.id] = player;
+				place.player.id = msg[1];
+				playersindex[place.player.id] = place.player;
 				roomcode = msg[2];
 				e_roomcode.innerHTML = roomcode;
 				window.history.replaceState({}, "", `${document.location.pathname}?${roomcode}`);
 				break;
 			case Messages.JOINSYNC:
 				console.log("Joinsync", msg[1]);
-				player.id = msg[1];
-				playersindex[player.id] = player;
+				place.player.id = msg[1];
+				playersindex[place.player.id] = place.player;
 				msg[2].forEach(i => {
-					p = new Player(i[1], i[2]);
+					p = place.addplayer(i[1], i[2]);
 					p.id = i[0];
-					p.add();
 					playersindex[p.id] = p;
 				});
 				if (msg[3]) {
 					place.del();
-					place = new Place(msg[1]);
-					players.forEach(i => {
-						i.reset();
-					});
+					place.setdata(msg[3]);
+					place.players.forEach(i => i.reset);
+					place.add();
 				}
 				break;
 			case Messages.TICKSYNC:
-				tick = msg[1];
+				place.tick = msg[1];
 				break;
 			case Messages.JOIN:
 				console.log("Join", msg[1]);
@@ -160,10 +171,11 @@ let playersindex = {};
 				break;
 			case Messages.NEWMAP:
 				place.del();
-				place = new Place(msg[1]);
-				players.forEach(i => {
-					i.reset();
-				});
+				place.setdata(msg[1]);
+				place.players.forEach(i => i.reset());
+				place.add();
 				break;
 		}
 	};
+
+export default Multi;

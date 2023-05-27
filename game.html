@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<title> Putt Party </title>
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta name="description" content="A small webapp to play golf with your friends">
 		<meta charset="UTF-8">
 		<style>
 			@font-face {
@@ -39,6 +40,10 @@
 			#rtext > * {
 				margin-top: -6vmax;
 				text-anchor: middle;
+				width: min-content;
+				overflow: visible;
+				white-space: nowrap;
+				text-shadow: 2px 2px 4px black;
 			}
 			#roomcodecontainer {
 				position: absolute;
@@ -84,34 +89,8 @@
 		<div id="infocontainer">
 			<div id="rmapname"> ? </div>
 			<div> Stroke </div> <div id="rstroke"> 0 </div>
-			<div> Hole   </div> <div id="rhole">    0 </div>
+			<div> Hole   </div> <div id="rhole"  > 0 </div>
 		</div>
-		<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-		<script src="lib/three.min.js"              > </script>
-		<script src="lib/three.ext.js"              > </script>
-		<script src="lib/cannon.min.js"             > </script>
-		<script src="lib/cannon.dbg.js"             > </script>
-		<script src="game/def.js"                   > </script>
-		<script src="game/settings.js"              > </script>
-		<script src="game/classes/thing.js"         > </script>
-		<script src="game/classes/place.js"         > </script>
-		<script src="game/classes/player.js"        > </script>
-		<script src="game/classes/floor.js"         > </script>
-		<script src="game/classes/bumpyfloor.js"    > </script>
-		<script src="game/classes/wall.js"          > </script>
-		<script src="game/classes/halfwall.js"      > </script>
-		<script src="game/classes/start.js"         > </script>
-		<script src="game/classes/hole.js"          > </script>
-		<script src="game/classes/jumppad.js"       > </script>
-		<script src="game/classes/bumper.js"        > </script>
-		<script src="game/classes/ispinner.js"      > </script>
-		<script src="game/classes/tspinner.js"      > </script>
-		<script src="game/classes/xspinner.js"      > </script>
-		<script src="game/classes/square.js"        > </script>
-		<script src="game/classes/triangle.js"      > </script>
-		<script src="game/classes/wind.js"          > </script>
-		<script src="game/classes/text.js"          > </script>
-		<script src="game/multi.js"                 > </script>
-		<script src="game/main.js"                  > </script>
+		<script defer async type="module" src="./game/main.js"></script>
 	</body>
 </html>

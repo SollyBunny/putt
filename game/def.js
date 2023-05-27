@@ -1,8 +1,10 @@
 
-const debugmove = true; // turn this to true if you are a gamer skript kiddy hacker man
-let a; // the holy debug variable
+import * as CANNON from "../lib/cannon.min.js";
 
-const Messages = {
+export const debugmove = true; // turn this to true if you are a gamer skript kiddy hacker man
+export let a; // the holy debug variable
+
+export const Messages = {
 	ERROR     : 0,
 	MSG       : 1,
 	CREATE    : 2,
@@ -14,9 +16,10 @@ const Messages = {
 	HOLE      : 8,
 	HIT       : 9,
 	NEWMAP    : 10,
+	READY     : 11
 };
 
-const Types = {
+export const Types = {
 	PLAYER     : -1,
 	TEXT       : 0,
 	FLOOR      : 1,
@@ -37,7 +40,7 @@ const Types = {
 	WIND       : 16,
 };
 
-const Modifiers = {
+export const Modifiers = {
 	TEXT     : 0,
 	SCALE    : 1,
 	MOVE     : 2,
@@ -49,12 +52,12 @@ const Modifiers = {
 	TELEPORT : 8
 };
 
-const Effects = {
+export const Effects = {
 	BOUNCE : new Audio("assets/bounce.wav"),
 	HIT    : new Audio("assets/hit.wav"),
 };
 
-const Physics = {
+export const Physics = {
 	FLOOR : new CANNON.Material({ restitution: 0.5, friction: 0 }),
 	WALL  : new CANNON.Material({ restitution: 1  , friction: 0 }),
 	HOLE  : new CANNON.Material({ restitution: 0  , friction: 0 }),

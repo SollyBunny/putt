@@ -12,6 +12,7 @@ const Messages = {
 	HOLE      : 8,
 	HIT       : 9,
 	NEWMAP    : 10,
+	READY     : 11
 };
 function random4chars() {
 	let result = "";
@@ -23,47 +24,55 @@ random4chars.chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 const rooms = {};
 module.exports.open = ws => { // optional
-	ws.url.query = ws.url.query.split("&");
-	if (ws.url.query[2]) ws.room = rooms[ws.url.query[2]];
-	if (ws.room) {
-		ws.id    = Date.now();
-		ws.name  = decodeURIComponent(ws.url.query[0]);
-		ws.color = parseInt(ws.url.query[1], 16);
-		ws.room.players.forEach(i => {
-			i.send(JSON.stringify([Messages.JOIN, ws.id, ws.name, ws.color]));
-		});
-		ws.send(JSON.stringify([
-			Messages.JOINSYNC,
-			ws.id,
-			ws.room.players.map(i => {
-				return [i.id, i.name, i.color];
-			}),
-			ws.room.map
-		]));
-		ws.room.players.push(ws);
-		if (ws.room.owner === undefined) ws.room.owner = ws;
-		console.log("Putt: Join", ws.ip, ws.room);
-	} else {
-		ws.room = random4chars(); // TODO collision check;
-		ws.room = rooms[ws.room] = {
-			code: ws.room,
-			players: [ ws ],
-			owner: ws,
-			tick: 0,
-			start: Date.now(),
-		};
-		ws.id    = Date.now();
-		ws.name  = decodeURIComponent(ws.url.query[0]);
-		ws.color = parseInt(ws.url.query[1], 16);
-		ws.send(JSON.stringify([Messages.CREATE, ws.id, ws.room.code]));
-		if (ws.url.query[2]) // supplied room code, but it was invalid (NOTE: must come after CREATE message as alert blocks ws stream)
-			ws.send(JSON.stringify([Messages.ERROR, "Invalid room code, creating new room"]));
-		console.log("Putt: Create", ws.ip, ws.room);
-	}
-	
+	ws.ready = false;
 };
 const updatelist = new Float32Array(14);
 module.exports.msg = (ws, msg) => {
+	if (!ws.ready) {
+		if (msg != Messages.READY) {
+			ws.close();
+			return;
+		}
+		ws.ready = true;
+		ws.url.query = ws.url.query.split("&");
+		if (ws.url.query[2]) ws.room = rooms[ws.url.query[2]];
+		if (ws.room) {
+			ws.id    = Date.now();
+			ws.name  = decodeURIComponent(ws.url.query[0]);
+			ws.color = parseInt(ws.url.query[1], 16);
+			ws.room.players.forEach(i => {
+				i.send(JSON.stringify([Messages.JOIN, ws.id, ws.name, ws.color]));
+			});
+			ws.send(JSON.stringify([
+				Messages.JOINSYNC,
+				ws.id,
+				ws.room.players.map(i => {
+					return [i.id, i.name, i.color];
+				}),
+				ws.room.map
+			]));
+			ws.room.players.push(ws);
+			if (ws.room.owner === undefined) ws.room.owner = ws;
+			console.log("Putt: Join", ws.ip, ws.room);
+		} else {
+			ws.room = random4chars(); // TODO collision check;
+			ws.room = rooms[ws.room] = {
+				code: ws.room,
+				players: [ ws ],
+				owner: ws,
+				tick: 0,
+				start: Date.now(),
+			};
+			ws.id    = Date.now();
+			ws.name  = decodeURIComponent(ws.url.query[0]);
+			ws.color = parseInt(ws.url.query[1], 16);
+			ws.send(JSON.stringify([Messages.CREATE, ws.id, ws.room.code]));
+			if (ws.url.query[2]) // supplied room code, but it was invalid (NOTE: must come after CREATE message as alert blocks ws stream)
+				ws.send(JSON.stringify([Messages.ERROR, "Invalid room code, creating new room"]));
+			console.log("Putt: Create", ws.ip, ws.room);
+		}
+		return;
+	}
 	console.log("hi", msg[0])
 	if (msg[0] !== "[") { // SYNC message
 		try {
