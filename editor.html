@@ -152,6 +152,7 @@
 						padding: 0;
 						box-sizing: border-box;
 						-moz-appearance: textfield;
+						appearance: textfield;
 					}
 					#rlayer::-webkit-outer-spin-button,
 					#rlayer::-webkit-inner-spin-button {
@@ -163,7 +164,7 @@
 					padding: 1vmin;
 					z-index: 10;
 					background: #333;
-					width: 20vmin;
+					width: 30vmin;
 					border-right: 1px solid white;
 				}
 				#right {
@@ -246,23 +247,22 @@
 							stroke: white;
 						}
 						text {
-							dominant-baseline: middle;
 							text-anchor: middle;
 							stroke-width: 0;
 						}
 						.svgspecpt {
 							r: 4
 						}
-						.svgspec0 { fill: #f00 !important }
-						.svgspec1 { fill: #f80 !important }
-						.svgspec2 { fill: #ff0 !important }
-						.svgspec3 { fill: #8f0 !important }
-						.svgspec4 { fill: #0f0 !important }
-						.svgspec5 { fill: #0fa !important }
-						.svgspec6 { fill: #0ff !important }
-						.svgspec7 { fill: #0af !important }
-						.svgspec8 { fill: #00f !important }
-						.svgspec9 { fill: #a0f !important }
+						.svgspec0  { fill: #f00 !important }
+						.svgspec1  { fill: #f80 !important }
+						.svgspec2  { fill: #ff0 !important }
+						.svgspec3  { fill: #8f0 !important }
+						.svgspec4  { fill: #0f0 !important }
+						.svgspec5  { fill: #0fa !important }
+						.svgspec6  { fill: #0ff !important }
+						.svgspec7  { fill: #0af !important }
+						.svgspec8  { fill: #00f !important }
+						.svgspec9  { fill: #a0f !important }
 						.svgspec10 { fill: #f0f !important }
 						.svgspec11 { fill: #f0a !important }
 						.wall {
@@ -352,9 +352,9 @@
 					<div id="rid"> </div> 
 					<h3> Position </h3>
 						<div id="rpos" class="pos"> 
-							<input type="number" oninput="posinput(0)">
-							<input type="number" oninput="posinput(1)">
-							<input type="number" oninput="posinput(2)"> 
+							<input type="number" step="0.1" oninput="posinput(0)">
+							<input type="number" step="0.1" oninput="posinput(1)">
+							<input type="number" step="0.1" oninput="posinput(2)"> 
 						</div> 
 						<div id="rposs"></div> 
 					<h3> Modifiers </h3>
@@ -365,7 +365,7 @@
 			<div id="right">
 				<div id="layer"> 
 					<button onclick="layerup()"> ▲ </button> 
-					<input type="number" placeholder="0" value="0" step="1" id="rlayer" oninput="layerinput()" style="width:1ch"> 
+					<input type="number" step="0.1" placeholder="0" value="0" step="1" id="rlayer" oninput="layerinput()" style="width:1ch"> 
 					<button onclick="layerdown()"> ▼ </button> 
 				</div> 
 				<div id="draw"> 
@@ -387,12 +387,10 @@
 					<input id="FLOOR"      onclick="toolset(undefined,Types.FLOOR)"      name="tool" type="radio"> <label for="FLOOR"     > Floor       </label>
 					<input id="BUMPYFLOOR" onclick="toolset(undefined,Types.BUMPYFLOOR)" name="tool" type="radio"> <label for="BUMPYFLOOR"> Bumpy Floor </label>
 					<input id="WALL"       onclick="toolset(undefined,Types.WALL)"       name="tool" type="radio"> <label for="WALL"      > Wall        </label>
-					<input id="HALFWALL"   onclick="toolset(undefined,Types.HALFWALL)"   name="tool" type="radio"> <label for="HALFWALL"  > Half Wall   </label>
 					<input id="DECOR"      onclick="toolset(undefined,Types.DECOR)"      name="tool" type="radio"> <label for="DECOR"     > Decor       </label>
 					<input id="START"      onclick="toolset(undefined,Types.START)"      name="tool" type="radio"> <label for="START"     > Start       </label>
 					<input id="HOLE"       onclick="toolset(undefined,Types.HOLE)"       name="tool" type="radio"> <label for="HOLE"      > Hole        </label>
 					<input id="BOOSTER"    onclick="toolset(undefined,Types.BOOSTER)"    name="tool" type="radio"> <label for="BOOSTER"   > Booster     </label>
-					<input id="JUMPPAD"    onclick="toolset(undefined,Types.JUMPPAD)"    name="tool" type="radio"> <label for="JUMPPAD"   > Jump Pad    </label>
 					<input id="BUMPER"     onclick="toolset(undefined,Types.BUMPER)"     name="tool" type="radio"> <label for="BUMPER"    > Bumper      </label>
 					<input id="ISPINNER"   onclick="toolset(undefined,Types.ISPINNER)"   name="tool" type="radio"> <label for="ISPINNER"  > I Spinner   </label>
 					<input id="TSPINNER"   onclick="toolset(undefined,Types.TSPINNER)"   name="tool" type="radio"> <label for="TSPINNER"  > T Spinner   </label>
@@ -421,6 +419,7 @@
 			<div>
 				<h2> Add Modifier </h2>
 				<button onclick="modadd(Modifiers.TEXT)"    > Text      </button>
+				<button onclick="modadd(Modifiers.VELOCITY)"> Velocity  </button>
 				<button onclick="modadd(Modifiers.SCALE)"   > Scale     </button>
 				<button onclick="modadd(Modifiers.MOVE)"    > Move      </button>
 				<button onclick="modadd(Modifiers.EASEMOVE)"> Ease Move </button>

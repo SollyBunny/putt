@@ -21,8 +21,30 @@
 				overflow: hidden;
 				background: #222;
 			}
-			button {
+			button, a {
 				cursor: pointer;
+			}
+			h1 {
+				width: 100vw;
+				line-height: 10vh;
+				padding: 0;
+				margin: 0;
+			}
+			h2 {
+				margin: 0;
+				margin-bottom: 1vmin;
+			}
+			h3, h4, h5, h6 {
+				margin: 0;
+			}
+			input, button {
+				padding: 2vmin;
+				margin: 1vmin;
+				border-radius: 1vmin;
+				outline: none;
+				border: none;
+				color: white;
+				background: #333;
 			}
 			#menu {
 				text-align: center;
@@ -34,13 +56,6 @@
 				left: 0;
 				transition: 0.5s transform ease;
 			}
-				h1 {
-					position: fixed;
-					width: 100vw;
-					line-height: 10vh;
-					padding: 0;
-					margin: 0;
-				}
 				#menuitem {
 					height: 100vh;
 					transition: 0.5s transform ease;
@@ -48,7 +63,8 @@
 				#menuitem > * {
 					width: calc(100vw - 10vmin);
 					height: calc(100% - 10vmin);
-					padding: 5vmin;
+					padding-left: 5vmin;
+					padding-right: 5vmin;
 					float: left;
 					position: relative;
 				}
@@ -99,11 +115,9 @@
 				#menugrid > input {
 					text-align: right;
 					height: 4vmin;
-					padding: 2vmin;
 				}
 				#menugrid > h6, #menusettingsreset {
 					grid-area: 1 span / 2 span;
-					margin: 0;
 					margin-top: 1vmin;
 					padding: 0;
 					font-weight: normal;
@@ -126,7 +140,8 @@
 					color: white;
 					text-decoration: none;
 					white-space: nowrap;
-					margin-bottom: 48px;
+					margin-top: 24px;
+					margin-bottom: 24px;
 				}
 				#menucreditscontainer .text {
 					display: inline;
@@ -136,19 +151,28 @@
 				#menucreditscontainer .icon {
 					float: left;
 				}
-				#menumain > * {
-					text-align: center;
-					border: none;
-					border-radius: 1vmin;
-					padding: 2vmin;
-					margin: 2vmin;
-					width: 50vw;
+				#menumaincontainer {
+					display: grid;
+					grid-template-columns: auto auto;
 				}
-				#menueditor > iframe {
+					#menumainleft {
+						margin: 1vmin;
+						text-align: left;
+					}
+					#menumainleft > button {
+						background: #333;
+						text-align: left;
+						width: 100%;
+						margin-bottom: 1vmin;
+					}
+					#menumainleft > * > div {
+						font-size: 75%;
+					}
+				#editor {
 					width: 100vw;
 					height: 100vh;
 					position: absolute;
-					top: 0;
+					top: -10vh;
 					left: 0;
 					border: none;
 				}
@@ -168,7 +192,7 @@
 			 <h1> Putt Party </h1>
 			 <div id="menuitem" style="transform:translateX(-200vw)">
 				<div id="menucredits">
-					<h2> Credits</h2>
+					<h2> Credits </h2>
 					<h6> Wow I got clicked<br>Thanks to these people for stuff </h6>
 					<div id="menucreditscontainer">
 						<a href="https://github.com/SollyBunny/putt" target="_blank">
@@ -181,8 +205,8 @@
 							<div class="text"> Source on GitHub! (SollyBunny) </div>
 						</a>
 						<a href="https://fonts.google.com/specimen/Varela+Round" target="_blank">
-							<image width="64" height="64" class="icon" style="border-radius:100%" src="putt/assets/font/joeprince.jpg"></image>
-							<div class="text"> The font Varella (Joe Prince) </div>
+							<image width="64" height="64" class="icon" style="border-radius:100%" src="putt/assets/joeprince.jpg"></image>
+							<div class="text"> The font Varela (Joe Prince) </div>
 						</a>
 						<a href="https://threejs.org/">
 							<svg width="64" height="64" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 226.77 226.77">
@@ -207,6 +231,7 @@
 					<button class="menushortcut right" onclick="page(-1)"> <a disabled href=" " title="Back"> ➡️ </a> </button>
 				</div>
 			 	<div id="menusettings">
+					<h2> Settings </h2>
 					<div id="menugrid">
 						<h6> General </h6>
 						<div> Name </div> <input attr="0" oninput="settingsset()" type="text" placeholder="Noob1234">
@@ -231,13 +256,25 @@
 					<button class="menushortcut right" onclick="page(-2)"> <a disabled href=" " title="Back"> ➡️ </a> </button>
 			 	</div>
 				<div id="menumain">
-					<input id="menuinput" oninput="input()" type="text" placeholder="Room Code"> <br>
-					<button onclick="play()" id="menubutton"> Create Room </button>
+					<h2> A golfing game </h2>
+					<div id="menumaincontainer">
+						<div id="menumainleft">
+							<h6> Create Room </h6>
+							<button> <div> Tutorial </div> Learn the basics of Putt Party with this short tutorial </button>
+							<button> <div> Offline </div> Play the game offline, you can also playtest maps from the editor </button>
+							<button> <div> Online </div> Create a new online room </button>
+							<h6> Room List </h6>
+						</div>
+						<div id="menumainright">
+							<input id="menuinput" oninput="input()" type="text" placeholder="Room Code"> <br>
+							<button onclick="play()" id="menubutton"> Create Room </button>
+						</div>
+					</div>
 					<button class="menushortcut left"  onclick="page(-1)"> <a disabled href=" " title="Settings"> ⚙️ </a> </button>
 					<button class="menushortcut right" onclick="page(-3)"> <a disabled href=" " title="Editor"> 🖌️ </a> </button>
 				</div>
 				<div id="menueditor">
-					<iframe id="menuiframe"> </iframe>
+					<iframe id="editor"> </iframe>
 					<button class="menushortcut left" onclick="page(-2)"> <a disabled href=" " title="Back"> ⬅️ </a> </button>
 					<button class="menushortcut active right"> <a disabled href="putt/editor.html" target="_blank" title="Open in new tab"> ⬆️ </a> </button>
 				</div>
@@ -246,7 +283,7 @@
 		<script defer>
 			const e_menubutton = document.getElementById("menubutton");
 			const e_menuinput  = document.getElementById("menuinput");
-			const e_menuiframe = document.getElementById("menuiframe");
+			const e_menuiframe = document.getElementById("editor");
 			const e_menuitem   = document.getElementById("menuitem");
 			const e_menugrid   = document.getElementById("menugrid");
 			const e_menu       = document.getElementById("menu");

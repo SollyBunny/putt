@@ -1,4 +1,18 @@
 
+function cyrb53(seed) {
+	seed = seed | 0;
+	let h1 = 0xdeadbeef ^ seed;
+	let h2 = 0x41c6ce57 ^ seed;
+	for (let i = 0, ch; i < this.length; ++i) {
+		ch = this.charCodeAt(i);
+		h1 = Math.imul(h1 ^ ch, 2654435761);
+		h2 = Math.imul(h2 ^ ch, 1597334677);
+	}
+	h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+	h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+	return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+
 function normalize() {
 	let newobjs = [objs[0], objs[1]];
 	let start = undefined;
@@ -7,6 +21,7 @@ function normalize() {
 	for (let i = 2; i < objs.length; ++i) {
 		if (objs[i][0] !== Types.START) continue;
 		start = objs[i][1];
+		break;
 	}
 	if (start === undefined) start = [0, 0, 0];
 	for (let i = 2; i < objs.length; ++i) {
@@ -37,7 +52,7 @@ function normalize() {
 		newobjs.push(o);
 		hash += JSON.stringify(o);
 	}
-	newobjs[0][1] = hash.cyrb53();
+	newobjs[0][1] = cyrb53(hash);
 	return newobjs;
 }
 function save() {
@@ -47,6 +62,7 @@ function save() {
 function load() {
 	let d = prompt("JSON data");
 	if (d === null || d.length === 0) return;
+	if (d.endsWith(";")) d = d.slice(0, -1);
 	try {
 		d = JSON.parse(d);
 	} catch (e) {
@@ -205,7 +221,6 @@ function click() {
 			break;
 		case Types.START:
 		case Types.HOLE:
-		case Types.JUMPPAD:
 		case Types.BOOSTER:
 		case Types.BUMPER:
 		case Types.ISPINNER:
@@ -235,7 +250,6 @@ function render() {
 	numstart = numhole = 0;
 	for (let i = 2; i < objs.length; ++i) {
 		m = objs[i];
-		console.log(m[0], Typesname[m[0]]);
 		switch (m[0]) {
 			case Types.TEXT:
 				l1 += `<text style="fill:white" x="${m[1][0] * 20}" y="${m[1][2] * 20}">Text</text>`;
@@ -294,6 +308,3 @@ function render() {
 	}
 	e_svg.innerHTML = l4 + l3 + l2 + l1;
 }
-
-// 
-// ${m[1][0] * 20 - 10},${m[1][2] * 20 + 40}

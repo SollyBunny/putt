@@ -5,7 +5,7 @@ const e_modifiercontainer = document.getElementById("modifiercontainer");
 
 function posinput(id) {
 	if (!sel) return;
-	let e = parseInt(event.target.value);
+	let e = Number(event.target.value);
 	if (e === null) {
 		event.target.classList.add("error");
 	} else {
@@ -17,12 +17,13 @@ function posinput(id) {
 }
 function possinput(n, id) {
 	if (!sel) return;
-	let e = parseInt(event.target.value);
+	let e = Number(event.target.value);
 	if (e === null) {
 		event.target.classList.add("error");
 	} else {
 		event.target.classList.remove("error");
 		historyadd();
+		console.log(n, id, e)
 		objs[sel][1][n][id] = e;
 		render();
 	}
@@ -56,7 +57,7 @@ function palleteinput(id) {
 		return;
 	}
 	event.target.classList.remove("error");
-	objs[1][id] = parseInt(event.target.value, 16);
+	objs[1][id] = Number(event.target.value, 16);
 }
 function nameinput() {
 	if (event.target.value.length === 0) {
@@ -71,11 +72,11 @@ function layerinput() {
 		mouse[1] = 0;
 		return;
 	}
-	if (isNaN(parseInt(event.target.value))) {
+	if (isNaN(Number(event.target.value))) {
 		event.target.value = mouse[1];
 		return;
 	}
-	mouse[1] = event.target.value = parseInt(event.target.value);
+	mouse[1] = event.target.value = Number(event.target.value);
 	e_rlayer.style.width = `${String(mouse[1]).length}ch`
 }
 
@@ -129,7 +130,7 @@ function tooledit(id) {
 		}
 		let o = "";
 		for (let i = 0; i < obj[1].length; ++i) {
-			o += `<div class="poss"><input type="number" oninput="possinput(${i},0)" value="${obj[1][i][0]}"><input type="number" oninput="possinput(${i},1)" value="${obj[1][i][1]}"><input type="number" oninput="possinput(${i},2)" value="${obj[1][i][2]}"><button class="x" onclick="possdel(${i})">X</button></div>`;
+			o += `<div class="poss"><input type="number" step="0.1" oninput="possinput(${i},0)" value="${obj[1][i][0]}"><input type="number" step="0.1" oninput="possinput(${i},1)" value="${obj[1][i][1]}"><input type="number"  step="0.1" oninput="possinput(${i},2)" value="${obj[1][i][2]}"><button class="x" onclick="possdel(${i})">X</button></div>`;
 		}
 		e_rposs.innerHTML = o;
 	}
@@ -146,15 +147,15 @@ function tooledit(id) {
 				case Modifiers.SPIN:
 				case Modifiers.VELOCITY:
 				case Modifiers.TELEPORT:
-					o += `<div class="pos"><input type="number" oninput="possinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" oninput="possinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"></div>`;
+					console.log("I ADDED A BOUNCE")
+					o += `<div class="pos"><input type="number" step="0.1" oninput="possinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" step="0.1" oninput="possinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" step="0.1" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"></div>`;
 					break;
 				case Modifiers.BOUNCE:
-					console.log("I ADDED A BOUNCE")
 					o += `<input type="text" value="${obj[2][i][1]}" oninput="modinput(i)">`;
 					break;				
 				case Modifiers.MOVE:
 				case Modifiers.EASEMOVE:
-					o += `<div class="pos4"><input type="number" oninput="possinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" oninput="possinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"><input type="number" oninput="possinput(${i},3)" value="${obj[2][i][1][3]}"></div>`;
+					o += `<div class="pos4"><input type="number" step="0.1" oninput="possinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" step="0.1" oninput="possinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" step="0.1" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"><input type="number" step="0.1" oninput="possinput(${i},3)" value="${obj[2][i][1][3]}"></div>`;
 					break;
 				case Modifiers.COLOR:
 					o += `<input type="text" value="${obj[2][i][1].toString(16).toUpperCase().padStart(6, "0")}" oninput="modinput(i)">`;
@@ -194,7 +195,7 @@ function modinput(n, id) {
 			obj[1] = event.target.value;
 			break;
 		case Modifiers.BOUNCE:
-			e = parseInt(event.target.value);
+			e = Number(event.target.value);
 			if (e === null) {
 				event.target.classList.add("error");
 				break;
@@ -207,8 +208,7 @@ function modinput(n, id) {
 		case Modifiers.VELOCITY:
 		case Modifiers.MOVE:
 		case Modifiers.EASEMOVE:
-			console.log("hi")
-			e = parseInt(event.target.value);
+			e = Number(event.target.value);
 			if (e === null) {
 				event.target.classList.add("error");
 				break;
@@ -222,7 +222,7 @@ function modinput(n, id) {
 				break;
 			}
 			event.target.classList.remove("error");
-			e = parseInt(event.target.value, 16);
+			e = Number(event.target.value, 16);
 			obj[1] = e;
 			break;
 	}

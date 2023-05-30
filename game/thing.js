@@ -7,16 +7,33 @@ import { Types, Effects, Modifiers, Physics } from "./def.js";
 
 const e_rtext    = document.getElementById("rtext"); // To use as a canvas for player names
 const e_rmapname = document.getElementById("rmapname");
+const e_rhole    = document.getElementById("rhole");
+
+const holecolor = [
+	new THREE.Color(1, 0, 0),
+	new THREE.Color(1, 0.5, 0),
+	new THREE.Color(1, 1, 0),
+	new THREE.Color(0.5, 1, 0),
+	new THREE.Color(0, 1, 0),
+	new THREE.Color(0, 1, 0.5),
+	new THREE.Color(0, 1, 1),
+	new THREE.Color(0, 0.5, 1),
+	new THREE.Color(0, 0, 1),
+	new THREE.Color(0.5, 0, 1),
+	new THREE.Color(1, 0, 1),
+	new THREE.Color(1, 0, 0.5),
+];
 
 export class Place {
 	// Can't call it map because of JS reserving so many names
 	materials = {
 		FLOOR1: new THREE.MeshLambertMaterial({ flatShading: true }), // Used for flat floor
 		FLOOR2: new THREE.MeshLambertMaterial({ flatShading: true }), // Used for bumpy / special floor
-		MG:   new THREE.MeshLambertMaterial(), // Used for triangle, square, spinner, wind
-		FG:   new THREE.MeshLambertMaterial(), // Used for wall
-		SG:   new THREE.MeshLambertMaterial(), // Used for bouncer
-		HOLE: new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
+		MG:     new THREE.MeshLambertMaterial(), // Used for triangle, square, spinner, wind
+		FG:     new THREE.MeshLambertMaterial(), // Used for wall
+		SG:     new THREE.MeshLambertMaterial(), // Used for bouncer
+		HOLE:   new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
+		START:  new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
 	}
 	setdata(data) {
 		this.data = data;
@@ -62,11 +79,10 @@ export class Place {
 					case Types.FLOOR      : j = new Floor      (this, m[1]); break;
 					case Types.BUMPYFLOOR : j = new Bumpyfloor (this, m[1]); break;
 					case Types.WALL       : j = new Wall       (this, m[1]); break;
-					case Types.HALFWALL   : j = new Halfwall   (this, m[1]); break;
 					case Types.START      : j = new Start      (this, m[1]); break;
 					case Types.HOLE       : j = new Hole       (this, m[1]); break;
+					case Types.BOOSTER    : j = new Booster    (this, m[1]); break;
 					case Types.BUMPER     : j = new Bumper     (this, m[1]); break;
-					case Types.JUMPPAD    : j = new Jumppad    (this, m[1]); break;
 					case Types.ISPINNER   : j = new Ispinner   (this, m[1]); break;
 					case Types.TSPINNER   : j = new Tspinner   (this, m[1]); break;
 					case Types.XSPINNER   : j = new Xspinner   (this, m[1]); break;
@@ -78,6 +94,7 @@ export class Place {
 					for (let k = 0; k < m[2].length; ++k) {
 						switch (m[2][k][0]) {
 							case Modifiers.TEXT:
+								if (!j.mesh) break;
 								j.textset(m[2][k][1]);
 								this.mods.text.push(j);
 								break;
@@ -108,6 +125,12 @@ export class Place {
 				}
 				this.things.push(j);
 			}
+	}
+	sethole(id) {
+		if (id > this.holes.length - 1) return;
+		this.players.forEach(i => {
+			i.sethole(id);
+		})
 	}
 	addplayer(name, color, me) {
 		const player = new Player(this, name, color);
@@ -226,19 +249,44 @@ export class Player extends Thing {
 		this.body.position.x = this.body.position.z = this.body.velocity.x = this.body.velocity.y = this.body.velocity.z = this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = 0;
 		this.body.position.y = 5;
 		this.body.allowSleep = false;
+		this.body.sleepState = 0;
 		this.isshoot = true;
 		this.ishole  = false;
 		this.sleepytime = 0;
 		this.lastsafe = new CANNON.Vec3();
 	}
-	hole() {
+	die() {
+		this.sleepytime = 0;
+		this.body.allowSleep = false;
+		this.body.sleepState = 0;
+		this.isshoot = false;
+		this.ishole = false;
+		this.mesh.material.opacity = 1;
+		this.body.position.x = this.lastsafe.x;
+		this.body.position.y = this.lastsafe.y;
+		this.body.position.z = this.lastsafe.z;
+		this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = this.body.velocity.x = this.body.velocity.y = this.body.velocity.z = 0;
+	}
+	sethole(id) {
+		this.hole = id;
+		if (this.parent.player === this)
+			e_rhole.textContent = id + 1;
+		this.lastsafe.x = this.parent.starts[id].mesh.position.x;
+		this.lastsafe.y = this.parent.starts[id].mesh.position.y + 5;
+		this.lastsafe.z = this.parent.starts[id].mesh.position.z;
+		this.die();
+	}
+	onhole() {
 		this.ishole = true;
 		this.mesh.material.opacity = 0.5;
 		this.body.sleep();
 		if (this.id === player.id)
 			Multi.hole();
+		window.setTimeout(() => {
+			this.parent.sethole(this.hole + 1);
+		});
 	}
-	hit() {
+	onhit() {
 		this.stroke += 1;
 		Effects.HIT.play().catch(e => {});
 	}
@@ -268,10 +316,7 @@ export class Player extends Thing {
 		if (this.ishole) {
 		
 		} else if (this.body.position.y < -15) {
-			this.body.position.x = this.lastsafe.x;
-			this.body.position.y = this.lastsafe.y + 5;
-			this.body.position.z = this.lastsafe.z;
-			this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = this.body.velocity.x = this.body.velocity.y = this.body.velocity.z = 0;
+			this.die();
 		} else if (Math.sqrt(
 			this.body.velocity.x ** 2 +
 			this.body.velocity.y ** 2 +
@@ -296,30 +341,32 @@ export class Player extends Thing {
 }
 
 export class Start extends Thing {
+	light = new THREE.PointLight(0xFFFFFF, 0.2, 100, 5, 0.5);
 	constructor(parent, pos) {
 		super(parent, Types.START);
 		// Set id
 		this.id = this.parent.starts.length;
 		this.parent.starts.push(this);
-		this.pos = pos;
+		this.material = this.parent.materials.START.clone();
+		this.material.color = holecolor[this.id];
+		this.mesh = new THREE.Mesh(
+			new THREE.CircleGeometry(0.5, 20),
+			this.material
+		);
+		this.mesh.rotation.x = Math.PI / 2;
+		this.mesh.position.x = pos[0];
+		this.mesh.position.y = pos[1] + 0.01;
+		this.mesh.position.z = pos[2];
+		if (Settings.LIGHTING) {
+			const light = this.light.clone();
+			light.position.set(pos[0], pos[1] + 1, pos[1]);
+			light.color = holecolor[this.id];
+			this.mesh.add(light);
+		}
 	}
 }
 
 export class Hole extends Thing {
-	color = [
-		new THREE.Color(1, 0, 0),
-		new THREE.Color(1, 0.5, 0),
-		new THREE.Color(1, 1, 0),
-		new THREE.Color(0.5, 1, 0),
-		new THREE.Color(0, 1, 0),
-		new THREE.Color(0, 1, 0.5),
-		new THREE.Color(0, 1, 1),
-		new THREE.Color(0, 0.5, 1),
-		new THREE.Color(0, 0, 1),
-		new THREE.Color(0.5, 0, 1),
-		new THREE.Color(1, 0, 1),
-		new THREE.Color(1, 0, 0.5),
-	]
 	shape = new CANNON.ConvexPolyhedron({
 		vertices: [
 	        new CANNON.Vec3(-0.7, -1.6, -0.7),
@@ -357,10 +404,9 @@ export class Hole extends Thing {
 		// Set id
 		this.id = this.parent.holes.length;
 		this.parent.holes.push(this);
-		this.pos = pos;
 		this.mesh = new THREE.Object3D();
 		this.material = this.parent.materials.HOLE.clone();
-		this.material.color = this.color[this.id];
+		this.material.color = holecolor[this.id];
 		let mesh;
 		{ // cylinder bottom
 			mesh = new THREE.Mesh(this.geometrybottom, this.material); 
@@ -379,7 +425,7 @@ export class Hole extends Thing {
 		if (Settings.LIGHTING) {
 			const light = this.light.clone();
 			light.position.set(pos[0], pos[1] + 5, pos[1]);
-			light.color = this.color[this.id];
+			light.color = holecolor[this.id];
 			this.mesh.add(light);
 		}
     	this.body = new CANNON.Body({
@@ -392,7 +438,8 @@ export class Hole extends Thing {
 		e.body.parent.mesh.position.x = e.target.position.x;
 		e.body.parent.mesh.position.y = e.target.position.y;
 		e.body.parent.mesh.position.z = e.target.position.z;
-		e.body.parent.hole();
+		console.log(e.body.parent)
+		e.body.parent.onhole();
 	}
 }
 
@@ -674,79 +721,7 @@ export class Wall extends Thing {
 	}
 }
 
-export class Halfwall extends Wall {
-	constructor(parent, pos) {
-		super(parent, Types.HALFWALL);
-		this.mesh = new THREE.Object3D();
-		this.body = new CANNON.Body({
-			mass: 0,
-			material: Physics.WALL
-		});
-		let mesh, geometry;
-		for (let i = 1; i < pos.length; ++i) {
-			geometry = new THREE.BoxGeometry(
-				0.5, 100,
-				Math.sqrt(
-					(pos[i][0] - pos[i - 1][0]) ** 2 +
-					(pos[i][2] - pos[i - 1][2]) ** 2
-				) + 0.25
-			);
-			for (let m = 0; m < geometry.attributes.position.array.length; m += 3) {
-				if (geometry.attributes.position.array[m + 1] === -30) continue;
-				if (geometry.attributes.position.array[m + 2] > 0)
-					geometry.attributes.position.array[m + 1] += pos[i][1];
-				else
-					geometry.attributes.position.array[m + 1] += pos[i - 1][1];
-			}
-			mesh = new THREE.Mesh(geometry, this.parent.materials.FG);
-			mesh.position.x = pos[i][0];
-			mesh.position.z = pos[i][2]
-			mesh.rotation.y = Math.atan2(
-				pos[i][0] - pos[i - 1][0],
-				pos[i][2] - pos[i - 1][2],
-			);
-			mesh.position.x -= geometry.parameters.depth * Math.sin(mesh.rotation.y) / 2
-			mesh.position.z -= geometry.parameters.depth * Math.cos(mesh.rotation.y) / 2
-			mesh.position.y -= 49.5;
-			this.mesh.add(mesh);
-			let faces = [];
-			for (let m = 0; m < geometry.index.array.length; m += 3) {
-				faces.push([
-					geometry.index.array[m],
-					geometry.index.array[m + 1],
-					geometry.index.array[m + 2],					
-				])
-			}
-			let points = [];
-			for (let m = 0; m < geometry.attributes.position.array.length; m += 3) {
-				points.push(new CANNON.Vec3(
-					geometry.attributes.position.array[m],
-					geometry.attributes.position.array[m + 1],
-					geometry.attributes.position.array[m + 2],
-				));
-			}
-			this.body.addShape(
-				new CANNON.ConvexPolyhedron({
-					vertices: points,
-					faces: faces
-				}),
-				new CANNON.Vec3(
-					mesh.position.x,
-					mesh.position.y,
-					mesh.position.z
-				),
-				new CANNON.Quaternion(
-					mesh.quaternion.x,
-					mesh.quaternion.y,
-					mesh.quaternion.z,
-					mesh.quaternion.w
-				)
-			);
-		}
-	}
-}
-
-export class Jumppad extends Thing {
+export class Booster extends Thing {
 	geometry = new THREE.BoxGeometry(2, 0.1, 2);
 	shape = new CANNON.Box(new CANNON.Vec3(1, 0.1, 1));
 	constructor(parent, pos) {
@@ -982,11 +957,11 @@ export class Xspinner extends Thing {
 export class Text extends Thing {
 	constructor(parent, pos) {
 		super(parent, Types.TEXT);
-		this.position = new THREE.Vector3(
-			pos[0],
-			pos[1] + 5,
-			pos[2],
-		)
+		this.mesh = new THREE.Object3D();
+		this.mesh.position.x = pos[0];
+		this.mesh.position.y = pos[1] + 5;
+		this.mesh.position.z = pos[2];
+		this.mesh.frustumCulled = true;
 	}
 }
 

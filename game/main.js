@@ -8,11 +8,10 @@ import Settings from "./settings.js";
 import Multi from "./multi.js";
 import { debugmove } from "./def.js";
 import { Place, Player } from "./thing.js";
-
+import { MapTutorial } from "./maps.js";
 
 const can = document.getElementById("can"); // What we are drawing on
 const e_rstroke  = document.getElementById("rstroke");
-const e_rhole    = document.getElementById("rhole");
 
 // Keys
 let keys = {}; // Key Pair : Key Pressed
@@ -72,7 +71,7 @@ window.onresize();
 
 export const world = new CANNON.World();
 world.gravity.set(0, -1, 0) // m/s²
-world.solver.iterations = 20;
+world.solver.iterations = 30;
 world.allowSleep = true;
 
 // Special objects
@@ -124,7 +123,9 @@ function frame(tt) {
 		let m, proj, l;
 		for (let i = 0; i < place.mods.spin.length; ++i) {
 			m = place.mods.spin[i];
-			m.mesh.rotation.y = place.tick / 1000;
+			m.mesh.rotation.x = place.tick / 1000 * m.modspin[0];
+			m.mesh.rotation.y = place.tick / 1000 * m.modspin[1];
+			m.mesh.rotation.z = place.tick / 1000 * m.modspin[2];
 			if (m.body) {
 				m.body.quaternion.x = m.mesh.quaternion.x;
 				m.body.quaternion.y = m.mesh.quaternion.y;
@@ -134,9 +135,10 @@ function frame(tt) {
 		}
 		for (let i = 0; i < place.mods.text.length; ++i) {
 			m = place.mods.text[i];
-			if (m.mesh) m = m.mesh.position;
-			else        m = m.position;
-			proj = m.clone().project(scene.camera);
+			m.mesh.lookAt(scene.camera.position);
+			//console.log(m.mesh)
+			if (m.mesh.quaternion.angleTo(scene.camera.quaternion) < 0.01) continue;
+			proj = m.mesh.position.clone().project(scene.camera);
 			proj.x = ( proj.x + 1) / 2 * can.width;
 			proj.y = (-proj.y + 1) / 2 * can.height;
 			place.mods.text[i].text.style.transform = `translate(calc(${proj.x}px - 50%),calc(${proj.y}px - 50%))`;
@@ -219,7 +221,7 @@ can.onpointerup = can.onpointercancel = () => {
 			place.player.lastsafe.y = place.player.body.position.y;
 			place.player.lastsafe.z = place.player.body.position.z;
 			Multi.hit();
-			place.player.hit();
+			place.player.onhit();
 			e_rstroke.innerHTML = place.player.stroke;
 		}
 		scene.camera.shoot = undefined;
@@ -251,8 +253,8 @@ can.onpointermove = event => {
 
 // Main
 
-let data =
-[["Test Place",3338908027751811],[43775,6065901,10280542,5266795],[1,[[-1,0,-1],[19,0,-1],[19,0,19],[-1,0,19]]],[6,[0,0,0]],[11,[1,0,17],[[4,[0,1,0]]]],[12,[5,0,17],[[4,[0,1,0]]]],[13,[9,0,17],[[4,[0,1,0]]]],[14,[13,0,17],[[4,[0,1,0]]]],[15,[16,0,17],[[4,[0,1,0]]]],[4,[[9,0,9],[19,0,9],[19,0,19],[-1,0,19]]],[0,[9,0,9],[[0,"Welcome to the test map :D"]]],[9,[18,0,0],[[6,[0,5,0]]]],[9,[18,0,2],[[6,[0,5,0]]]],[9,[18,0,4],[[6,[0,5,0]]]],[9,[18,0,6],[[6,[0,5,0]]]],[9,[18,0,8],[[6,[0,5,0]]]],[1,[[24,-5,-1],[24,-5,9],[34,-5,9],[34,-5,-1]]],[5,[[25,-5,0],[25,-5,8]]],[3,[[24,-5,-1],[34,-5,-1],[34,-5,9]]],[1,[[24,-5,9],[24,-10,19],[34,-10,19],[34,-5,9]]],[1,[[24,-10,19],[24,-10,29],[34,-10,29],[34,-10,19]]],[2,[[24,-10,21],[1,-10,21],[1,-10,27],[24,-10,27]]],[3,[[24,-10,19],[24,-5,9]]],[3,[[34,-5,9],[34,-10,19],[34,-10,29],[24,-10,29]]],[15,[33,-10,28],[[4,[0,1,0]]]],[15,[33,-10,0],[[4,[0,1,0]]]],[8,[25,-10,22],[[6,[5,0,0]]]],[8,[25,-10,24],[[6,[5,0,0]]]],[8,[25,-10,26],[[6,[5,0,0]]]],[10,[24,-10,19],[[5,5]]],[10,[24,-5,9],[[5,5]]],[10,[24,-5,-1],[[5,5]]],[5,[[0,-5,14],[18,-5,14]]],[3,[[-1,0,9],[-1,0,19]]],[3,[[-1,0,-1],[19,2,-1]]],[1,[[-1,0,-1],[-1,0,9],[-4,-2,9],[-4,-2,-1]]],[1,[[-4,-2,-1],[-14,-2,-1],[-14,-2,9],[-4,-2,9]]],[1,[[-14,-4,9],[-14,-4,11],[-12,-4,11],[-12,-4,9]]],[3,[[-4,-2,-1],[-14,-2,-1],[-14,-2,9],[-14,-2,11],[-4,-3,11],[-4,-7,11]]],[1,[[-12,-5,9],[-10,-5,9],[-10,-5,11],[-12,-5,11]]],[1,[[-10,-6,9],[-8,-6,9],[-8,-6,11],[-10,-6,11]]],[1,[[-8,-7,9],[-6,-7,9],[-6,-7,11],[-8,-7,11]]],[1,[[-6,-8,9],[-4,-8,9],[-4,-8,11],[-6,-8,11]]],[7,[-5,-8,10]],[7,[-7,-7,10]],[7,[-9,-6,10]],[7,[-11,-5,10]],[7,[-13,-4,10]]]
+let data = MapTutorial;
+console.log(data)
 
 export const place = new Place();
 place.world = world;
@@ -260,7 +262,7 @@ place.scene = scene;
 place.setdata(data);
 place.add();
 place.addplayer(Settings.NAME, Settings.COLOR, true);
-console.log(place.player)
+place.sethole(0);
 Multi.ready();
 
 window.requestAnimationFrame(frame);
@@ -273,7 +275,6 @@ window.onmessage = event => {
 	place.players.forEach(i => i.reset);
 	place.add();
 };
-
 
 if (debugmove) {
 	window.player = place.player;
