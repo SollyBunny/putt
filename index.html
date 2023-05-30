@@ -28,20 +28,21 @@
 				text-align: center;
 				background: #222;
 				height: 100vh;
-				width: 300vw;
+				width: 400vw;
 				position: absolute;
 				top: 0;
 				left: 0;
 				transition: 0.5s transform ease;
 			}
 				h1 {
+					position: fixed;
 					width: 100vw;
 					line-height: 10vh;
 					padding: 0;
 					margin: 0;
 				}
 				#menuitem {
-					height: 90vh;
+					height: 100vh;
 					transition: 0.5s transform ease;
 				}
 				#menuitem > * {
@@ -77,9 +78,6 @@
 				}
 					.menushortcut.left   { left:  0 }
 					.menushortcut.right  { right: 0 }
-				#menusettings {
-					
-				}
 				#menugrid {
 					display: grid;
 					grid-template-columns: 1fr 1fr;
@@ -91,21 +89,49 @@
 				#menugrid > * {
 					border: none;
 					border-radius: 1vmin;
-					padding: 2vmin;
 				}
 				#menugrid > div {
 					text-align: left;
 				}
 				#menugrid > input {
 					text-align: right;
+					height: 4vmin;
+					padding: 2vmin;
 				}
-				#menugrid > h6 {
+				#menugrid > h6, #menusettingsreset {
 					grid-area: 1 span / 2 span;
 					margin: 0;
 					margin-top: 1vmin;
 					padding: 0;
 					font-weight: normal;
 					font-size: 120%;
+				}
+				#menusettingsreset {
+					padding: 2vmin;
+					width: min-content;
+					padding-left: 8vmin;
+					padding-right: 8vmin;
+					margin: auto;
+				}
+				#menucreditscontainer {
+					width: min-content;
+					margin: auto;
+				}
+				#menucreditscontainer > a {
+					text-align: left;
+					display: block;
+					color: white;
+					text-decoration: none;
+					white-space: nowrap;
+					margin-bottom: 48px;
+				}
+				#menucreditscontainer .text {
+					display: inline;
+					padding-left: 32px;
+					line-height: 64px;
+				}
+				#menucreditscontainer .icon {
+					float: left;
 				}
 				#menumain > * {
 					text-align: center;
@@ -119,7 +145,7 @@
 					width: 100vw;
 					height: 100vh;
 					position: absolute;
-					top: -10vh;
+					top: 0;
 					left: 0;
 					border: none;
 				}
@@ -137,7 +163,46 @@
 		<iframe id="game"> </iframe>
 		<div id="menu">
 			 <h1> Putt Party </h1>
-			 <div id="menuitem" style="transform:translateX(-100vw)">
+			 <div id="menuitem" style="transform:translateX(-200vw)">
+				<div id="menucredits">
+					<h2> Credits</h2>
+					<h6> Wow I got clicked<br>Thanks to these people for stuff </h6>
+					<div id="menucreditscontainer">
+						<a href="https://github.com/SollyBunny/putt" target="_blank">
+							<svg width="64" height="64" class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 20 20" version="1.1">
+								<circle fill="white" cx="10" cy="10" r="10"/>
+								<g transform="translate(2, 2)">
+									<path fill="black" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/>
+								</g>
+							</svg>
+							<div class="text"> Source on GitHub! (SollyBunny) </div>
+						</a>
+						<a href="https://fonts.google.com/specimen/Varela+Round" target="_blank">
+							<image width="64" height="64" class="icon" style="border-radius:100%" src="putt/assets/font/joeprince.jpg"></image>
+							<div class="text"> The font Varella (Joe Prince) </div>
+						</a>
+						<a href="https://threejs.org/">
+							<svg width="64" height="64" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 226.77 226.77">
+								<circle fill="white" cx="113.385" cy="113.385" r="113.385"/>
+								<g fill="transparent" transform="translate(20 5)" stroke="#000" stroke-linecap="butt" stroke-linejoin="round" stroke-width="4">
+									<path d="m63.02 200.61-43.213-174.94 173.23 49.874z"/>
+									<path d="m106.39 50.612 21.591 87.496-86.567-24.945z"/>
+									<path d="m84.91 125.03-10.724-43.465 43.008 12.346z"/>
+									<path d="m63.458 38.153 10.724 43.465-43.008-12.346z"/>
+									<path d="m149.47 62.93 10.724 43.465-43.008-12.346z"/>
+									<path d="m84.915 125.06 10.724 43.465-43.008-12.346z"/>
+								</g>
+							</svg>
+							<div class="text"> Three.JS used for 3D rendering </div>
+						</a>
+						<a href="https://pmndrs.github.io/cannon-es/">
+							<image width="64" height="64" class="icon" style="border-radius:100%" src="putt/assets/stefanhedman.png"></image>
+							<div class="text"> Cannon.ES (contuation of Cannon.JS) used for physics </div>
+						</a>
+					</div>
+					<h6> And of course, <bold>you</bold>, the player </h6>
+					<button class="menushortcut right" onclick="page(-1)"> <a disabled href=" " title="Back"> ➡️ </a> </button>
+				</div>
 			 	<div id="menusettings">
 					<div id="menugrid">
 						<h6> General </h6>
@@ -152,24 +217,25 @@
 						<div> BG Color </div> <input attr="6" oninput="settingsset()" type="text" placeholder="00AAFF">
 						<h6> Peformance </h6>
 						<div> Max FPS </div> <input attr="7" oninput="settingsset()" type="number">
-						
 						<div> Fog </div> <input attr="8" oninput="settingsset()" type="checkbox">
 						<div> Lighting </div> <input attr="9" oninput="settingsset()" type="checkbox">
 						<div> Hi Poly Ball </div> <input attr="10" oninput="settingsset()" type="checkbox">
 						<div> Debug Mesh </div> <input attr="11" oninput="settingsset()" type="checkbox">
+						<h6 style="color:red"> Danger Zone </h6>
+						<button id="menusettingsreset" style="background:red;color:white" onclick="settingsreset()"> Reset to Default </button>
 					</div>
-					<button class="menushortcut left" onclick="settingsreset()"> <a disabled href=" " title="Reset"> ♻️ </a> </button>
-					<button class="menushortcut right" onclick="page(-1)"> <a disabled href=" " title="Settings"> ➡️ </a> </button>
+					<button class="menushortcut left"  onclick="page(0)"> <a disabled href=" " title="Credits"> 💳 </a> </button>
+					<button class="menushortcut right" onclick="page(-2)"> <a disabled href=" " title="Back"> ➡️ </a> </button>
 			 	</div>
 				<div id="menumain">
 					<input id="menuinput" oninput="input()" type="text" placeholder="Room Code"> <br>
 					<button onclick="play()" id="menubutton"> Create Room </button>
-					<button class="menushortcut left"  onclick="page(0)"> <a disabled href=" " title="Settings"> ⚙️ </a> </button>
-					<button class="menushortcut right" onclick="page(-2)"> <a disabled href=" " title="Settings"> 🖌️ </a> </button>
+					<button class="menushortcut left"  onclick="page(-1)"> <a disabled href=" " title="Settings"> ⚙️ </a> </button>
+					<button class="menushortcut right" onclick="page(-3)"> <a disabled href=" " title="Editor"> 🖌️ </a> </button>
 				</div>
 				<div id="menueditor">
 					<iframe id="menuiframe"> </iframe>
-					<button class="menushortcut left" onclick="page(-1)"> <a disabled href=" " title="Settings"> ⬅️ </a> </button>
+					<button class="menushortcut left" onclick="page(-2)"> <a disabled href=" " title="Back"> ⬅️ </a> </button>
 					<button class="menushortcut active right"> <a disabled href="putt/editor.html" target="_blank" title="Open in new tab"> ⬆️ </a> </button>
 				</div>
 			</div>
@@ -243,9 +309,9 @@
 			}
 			// Events
 			function page(p) {
-				if (p === -2 && e_menuiframe.src.length === 0) {
+				if (p === -3 && e_menuiframe.src.length === 0) {
 					e_menuiframe.src = "putt/editor.html";
-				} else if (p == 0 && settingspopulated === false) {
+				} else if (p == -1 && settingspopulated === false) {
 					settingspopulate();
 					settingspopulated = true;
 				}
@@ -314,7 +380,6 @@
 						}, 2000);
 					}
 					e_menu.style.transform = "translateY(-100vh)";
-					
 				}
 			}
 		</script>

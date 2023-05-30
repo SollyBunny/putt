@@ -1,5 +1,6 @@
 import * as THREE from "../lib/three.module.min.js";
 import * as CANNON from "../lib/cannon.min.js";
+import Multi from "./multi.js";
 import Settings from "./settings.js";
 import { ConvexGeometry, mergeVertices } from "../lib/three.ext.js";
 import { Types, Effects, Modifiers, Physics } from "./def.js";
@@ -10,7 +11,8 @@ const e_rmapname = document.getElementById("rmapname");
 export class Place {
 	// Can't call it map because of JS reserving so many names
 	materials = {
-		BG:   new THREE.MeshLambertMaterial(), // Used for floor
+		FLOOR1: new THREE.MeshLambertMaterial({ flatShading: true }), // Used for flat floor
+		FLOOR2: new THREE.MeshLambertMaterial({ flatShading: true }), // Used for bumpy / special floor
 		MG:   new THREE.MeshLambertMaterial(), // Used for triangle, square, spinner, wind
 		FG:   new THREE.MeshLambertMaterial(), // Used for wall
 		SG:   new THREE.MeshLambertMaterial(), // Used for bouncer
@@ -29,32 +31,29 @@ export class Place {
 		if (this.players === undefined) this.players = [];
 		this.tick = 0;
 		// Set colors
+			this.materials.FLOOR1.color.setHex(data[1][0]); // Used for floor
+			this.materials.FLOOR2.color.r = this.materials.FLOOR1.color.r * 0.5;
+			this.materials.FLOOR2.color.g = this.materials.FLOOR1.color.g * 0.5;
+			this.materials.FLOOR2.color.b = this.materials.FLOOR1.color.b * 0.5;
 			this.materials.MG  .color.setHex(data[1][1]); // Used for triangle, square, spinner, wind
 			this.materials.FG  .color.setHex(data[1][2]); // Used for wall
 			this.materials.SG  .color.setHex(data[1][3]); // Used for bouncer
 			this.materials.HOLE.color.setHex(data[1][2]); // Used for hole
 		// Set maps 
-			const floortexture = new THREE.TextureLoader();
-			floortexture.load(
+			/*new THREE.TextureLoader().load(
 				"assets/floor.png",
 				texture => {
 					texture.wrapS = THREE.RepeatWrapping;
 					texture.wrapT = THREE.RepeatWrapping;
+					texture.offset.set( 0, 0 );
 					texture.repeat.set(10, 10);
-					this.materials.BG.map = texture;
-					this.materials.BG.needsUpdate = true;
+					this.materials.FLOOR1.map = this.materials.FLOOR2.map = texture;
+					this.materials.FLOOR1.needsUpdate = this.materials.FLOOR2.needsUpdate = true;
 				},
 				e => {
 					console.warn("Failed to load assets/floor.png", e);
 				}
-			);
-			/*const texture = new THREE.TextureLoader().load(
-				"assets/floor.png"
-			)
-			texture.wrapS = THREE.RepeatWrapping;
-			texture.wrapT = THREE.RepeatWrapping;
-			texture.repeat.set(10, 10);*/
-			
+			);*/
 		// Generate Map stuff
 			let m, j;
 			for (let i = 2; i < data.length; ++i) {
@@ -111,7 +110,7 @@ export class Place {
 			}
 	}
 	addplayer(name, color, me) {
-		const player = new Player(this, Settings.NAME, Settings.COLOR);
+		const player = new Player(this, name, color);
 		if (me) {
 			this.player = player;
 			this.scene.camera.follow = player;
@@ -123,8 +122,10 @@ export class Place {
 		this.things.forEach(i => { i.add(); });
 		e_rmapname.textContent = this.data[0][0];
 		this.scene.background.setHex(this.data[1][0]);
-		this.scene.fogmaterial.color.setHex(this.data[1][0]);
-		this.scene.fogmaterial.color.addScalar(0.1);
+		if (Settings.FOG) {
+			this.scene.fogmaterial.color.setHex(this.data[1][0]);
+			this.scene.fogmaterial.color.addScalar(0.1);
+		}
 	}
 	del() {
 		this.things.forEach(i => { i.del(); });
@@ -417,10 +418,16 @@ export class Floor extends Thing {
 	constructor(parent, pos) {
 		super(parent, Types.FLOOR);
 		let points = [];
+		this.flat = undefined;
 		for (let i = 0; i < pos.length; ++i) {
+			if (this.flat === undefined)
+				this.flat = pos[i][1];
+			else if (this.flat !== false && this.flat !== pos[i][1])
+				this.flat = false;
 			points.push(new THREE.Vector3(pos[i][0], pos[i][1], pos[i][2]));
 			points.push(new THREE.Vector3(pos[i][0], -100, pos[i][2]));
 		}
+		if (this.flat !== false) this.flat = true;
 		this.geometry = new ConvexGeometry(points);
 		this.geometry.computeBoundingBox();
 		let x = undefined, z; // x used as flag
@@ -438,7 +445,7 @@ export class Floor extends Thing {
 			break;
 		}
 		let faces = [];
-		if ( x === undefined) {
+		if (x === undefined) {
 			this.geometry = mergeVertices(this.geometry, 0);
 			faces = []; // Generate faces for physics
 			for (let i = 0; i < this.geometry.index.array.length; i += 3) {
@@ -494,7 +501,7 @@ export class Floor extends Thing {
 				this.geometry.attributes.position.array[i + 2],
 			));
 		}
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.BG);
+		this.mesh = new THREE.Mesh(this.geometry, this.flat ? this.parent.materials.FLOOR1 : this.parent.materials.FLOOR2);
 		this.body = new CANNON.Body({
 			mass: 0,
 			shape: new CANNON.ConvexPolyhedron({
@@ -508,8 +515,9 @@ export class Floor extends Thing {
 }
 
 export class Bumpyfloor extends Thing {
-	material = new THREE.MeshLambertMaterial({
-		vertexColors: true
+	material = new THREE.MeshBasicMaterial({
+		vertexColors: true,
+		flatShading: true
 	});
 	constructor(parent, pos) {
 		super(parent, Types.BUMPYFLOOR);
@@ -534,18 +542,24 @@ export class Bumpyfloor extends Thing {
 		this.geometry = new THREE.PlaneGeometry(width, height, width, height);
 		const vertices = this.geometry.attributes.position.array;
 		const colors = new Float32Array(vertices.length * 3);
-		const r = this.parent.materials.BG.color.r;
-		const g = this.parent.materials.BG.color.g;
-		const b = this.parent.materials.BG.color.b;
+		console.log(width)
 		for (let i = 0; i < vertices.length; i += 3) {
-			if (((i / 3) + Math.floor(i / (3 * width))) % 2 === 0) {
-				colors[i    ] = r;
-				colors[i + 1] = g;
-				colors[i + 2] = b;
+			if ((
+				(i / 3) + (
+					Math.floor(
+						i / 3 / height
+					) * (
+						height % 2 == 0 ? 1 : 2
+					)
+				)
+			) % 2 === 0) {
+				colors[i    ] = this.parent.materials.FLOOR1.color.r;
+				colors[i + 1] = this.parent.materials.FLOOR1.color.g;
+				colors[i + 2] = this.parent.materials.FLOOR1.color.b;
 			} else {
-				colors[i    ] = b * 0.8;
-				colors[i + 1] = r * 0.8;
-				colors[i + 2] = g * 0.8;
+				colors[i    ] = this.parent.materials.FLOOR2.color.r;
+				colors[i + 1] = this.parent.materials.FLOOR2.color.g;
+				colors[i + 2] = this.parent.materials.FLOOR2.color.b;
 				const x = vertices[i];
 				const z = vertices[i + 1];
 				if (Math.abs(x) * 2 !== width && Math.abs(z) * 2 !== height)

@@ -1,4 +1,5 @@
-Copyright 2011-2016 The Varela Round Project Authors (https://github.com/alefalefalef/Varela-Round-Hebrew/), with Reserved Font Names 'Varela' and ‘Varela Round’.
+Copyright (c) 2011, Joe Prince, Admix Designs (http://www.admixdesigns.com/),
+with Reserved Font Name "Varela".
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
