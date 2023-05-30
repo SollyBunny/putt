@@ -73,10 +73,13 @@
 				.menushortcut.active > a {
 					pointer-events: all !important;
 				}
-				.menushortcut:hover {
-					transform: rotate(20deg) scale(1.1);
+				.menushortcut.left:hover {
+					transform: rotate(-20deg) scale(1.1);
 				}
 					.menushortcut.left   { left:  0 }
+				.menushortcut.right:hover {
+					transform: rotate(20deg) scale(1.1);
+				}
 					.menushortcut.right  { right: 0 }
 				#menugrid {
 					display: grid;
