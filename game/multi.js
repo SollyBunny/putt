@@ -69,9 +69,9 @@ export let playersindex = {};
 		if (ws.readyState !== WebSocket.OPEN) return;
 		ws.send(JSON.stringify([ Messages.HIT ]));
 	};
-	Multi.hole = () => {
+	Multi.hole = hole => {
 		if (ws.readyState !== WebSocket.OPEN) return;
-		ws.send(JSON.stringify([ Messages.HOLE ]));
+		ws.send(JSON.stringify([ Messages.HOLE, hole ]));
 	}
 	Multi.error = false;
 	ws.onopen = () => {

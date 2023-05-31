@@ -40,6 +40,7 @@ module.exports.msg = (ws, msg) => {
 			ws.id    = Date.now();
 			ws.name  = decodeURIComponent(ws.url.query[0]);
 			ws.color = parseInt(ws.url.query[1], 16);
+			ws.hole  = 0;
 			ws.room.players.forEach(i => {
 				i.send(JSON.stringify([Messages.JOIN, ws.id, ws.name, ws.color]));
 			});
@@ -73,7 +74,6 @@ module.exports.msg = (ws, msg) => {
 		}
 		return;
 	}
-	console.log("hi", msg[0])
 	if (msg[0] !== "[") { // SYNC message
 		try {
 			msg = new Float32Array(msg.buffer, msg.byteOffset, 13);
@@ -97,19 +97,7 @@ module.exports.msg = (ws, msg) => {
 				i.send(JSON.stringify([
 					Messages.SYNC,
 					ws.id,
-					msg[1],
-					msg[2],
-					msg[3],
-					msg[4],
-					msg[5],
-					msg[6],
-					msg[7],
-					msg[8],
-					msg[9],
-					msg[10],
-					msg[11],
-					msg[12],
-					msg[13],
+					msg[1], msg[2], msg[3], msg[4], msg[5], msg[6], msg[7], msg[8], msg[9], msg[10], msg[11], msg[12], msg[13]
 				]));
 			});
 			break;

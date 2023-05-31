@@ -267,13 +267,22 @@ export class Player extends Thing {
 		this.body.position.z = this.lastsafe.z;
 		this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = this.body.velocity.x = this.body.velocity.y = this.body.velocity.z = 0;
 	}
-	sethole(id) {
-		this.hole = id;
-		if (this.parent.player === this)
-			e_rhole.textContent = id + 1;
-		this.lastsafe.x = this.parent.starts[id].mesh.position.x;
-		this.lastsafe.y = this.parent.starts[id].mesh.position.y + 5;
-		this.lastsafe.z = this.parent.starts[id].mesh.position.z;
+	sethole(hole) {
+		this.hole = hole;
+		if (this.parent.player === this) {
+			e_rhole.textContent = hole + 1;
+			const dx = this.parent.holes[hole].mesh.position.x - this.parent.starts[hole].mesh.position.x;
+			const dy = this.parent.holes[hole].mesh.position.y - this.parent.starts[hole].mesh.position.y;
+			this.parent.scene.camera.dir[0] = Math.atan2(dx, dy) * 180 / Math.PI;
+			if (dx < 0 && dy < 0)
+				this.parent.scene.camera.dir[0] -= 110;
+			else
+				this.parent.scene.camera.dir[0] += 135;
+			this.parent.scene.camera.dir[1] = -90;
+		}
+		this.lastsafe.x = this.parent.starts[hole].mesh.position.x;
+		this.lastsafe.y = this.parent.starts[hole].mesh.position.y + 5;
+		this.lastsafe.z = this.parent.starts[hole].mesh.position.z;
 		this.die();
 	}
 	onhole() {
@@ -281,10 +290,7 @@ export class Player extends Thing {
 		this.mesh.material.opacity = 0.5;
 		this.body.sleep();
 		if (this.id === player.id)
-			Multi.hole();
-		window.setTimeout(() => {
-			this.parent.sethole(this.hole + 1);
-		});
+			Multi.hole(this.hole);
 	}
 	onhit() {
 		this.stroke += 1;
@@ -435,10 +441,13 @@ export class Hole extends Thing {
 		});
 	}
 	oncollide(e) {
+		if (e.body.parent.hole !== e.target.parent.id) {
+			e.body.parent.sethole(e.body.parent.hole);
+			return;
+		};
 		e.body.parent.mesh.position.x = e.target.position.x;
 		e.body.parent.mesh.position.y = e.target.position.y;
 		e.body.parent.mesh.position.z = e.target.position.z;
-		console.log(e.body.parent)
 		e.body.parent.onhole();
 	}
 }
@@ -574,7 +583,6 @@ export class Bumpyfloor extends Thing {
 			pos[0][0],
 			pos[0][2]
 		];
-		
 		for (let i = 1; i < pos.length; ++i) {
 			if (pos[i][0] < bounding[0])
 				bounding[0] = pos[i][0];
@@ -601,7 +609,6 @@ export class Bumpyfloor extends Thing {
 		this.geometry = new THREE.PlaneGeometry(width, height, width, height);
 		const vertices = this.geometry.attributes.position.array;
 		const colors = new Float32Array(vertices.length * 3);
-		console.log(width)
 		for (let i = 0; i < vertices.length; i += 3) {
 			if ((
 				(i / 3) + (
