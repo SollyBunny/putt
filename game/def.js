@@ -5,18 +5,20 @@ export const debugmove = true; // turn this to true if you are a gamer skript ki
 export let a; // the holy debug variable
 
 export const Messages = {
-	ERROR     : 0,
-	MSG       : 1,
-	CREATE    : 2,
-	JOINSYNC  : 3,
-	TICKSYNC  : 4,
-	JOIN      : 5,
-	LEAVE     : 6,
-	SYNC      : 7,
-	HOLE      : 8,
+	WARN      : -2,
+	ERROR     : -1,
+	MSG       : 0,
+	CREATE    : 1,
+	JOINSYNC  : 2,
+	TICKSYNC  : 3,
+	JOIN      : 4,
+	LEAVE     : 5,
+	SYNC      : 6,
+	HOLE      : 7,
+	NEXTHOLE  : 8,
 	HIT       : 9,
 	NEWMAP    : 10,
-	READY     : 11
+	READY     : 11,
 };
 
 export const Types = {

@@ -1,10 +1,11 @@
 import Settings from "./settings.js";
 import { Messages } from "./def.js";
 import { place } from "./main.js";
+import { Player } from "./thing.js";
 
 export let ws;
 export let roomcode;
-export let playersindex = {};
+export const playersindex = {};
 
 // Roomcode check
 	const e_roomcode = document.getElementById("roomcode");
@@ -83,14 +84,17 @@ export let playersindex = {};
 	}
 	ws.onmessage = msg => {
 		let p;
-		if (msg.data[0] !== "[") {
+		if (msg.data[0] !== '[') {
 			msg.data.arrayBuffer().then(data => {
-				console.log(data)
+				window.data = data;
 				msg = new Float32Array(data);
-				console.log(msg)
-				console.log("Sync", msg[13]);
 				p = playersindex[msg[13]];
 				if (!p) return;
+				if (p.id == place.player.id) {
+					console.warn("Syncing self?");
+					return;
+				}
+				console.log("Sync", msg[13]);
 				p.body.position.x        = msg[0];
 				p.body.position.y        = msg[1];
 				p.body.position.z        = msg[2];
@@ -104,11 +108,20 @@ export let playersindex = {};
 				p.body.quaternion.y      = msg[10];
 				p.body.quaternion.z      = msg[11];
 				p.body.quaternion.w      = msg[12];
+			}).catch(e => {
+				throw e;
 			});
 			return;
 		};
-		msg = JSON.parse(msg.data);
+		try {
+			msg = JSON.parse(msg.data);
+		} catch (e) {
+			return;
+		}
 		switch (msg[0]) {
+			case Messages.WARN:	
+				alert("Warn: " + msg[1]);
+				break;
 			case Messages.ERROR:
 				alert("Error: " + msg[1]);
 				Multi.error = true;
@@ -129,14 +142,15 @@ export let playersindex = {};
 				console.log("Joinsync", msg[1]);
 				place.player.id = msg[1];
 				playersindex[place.player.id] = place.player;
-				msg[2].forEach(i => {
+				place.sethole(msg[2]);
+				msg[3].forEach(i => {
 					p = place.addplayer(i[1], i[2]);
 					p.id = i[0];
 					playersindex[p.id] = p;
 				});
-				if (msg[3]) {
+				if (msg[4]) {
 					place.del();
-					place.setdata(msg[3]);
+					place.setdata(msg[4]);
 					place.players.forEach(i => i.reset);
 					place.add();
 				}
@@ -146,9 +160,8 @@ export let playersindex = {};
 				break;
 			case Messages.JOIN:
 				console.log("Join", msg[1]);
-				p = new Player(msg[2], msg[3]);
+				p = place.addplayer(msg[2], msg[3]);
 				p.id = msg[1];
-				p.add();
 				playersindex[p.id] = p;
 				break;
 			case Messages.LEAVE:
@@ -156,18 +169,21 @@ export let playersindex = {};
 				p = playersindex[msg[1]];
 				if (!p) break;
 				p.del();
-				players = players.filter(i => { return i.id !== player.id });
+				place.players = place.players.filter(i => { return i.id !== msg[1] });
 				delete playersindex[msg[1]];
 				break;
 			case Messages.HIT:
 				p = playersindex[msg[1]];
 				if (!p) break;
-				p.hit();
+				p.onhit();
 				break;
 			case Messages.HOLE:
 				p = playersindex[msg[1]];
 				if (!p) break;
-				p.hole();
+				break;
+			case Messages.NEXTHOLE:
+				console.log("<3");
+				place.sethole(msg[1]);
 				break;
 			case Messages.NEWMAP:
 				place.del();

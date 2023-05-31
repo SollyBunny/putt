@@ -1,19 +1,22 @@
 // TODO clean this code
 
 const Messages = {
-	ERROR     : 0,
-	MSG       : 1,
-	CREATE    : 2,
-	JOINSYNC  : 3,
-	TICKSYNC  : 4,
-	JOIN      : 5,
-	LEAVE     : 6,
-	SYNC      : 7,
-	HOLE      : 8,
+	WARN      : -2,
+	ERROR     : -1,
+	MSG       : 0,
+	CREATE    : 1,
+	JOINSYNC  : 2,
+	TICKSYNC  : 3,
+	JOIN      : 4,
+	LEAVE     : 5,
+	SYNC      : 6,
+	HOLE      : 7,
+	NEXTHOLE  : 8,
 	HIT       : 9,
 	NEWMAP    : 10,
-	READY     : 11
+	READY     : 11,
 };
+
 function random4chars() {
 	let result = "";
 	for (let i = 0; i < 5; ++i)
@@ -26,10 +29,13 @@ const rooms = {};
 module.exports.open = ws => { // optional
 	ws.ready = false;
 };
-const updatelist = new Float32Array(14);
+const updatearraybuffer = new ArrayBuffer(14 * 4);
+const updatebuffer = new Uint8Array(updatearraybuffer);
+const updatelist = new Float32Array(updatearraybuffer);
 module.exports.msg = (ws, msg) => {
 	if (!ws.ready) {
 		if (msg != Messages.READY) {
+			ws.send(JSON.stringify([Messages.ERROR, "Forgot to send ready packet, BAKA."]));
 			ws.close();
 			return;
 		}
@@ -37,16 +43,18 @@ module.exports.msg = (ws, msg) => {
 		ws.url.query = ws.url.query.split("&");
 		if (ws.url.query[2]) ws.room = rooms[ws.url.query[2]];
 		if (ws.room) {
-			ws.id    = Date.now();
+			ws.id    = ws.room.ID
+			ws.room.ID += 1;
 			ws.name  = decodeURIComponent(ws.url.query[0]);
 			ws.color = parseInt(ws.url.query[1], 16);
-			ws.hole  = 0;
+			ws.hole  = ws.room.hole;
 			ws.room.players.forEach(i => {
 				i.send(JSON.stringify([Messages.JOIN, ws.id, ws.name, ws.color]));
 			});
 			ws.send(JSON.stringify([
 				Messages.JOINSYNC,
 				ws.id,
+				ws.room.hole,
 				ws.room.players.map(i => {
 					return [i.id, i.name, i.color];
 				}),
@@ -54,33 +62,31 @@ module.exports.msg = (ws, msg) => {
 			]));
 			ws.room.players.push(ws);
 			if (ws.room.owner === undefined) ws.room.owner = ws;
-			console.log("Putt: Join", ws.ip, ws.room);
+			console.log("Putt: Join", ws.ip);
 		} else {
-			ws.room = random4chars(); // TODO collision check;
+			ws.room = random4chars(); // TODO collision check
 			ws.room = rooms[ws.room] = {
+				ID: 1,
 				code: ws.room,
 				players: [ ws ],
+				hole: 0,
 				owner: ws,
 				tick: 0,
 				start: Date.now(),
 			};
-			ws.id    = Date.now();
+			ws.id    = 0;
 			ws.name  = decodeURIComponent(ws.url.query[0]);
 			ws.color = parseInt(ws.url.query[1], 16);
+			ws.hole  = 0;
 			ws.send(JSON.stringify([Messages.CREATE, ws.id, ws.room.code]));
 			if (ws.url.query[2]) // supplied room code, but it was invalid (NOTE: must come after CREATE message as alert blocks ws stream)
-				ws.send(JSON.stringify([Messages.ERROR, "Invalid room code, creating new room"]));
-			console.log("Putt: Create", ws.ip, ws.room);
+				ws.send(JSON.stringify([Messages.WARN, "Invalid room code, creating new room"]));
+			console.log("Putt: Create", ws.ip);
 		}
 		return;
 	}
-	if (msg[0] !== "[") { // SYNC message
-		try {
-			msg = new Float32Array(msg.buffer, msg.byteOffset, 13);
-			updatelist.set(msg, 0);
-		} catch (e) {
-			return;
-		}
+	if (msg[0] !== 91) { // SYNC message (91 == '[')
+		updatebuffer.set(msg);
 		updatelist[13] = ws.id;
 		ws.room.players.forEach(i => {
 			if (i.id === ws.id) return;
@@ -88,8 +94,12 @@ module.exports.msg = (ws, msg) => {
 		});
 		return;
 	}
-	msg = JSON.parse(msg);
-	console.log("msg", msg)
+	try {
+		msg = JSON.parse(msg);
+	} catch (e) {
+		return;
+	}
+	console.log("Putt: msg", msg);
 	switch (msg[0]) {
 		case Messages.SYNC:
 			ws.room.players.forEach(i => {
@@ -102,10 +112,20 @@ module.exports.msg = (ws, msg) => {
 			});
 			break;
 		case Messages.HOLE:
+			ws.hole = msg[1] + 1;
+			let hole = ws.hole;
 			ws.room.players.forEach(i => {
 				if (i.id === ws.id) return;
-				i.send(JSON.stringify([Messages.HOLE, ws.id]));
+				if (hole !== i.hole) hole = false;
+				i.send(JSON.stringify([Messages.HOLE, ws.id, msg[1]]));
 			});
+			console.log("Hello", ws.room.players.map(i => i.hole));
+			if (hole !== false) {
+				ws.room.hole = hole;
+				ws.room.players.forEach(i => {
+					i.send(JSON.stringify([Messages.NEXTHOLE, hole]));
+				});
+			}
 			break;
 		case Messages.HIT: // This can so easily be abused
 			ws.room.players.forEach(i => {
@@ -135,10 +155,22 @@ module.exports.close = (ws) => { // optional
 		return i !== ws
 	});
 	if (ws.room.owner.id === ws.id) {
-		if (ws.room.players.length === 0)
-			ws.room.owner = undefined;
-		else
+		if (ws.room.players.length === 0) {
+			delete rooms[ws.room.code];
+			return;
+		} else {
 			ws.room.owner = ws.room.players[0];
+		}
+	}
+	let hole = ws.room.players[0].hole;
+	ws.room.players.forEach(i => {
+		if (hole !== i.hole) hole = false;
+	});
+	if (hole !== false) {
+		ws.room.hole = hole;
+		ws.room.players.forEach(i => {
+			i.send(JSON.stringify([Messages.NEXTHOLE, hole]));
+		});
 	}
 };
 setInterval(() => {

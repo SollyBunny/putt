@@ -140,6 +140,7 @@ export class Place {
 		}
 		this.players.push(player);
 		player.add();
+		return player;
 	}
 	add() {
 		this.things.forEach(i => { i.add(); });
@@ -289,7 +290,7 @@ export class Player extends Thing {
 		this.ishole = true;
 		this.mesh.material.opacity = 0.5;
 		this.body.sleep();
-		if (this.id === player.id)
+		if (this.id === this.parent.player.id)
 			Multi.hole(this.hole);
 	}
 	onhit() {
