@@ -27,8 +27,8 @@ const holecolor = [
 export class Place {
 	// Can't call it map because of JS reserving so many names
 	materials = {
-		FLOOR1: new THREE.MeshLambertMaterial({ flatShading: true }), // Used for flat floor
-		FLOOR2: new THREE.MeshLambertMaterial({ flatShading: true }), // Used for bumpy / special floor
+		FLOOR1: new THREE.MeshPhongMaterial({ flatShading: true }), // Used for flat floor
+		FLOOR2: new THREE.MeshPhongMaterial({ flatShading: true }), // Used for bumpy / special floor
 		MG:     new THREE.MeshLambertMaterial(), // Used for triangle, square, spinner, wind
 		FG:     new THREE.MeshLambertMaterial(), // Used for wall
 		SG:     new THREE.MeshLambertMaterial(), // Used for bouncer
@@ -562,7 +562,7 @@ export class Floor extends Thing {
 }
 
 export class Bumpyfloor extends Thing {
-	material = new THREE.MeshBasicMaterial({
+	material = new THREE.MeshPhongMaterial({
 		vertexColors: true,
 		flatShading: true
 	});
@@ -574,6 +574,7 @@ export class Bumpyfloor extends Thing {
 			pos[0][0],
 			pos[0][2]
 		];
+		
 		for (let i = 1; i < pos.length; ++i) {
 			if (pos[i][0] < bounding[0])
 				bounding[0] = pos[i][0];
@@ -583,6 +584,17 @@ export class Bumpyfloor extends Thing {
 				bounding[1] = pos[i][2];
 			else if (pos[i][2] > bounding[2])
 				bounding[3] = pos[i][2];
+		}
+		let temp;
+		if (bounding[0] > bounding[2]) {
+			temp = bounding[0];
+			bounding[0] = bounding[2];
+			bounding[2] = temp;
+		}
+		if (bounding[1] > bounding[3]) {
+			temp = bounding[1];
+			bounding[1] = bounding[3];
+			bounding[3] = temp;
 		}
 		const width  = bounding[2] - bounding[0];
 		const height = bounding[3] - bounding[1];
