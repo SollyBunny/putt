@@ -113,16 +113,6 @@ module.exports.msg = (ws, msg) => {
 	}
 	console.log("Putt: msg", msg);
 	switch (msg[0]) {
-		case Messages.SYNC:
-			ws.room.players.forEach(i => {
-				if (i.id === ws.id) return;
-				i.send(JSON.stringify([
-					Messages.SYNC,
-					ws.id,
-					msg[1], msg[2], msg[3], msg[4], msg[5], msg[6], msg[7], msg[8], msg[9], msg[10], msg[11], msg[12], msg[13]
-				]));
-			});
-			break;
 		case Messages.HOLE:
 			ws.hole = msg[1] + 1;
 			let hole = ws.hole;
@@ -192,4 +182,4 @@ setInterval(() => {
 			m.send(JSON.stringify([Messages.TICKSYNC, i.tick]))
 		})
 	})
-}, 1000);
+}, 2000);

@@ -127,7 +127,7 @@ class Multi {
 				msg = new Float32Array(data);
 				p = this.playersindex[msg[13]];
 				if (!p) return;
-				if (p.id == this.place.player.id) {
+				if (p.id === this.place.player.id) {
 					console.warn("Syncing self?");
 					return;
 				}
