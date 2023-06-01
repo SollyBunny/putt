@@ -35,24 +35,20 @@ export class Place {
 		HOLE:   new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
 		START:  new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
 	}
+	constructor(scene, world) {
+		this.scene = scene;
+		this.world = world;
+		this.players = [];
+		this.del();
+	}
 	setdata(data) {
 		this.data = data;
-		this.mods = {}
-		this.mods.text     = [];
-		this.mods.move     = [];
-		this.mods.easemove = [];
-		this.mods.spin     = [];
-		this.starts = [];
-		this.holes  = [];
-		this.things = [];
-		if (this.players === undefined) this.players = [];
-		this.tick = 0;
 		// Set colors
-			this.materials.FLOOR1.color.setHex(data[1][0]); // Used for floor
+			this.materials.FLOOR1.color.setHex(data[1][1]); // Used for floor
 			this.materials.FLOOR2.color.r = this.materials.FLOOR1.color.r * 0.5;
 			this.materials.FLOOR2.color.g = this.materials.FLOOR1.color.g * 0.5;
 			this.materials.FLOOR2.color.b = this.materials.FLOOR1.color.b * 0.5;
-			this.materials.MG  .color.setHex(data[1][1]); // Used for triangle, square, spinner, wind
+			this.materials.MG  .color.setHex(data[1][3]); // Used for triangle, square, spinner, wind
 			this.materials.FG  .color.setHex(data[1][2]); // Used for wall
 			this.materials.SG  .color.setHex(data[1][3]); // Used for bouncer
 			this.materials.HOLE.color.setHex(data[1][2]); // Used for hole
@@ -138,6 +134,7 @@ export class Place {
 			this.player = player;
 			this.scene.camera.follow = player;
 		}
+		console.log(this, this.players)
 		this.players.push(player);
 		player.add();
 		return player;
@@ -152,7 +149,17 @@ export class Place {
 		}
 	}
 	del() {
-		this.things.forEach(i => { i.del(); });
+		if (this.things)
+			this.things.forEach(i => { i.del(); });
+		this.mods = {};
+		this.mods.text     = [];
+		this.mods.move     = [];
+		this.mods.easemove = [];
+		this.mods.spin     = [];
+		this.starts = [];
+		this.holes  = [];
+		this.things = [];
+		this.tick = 0;
 	}
 }
 
@@ -242,7 +249,6 @@ export class Player extends Thing {
 		this.ishole  = false;
 		this.sleepytime = 0;
 		this.lastsafe = new CANNON.Vec3();
-		this.parent.players.push(this);
 		this.textset(name);
 		this.parent.mods.text.push(this);
 	}
@@ -567,7 +573,7 @@ export class Floor extends Thing {
 			}),
 			material: Physics.FLOOR
 		});
-		this.parent.world.addBody(this.body)
+		this.parent.world.addBody(this.body);
 	}
 }
 

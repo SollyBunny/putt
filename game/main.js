@@ -8,7 +8,6 @@ import Settings from "./settings.js";
 import Multi from "./multi.js";
 import { debug } from "./def.js";
 import { Place } from "./thing.js";
-import { MapTutorial } from "./maps.js";
 
 const can = document.getElementById("can"); // What we are drawing on
 const e_rstroke = document.getElementById("rstroke");
@@ -140,7 +139,8 @@ function frame(tt) {
 		place.tick = Date.now() - start;
 	// Update
 		world.step(1 / fps, tx, 5);
-		Multi.update(); // I'm a multiplayer now!
+		if (place.player.body.sleepState === 0)
+			multi.update(); // I'm a multiplayer now!
 		let m, proj, l;
 		for (let i = 0; i < place.mods.spin.length; ++i) {
 			m = place.mods.spin[i];
@@ -265,7 +265,7 @@ can.onpointerup = can.onpointercancel = () => {
 			place.player.lastsafe.x = place.player.body.position.x;
 			place.player.lastsafe.y = place.player.body.position.y;
 			place.player.lastsafe.z = place.player.body.position.z;
-			Multi.hit();
+			multi.hit();
 			place.player.onhit();
 			e_rstroke.innerHTML = place.player.stroke;
 		}
@@ -298,36 +298,35 @@ can.onpointermove = event => {
 
 // Main
 
-let data = MapTutorial;
-
-export const place = new Place();
-place.world = world;
-place.scene = scene;
-place.setdata(data);
-place.add();
-place.addplayer(Settings.NAME, Settings.COLOR, true);
-place.sethole(0);
-Multi.ready();
-
-window.requestAnimationFrame(frame);
+export const place = new Place(scene, world);
+export const multi = new Multi(place, document.location.search.slice(1), (multi, hole) => {
+	place.setdata(multi.mapdata);
+	place.add();
+	place.sethole(hole);
+	window.requestAnimationFrame(frame);
+	if (debug) { // Expose things to console
+		window.render = render;
+		window.camera = scene.camera;
+		window.players = place.players;
+		window.player = place.player;
+		window.place = place;
+		window.scene = scene;
+		window.world = world;
+		window.multi = multi;
+		window.Settings = Settings;
+		window.Multi = Multi;
+		window.CANNON = CANNON;
+		window.THREE = THREE;
+	}
+});
 
 window.onmessage = event => {
+	/*
 	console.log(event.data)
 	if (event.data[0] !== "MAIN") return;
-	Multi.newmap(event.data[1]);
+	multi.newmap(event.data[1]);
 	place.setdata(event.data[1]);
 	place.players.forEach(i => i.reset);
 	place.add();
+	*/
 };
-
-if (debug) { // Expose things to console
-	window.render = render;
-	window.camera = scene.camera;
-	window.players = place.players;
-	window.player = place.player;
-	window.place = place;
-	window.Settings = Settings;
-	window.Multi = Multi;
-	window.CANNON = CANNON;
-	window.THREE = THREE;
-}

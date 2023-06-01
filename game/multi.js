@@ -1,96 +1,133 @@
 import Settings from "./settings.js";
+import Maps from "./maps.js";
 import { Messages } from "./def.js";
-import { place } from "./main.js";
-import { Player } from "./thing.js";
 
-export let ws;
-export let roomcode;
-export const playersindex = {};
+export let ws = undefined;
 
-// Roomcode check
-	const e_roomcode = document.getElementById("roomcode");
-	if (document.location.search.length > 1) {
-		roomcode = document.location.search.slice(1);
-		e_roomcode.innerHTML = roomcode; 
-	} else {
-		roomcode = undefined;
-	}
+const e_roomcode = document.getElementById("roomcode");
 
-// WS Setup
-	try {
-		ws = new WebSocket(`wss://${document.location.host}/putt/server.js?${encodeURIComponent(Settings.NAME)}&${Settings.COLOR}` + (roomcode ? `&${roomcode}` : ""));
-	} catch (e) {
-		console.error(e);
-		alert("Your browser does not support Websocket, this game will not work");
-	}
-
-// main
-	let Multi = {};
-	Multi.newmap = data => {
-		if (ws.readyState === WebSocket.CLOSED) return;
-		if (ws.readyState === WebSocket.CONNECTING) {
-			alert("Closing connection as it is currently connecting");
-			Multi.error = true;
-			ws.close();
-		}
+/*
+	newmap(data) {
+		if (!this.connected) return;
 		ws.send(JSON.stringify([
 			Messages.NEWMAP,
 			data
 		]));
 	}
-	Multi.ready = () => {
-		if (ws.readyState !== WebSocket.OPEN)
-			ws.onopen = () => {
-				console.log("Connected")
-				ws.send(Messages.READY.toString());
+	case Messages.NEWMAP:
+		this.place.del();
+		this.place.setdata(msg[1]);
+		this.place.players.forEach(i => i.reset());
+		this.place.add();
+		break;
+*/
+
+class Multi {
+	constructor(place, roomcode, onstart) {
+		this.place = place;
+		this.roomcode = roomcode || "-Tutorial";
+		this.onstart = onstart;
+		this.connected = false;
+		if (this.roomcode.startsWith("-")) { // offline
+			this.setmap(this.roomcode.slice(1));
+			this.online = false;
+		} else if (this.roomcode.startsWith("+")) { // create
+			this.setmap(this.roomcode.slice(1));
+			this.online = true;
+		} else { // join
+			this.online = true;
+			this.mapname = undefined;
+		}
+		if (this.online) {
+			try {
+				// Get prepared for websocket
+				this.updatelist = new Float32Array(13);
+				this.playersindex = {};
+				// Open websocket
+				ws = new WebSocket(`wss://${document.location.host}/putt/server.js?${encodeURIComponent(Settings.NAME)}&${Settings.COLOR}` + (roomcode ? `&${roomcode}` : ""));
+				ws.onopen = () => {
+					console.log("Connected");
+					ws.send(Messages.READY.toString());
+					// Note: don't set connected here in case of error or disconnect
+				};
+				ws.onclose = () => {
+					this.online = false;
+					if (this.connected) {
+						this.connected = false;
+						alert("Connection Closed!");
+					} else { // wasn't connected in the first place, something has gone wrong
+						alert("Failed to open websocket, going offline!");
+						this.setmap(); // Pick default map
+						this.start(0);
+					}
+					e_roomcode.parentElement.style.display = "none";
+				};
+			} catch (e) {
+				console.error(e);
+				if (ws) ws.onclose();
 			}
-		else
-			ws.send(Messages.READY.toString());
+			ws.onmessage = this.onmsg.bind(this);
+			// Note: only set roomcode when succsesfully connected so we don't blue golfball the player
+		} else {
+			e_roomcode.parentElement.style.display = "none";
+			this.start(0);
+		}
 	}
-	Multi.updatelist = new Float32Array(13);
-	Multi.update = () => {
-		if (ws.readyState !== WebSocket.OPEN) return;
-		if (place.player.body.sleepState === 2) return;
-		Multi.updatelist[0]  = place.player.body.position.x;
-		Multi.updatelist[1]  = place.player.body.position.y;
-		Multi.updatelist[2]  = place.player.body.position.z;
-		Multi.updatelist[3]  = place.player.body.velocity.x;
-		Multi.updatelist[4]  = place.player.body.velocity.y;
-		Multi.updatelist[5]  = place.player.body.velocity.z;
-		Multi.updatelist[6]  = place.player.body.angularVelocity.x;
-		Multi.updatelist[7]  = place.player.body.angularVelocity.y;
-		Multi.updatelist[8]  = place.player.body.angularVelocity.z;
-		Multi.updatelist[9]  = place.player.body.quaternion.x;
-		Multi.updatelist[10] = place.player.body.quaternion.y;
-		Multi.updatelist[11] = place.player.body.quaternion.z;
-		Multi.updatelist[12] = place.player.body.quaternion.w;
-		ws.send(Multi.updatelist.buffer);
+	start(hole) {
+		if (this.onstart) {
+			this.onstart(this, hole);
+			delete this.onstart;
+		}
 	}
-	Multi.hit = () => {
-		if (ws.readyState !== WebSocket.OPEN) return;
+	setmap(name) {
+		this.mapname = name || "Tutorial";
+		this.mapdata = Maps[this.mapname];
+		if (!this.mapdata) {
+			alert(`Map "${this.mapname}" not found, defaulting to "Tutorial"`);
+			this.mapname = "Tutorial";
+			this.mapdata = Maps["Tutorial"];
+			if (this.roomcode.startsWith("+"))
+				this.roomcode = `+${this.mapname}`;
+			else if (this.roomcode.startsWith("-"))
+				this.roomcode = `-${this.mapname}`;
+		}
+	}
+	update() {
+		if (!this.connected) return;
+		this.updatelist[0]  = place.player.body.position.x;
+		this.updatelist[1]  = place.player.body.position.y;
+		this.updatelist[2]  = place.player.body.position.z;
+		this.updatelist[3]  = place.player.body.velocity.x;
+		this.updatelist[4]  = place.player.body.velocity.y;
+		this.updatelist[5]  = place.player.body.velocity.z;
+		this.updatelist[6]  = place.player.body.angularVelocity.x;
+		this.updatelist[7]  = place.player.body.angularVelocity.y;
+		this.updatelist[8]  = place.player.body.angularVelocity.z;
+		this.updatelist[9]  = place.player.body.quaternion.x;
+		this.updatelist[10] = place.player.body.quaternion.y;
+		this.updatelist[11] = place.player.body.quaternion.z;
+		this.updatelist[12] = place.player.body.quaternion.w;
+		ws.send(this.updatelist.buffer);
+	}
+	hit() {
+		if (!this.connected) return;
 		ws.send(JSON.stringify([ Messages.HIT ]));
-	};
-	Multi.hole = hole => {
-		if (ws.readyState !== WebSocket.OPEN) return;
-		ws.send(JSON.stringify([ Messages.HOLE, hole ]));
 	}
-	Multi.error = false;
-	ws.onopen = () => {
-		console.log("Connected");
-	};
-	ws.onclose = () => {
-		if (Multi.error) return;
-		alert("Connection Closed!");
+	hole(hole) {
+		if (!this.connected)
+			place.sethole(hole + 1);
+		else
+			ws.send(JSON.stringify([ Messages.HOLE, hole ]));
 	}
-	ws.onmessage = msg => {
+	onmsg(msg) {
 		let p;
 		if (msg.data[0] !== '[') {
 			msg.data.arrayBuffer().then(data => {
 				window.data = data;
 				msg = new Float32Array(data);
-				p = playersindex[msg[13]];
+				p = this.playersindex[msg[13]];
 				if (!p) return;
-				if (p.id == place.player.id) {
+				if (p.id == this.place.player.id) {
 					console.warn("Syncing self?");
 					return;
 				}
@@ -124,74 +161,60 @@ export const playersindex = {};
 				break;
 			case Messages.ERROR:
 				alert("Error: " + msg[1]);
-				Multi.error = true;
+				this.connected = false;
 				ws.close();
 				break;
 			case Messages.MSG:
 				alert(msg[1]);
 				break;
-			case Messages.CREATE:
-				console.log("Create", msg[1]);
-				place.player.id = msg[1];
-				playersindex[place.player.id] = place.player;
-				roomcode = msg[2];
-				e_roomcode.innerHTML = roomcode;
-				window.history.replaceState({}, "", `${document.location.pathname}?${roomcode}`);
-				break;
 			case Messages.JOINSYNC:
-				console.log("Joinsync", msg[1]);
-				place.player.id = msg[1];
-				playersindex[place.player.id] = place.player;
-				place.sethole(msg[2]);
-				msg[3].forEach(i => {
-					p = place.addplayer(i[1], i[2]);
+				console.log("Joinsync", msg[1], msg);
+				this.connected = true;
+				this.place.addplayer(Settings.NAME, Settings.COLOR, true);
+				this.place.player.id = msg[1];
+				this.playersindex[this.place.player.id] = this.place.player;
+				if (msg[3] !== this.mapname) this.setmap(msg[3]);
+				this.start(msg[4]);
+				msg[5].forEach(i => {
+					p = this.place.addplayer(i[1], i[2]);
 					p.id = i[0];
-					playersindex[p.id] = p;
+					this.playersindex[p.id] = p;
 				});
-				if (msg[4]) {
-					place.del();
-					place.setdata(msg[4]);
-					place.players.forEach(i => i.reset);
-					place.add();
-				}
+				this.roomcode = msg[2];
+				e_roomcode.textContent = this.roomcode;
+				window.history.replaceState({}, "", `${document.location.pathname}?${this.roomcode}`);
 				break;
 			case Messages.TICKSYNC:
-				place.tick = msg[1];
+				this.place.tick = msg[1];
 				break;
 			case Messages.JOIN:
 				console.log("Join", msg[1]);
-				p = place.addplayer(msg[2], msg[3]);
+				p = this.place.addplayer(msg[2], msg[3]);
 				p.id = msg[1];
-				playersindex[p.id] = p;
+				this.playersindex[p.id] = p;
 				break;
 			case Messages.LEAVE:
 				console.log("Leave", msg[1]);
-				p = playersindex[msg[1]];
+				p = this.playersindex[msg[1]];
 				if (!p) break;
 				p.del();
-				place.players = place.players.filter(i => { return i.id !== msg[1] });
-				delete playersindex[msg[1]];
+				this.place.players = this.place.players.filter(i => { return i.id !== msg[1] });
+				delete this.playersindex[msg[1]];
 				break;
 			case Messages.HIT:
-				p = playersindex[msg[1]];
+				p = this.playersindex[msg[1]];
 				if (!p) break;
 				p.onhit();
 				break;
 			case Messages.HOLE:
-				p = playersindex[msg[1]];
+				p = this.playersindex[msg[1]];
 				if (!p) break;
 				break;
 			case Messages.NEXTHOLE:
-				console.log("<3");
-				place.sethole(msg[1]);
-				break;
-			case Messages.NEWMAP:
-				place.del();
-				place.setdata(msg[1]);
-				place.players.forEach(i => i.reset());
-				place.add();
+				this.place.sethole(msg[1]);
 				break;
 		}
 	};
+}
 
 export default Multi;

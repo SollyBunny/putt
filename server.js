@@ -41,8 +41,39 @@ module.exports.msg = (ws, msg) => {
 		}
 		ws.ready = true;
 		ws.url.query = ws.url.query.split("&");
-		if (ws.url.query[2]) ws.room = rooms[ws.url.query[2]];
-		if (ws.room) {
+		ws.room = rooms[ws.url.query[2]];
+		if (
+			ws.url.query[2].startsWith("+") || 
+			ws.url.query[2].length < 1 ||
+			(ws.room === undefined && ws.url.query[2].length > 0)
+		) {
+			ws.room = random4chars(); // TODO collision check
+			ws.room = rooms[ws.room] = {
+				ID: 1,
+				code: ws.room,
+				players: [ws],
+				hole: 0,
+				owner: ws,
+				tick: 0,
+				start: Date.now(),
+				mapname: ws.url.query[2].startsWith("+") ? ws.url.query[2].slice(1) : "Tutorial",
+			};
+			ws.id    = 0;
+			ws.name  = decodeURIComponent(ws.url.query[0]);
+			ws.color = parseInt(ws.url.query[1], 16);
+			ws.hole  = 0;
+			ws.send(JSON.stringify([
+				Messages.JOINSYNC,
+				ws.id,
+				ws.room.code,
+				ws.room.mapname,
+				0,
+				[]
+			]));
+			if (!ws.url.query[2].startsWith("+") && ws.url.query[2].length > 0) // supplied room code, but it was invalid (NOTE: must come after CREATE message as alert blocks ws stream)
+				ws.send(JSON.stringify([Messages.WARN, "Invalid room code, creating new room"]));
+			console.log("Putt: Create", ws.ip);
+		} else {
 			ws.id    = ws.room.ID
 			ws.room.ID += 1;
 			ws.name  = decodeURIComponent(ws.url.query[0]);
@@ -54,34 +85,16 @@ module.exports.msg = (ws, msg) => {
 			ws.send(JSON.stringify([
 				Messages.JOINSYNC,
 				ws.id,
+				ws.room.code,
+				ws.room.mapname,
 				ws.room.hole,
 				ws.room.players.map(i => {
 					return [i.id, i.name, i.color];
-				}),
-				ws.room.map
+				})
 			]));
 			ws.room.players.push(ws);
 			if (ws.room.owner === undefined) ws.room.owner = ws;
 			console.log("Putt: Join", ws.ip);
-		} else {
-			ws.room = random4chars(); // TODO collision check
-			ws.room = rooms[ws.room] = {
-				ID: 1,
-				code: ws.room,
-				players: [ ws ],
-				hole: 0,
-				owner: ws,
-				tick: 0,
-				start: Date.now(),
-			};
-			ws.id    = 0;
-			ws.name  = decodeURIComponent(ws.url.query[0]);
-			ws.color = parseInt(ws.url.query[1], 16);
-			ws.hole  = 0;
-			ws.send(JSON.stringify([Messages.CREATE, ws.id, ws.room.code]));
-			if (ws.url.query[2]) // supplied room code, but it was invalid (NOTE: must come after CREATE message as alert blocks ws stream)
-				ws.send(JSON.stringify([Messages.WARN, "Invalid room code, creating new room"]));
-			console.log("Putt: Create", ws.ip);
 		}
 		return;
 	}
