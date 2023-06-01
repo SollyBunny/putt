@@ -59,7 +59,7 @@ module.exports.msg = (ws, msg) => {
 			};
 			ws.id    = 0;
 			ws.name  = decodeURIComponent(ws.url.query[0]);
-			ws.color = parseInt(ws.url.query[1], 16);
+			ws.color = parseInt(ws.url.query[1]) || 0;
 			ws.hole  = 0;
 			ws.send(JSON.stringify([
 				Messages.JOINSYNC,
@@ -76,7 +76,7 @@ module.exports.msg = (ws, msg) => {
 			ws.id    = ws.room.ID
 			ws.room.ID += 1;
 			ws.name  = decodeURIComponent(ws.url.query[0]);
-			ws.color = parseInt(ws.url.query[1], 16);
+			ws.color = parseInt(ws.url.query[1]) || 0;
 			ws.hole  = ws.room.hole;
 			ws.room.players.forEach(i => {
 				i.send(JSON.stringify([Messages.JOIN, ws.id, ws.name, ws.color]));
