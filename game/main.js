@@ -201,11 +201,41 @@ function frame(tt) {
 			}
 		}
 	// Camera
-		scene.camera.dis = (scene.camera.dis + scene.camera.dismov) / 2;
-		scene.camera.position.x = scene.camera.follow.mesh.position.x + Math.sin( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
-		scene.camera.position.y = scene.camera.follow.mesh.position.y + Math.sin(-scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
-		scene.camera.position.z = scene.camera.follow.mesh.position.z + Math.cos( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
-		scene.camera.lookAt(scene.camera.follow.mesh.position.x, scene.camera.follow.mesh.position.y, scene.camera.follow.mesh.position.z);
+		if (place.player.isshoot) {
+			scene.camera.dis = (scene.camera.dis + scene.camera.dismov) / 2;
+			scene.camera.position.x = scene.camera.follow.mesh.position.x + Math.sin( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.position.y = scene.camera.follow.mesh.position.y + Math.sin(-scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.position.z = scene.camera.follow.mesh.position.z + Math.cos( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.lookAt(scene.camera.follow.mesh.position.x, scene.camera.follow.mesh.position.y, scene.camera.follow.mesh.position.z);
+		} else {
+			scene.camera.oldfpsyaw = scene.camera.oldfpsyaw || 0;
+			scene.camera.newfpsyaw = Math.atan2(scene.camera.follow.body.velocity.z, scene.camera.follow.body.velocity.x) * 180 / Math.PI;
+			if (isNaN(scene.camera.newfpsyaw)) {
+				scene.camera.newfpsyaw = scene.camera.oldfpsyaw;
+			} else if (scene.camera.follow.body.velocity.x < 0 && scene.camera.follow.body.velocity.z < 0) {
+				window.x = window.x || 0;
+				scene.camera.newfpsyaw += window.x;
+			} else {
+				window.y = window.y || 0;
+				scene.camera.newfpsyaw += window.y;
+			}				
+			scene.camera.oldfpsyaw = scene.camera.newfpsyaw;
+			scene.camera.dis = (scene.camera.dis + scene.camera.dismov) / 2;
+			scene.camera.position.x = scene.camera.follow.mesh.position.x + Math.sin( scene.camera.newfpsyaw) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.position.y = scene.camera.follow.mesh.position.y + Math.sin(-scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.position.z = scene.camera.follow.mesh.position.z + Math.cos( scene.camera.newfpsyaw) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.lookAt(scene.camera.follow.mesh.position.x, scene.camera.follow.mesh.position.y, scene.camera.follow.mesh.position.z);
+			/*scene.camera.oldfpsyaw = scene.camera.oldfpsyaw || 0;
+			scene.camera.newfpsyaw = Math.atan2(scene.camera.follow.body.velocity.x, scene.camera.follow.body.velocity.z) + Math.PI || scene.camera.oldfpsyaw;
+			scene.camera.oldfpsroll = scene.camera.oldfpsroll || 0;
+			scene.camera.newfpsroll = Math.atan2(scene.camera.follow.body.velocity.y, scene.camera.follow.body.velocity.z) + Math.PI || scene.camera.oldfpsroll;
+			scene.camera.position.x = scene.camera.follow.mesh.position.x;
+			scene.camera.position.y = scene.camera.follow.mesh.position.y;
+			scene.camera.position.z = scene.camera.follow.mesh.position.z;
+			scene.camera.rotation.x = scene.camera.newfpsroll * Math.cos(scene.camera.newfpsyaw);
+			scene.camera.rotation.y = scene.camera.newfpsyaw;
+			scene.camera.rotation.z = scene.camera.newfpsroll * Math.sin(scene.camera.newfpsyaw);*/
+		}
 		scene.camera.updateMatrixWorld();
 	// Render
 		if (debugmeshenabled) {
