@@ -18,6 +18,7 @@ const e_debug = document.getElementById("debug");
 
 let debugmesh;
 let debugmeshenabled = false;
+let fpsenabled = false;
 
 // Keys
 let keys = {}; // Key Pair : Key Pressed
@@ -45,6 +46,8 @@ window.onkeyup = event => {
 			debugmeshenabled = false;
 		}
 		event.preventDefault(); // Prevent dev console stuff
+	} else if (event.key === "f") {
+		fpsenabled = !fpsenabled;
 	}
 }; 
 
@@ -183,17 +186,17 @@ function frame(tt) {
 	// Debug Move
 		if (debug) {
 			if        (keys["w"]) {
-				place.player.body.velocity.x -= tx / 20  * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
-				place.player.body.velocity.z -= tx / 20  * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
+				place.player.body.velocity.x -= tx / 20 * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
+				place.player.body.velocity.z -= tx / 20 * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
 			} else if (keys["s"]) {
-				place.player.body.velocity.x += tx / 20  * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
-				place.player.body.velocity.z += tx / 20  * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
+				place.player.body.velocity.x += tx / 20 * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
+				place.player.body.velocity.z += tx / 20 * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
 			} if      (keys["a"]) {
-				place.player.body.velocity.x -= tx / 20  * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
-				place.player.body.velocity.z += tx / 20  * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
+				place.player.body.velocity.x -= tx / 20 * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
+				place.player.body.velocity.z += tx / 20 * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
 			} else if (keys["d"]) {
-				place.player.body.velocity.x += tx / 20  * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
-				place.player.body.velocity.z -= tx / 20  * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
+				place.player.body.velocity.x += tx / 20 * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
+				place.player.body.velocity.z -= tx / 20 * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
 			} if (keys[" "]) {
 				place.player.body.velocity.y += tx / 100;
 			} if (keys["Shift"]) {
@@ -201,40 +204,22 @@ function frame(tt) {
 			}
 		}
 	// Camera
-		if (place.player.isshoot) {
+		if (place.player.isshoot || fpsenabled === false) {
 			scene.camera.dis = (scene.camera.dis + scene.camera.dismov) / 2;
 			scene.camera.position.x = scene.camera.follow.mesh.position.x + Math.sin( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
 			scene.camera.position.y = scene.camera.follow.mesh.position.y + Math.sin(-scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
 			scene.camera.position.z = scene.camera.follow.mesh.position.z + Math.cos( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
 			scene.camera.lookAt(scene.camera.follow.mesh.position.x, scene.camera.follow.mesh.position.y, scene.camera.follow.mesh.position.z);
 		} else {
-			scene.camera.oldfpsyaw = scene.camera.oldfpsyaw || 0;
-			scene.camera.newfpsyaw = Math.atan2(scene.camera.follow.body.velocity.z, scene.camera.follow.body.velocity.x) * 180 / Math.PI;
-			if (isNaN(scene.camera.newfpsyaw)) {
-				scene.camera.newfpsyaw = scene.camera.oldfpsyaw;
-			} else if (scene.camera.follow.body.velocity.x < 0 && scene.camera.follow.body.velocity.z < 0) {
-				window.x = window.x || 0;
-				scene.camera.newfpsyaw += window.x;
-			} else {
-				window.y = window.y || 0;
-				scene.camera.newfpsyaw += window.y;
-			}				
-			scene.camera.oldfpsyaw = scene.camera.newfpsyaw;
-			scene.camera.dis = (scene.camera.dis + scene.camera.dismov) / 2;
-			scene.camera.position.x = scene.camera.follow.mesh.position.x + Math.sin( scene.camera.newfpsyaw) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
-			scene.camera.position.y = scene.camera.follow.mesh.position.y + Math.sin(-scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
-			scene.camera.position.z = scene.camera.follow.mesh.position.z + Math.cos( scene.camera.newfpsyaw) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
-			scene.camera.lookAt(scene.camera.follow.mesh.position.x, scene.camera.follow.mesh.position.y, scene.camera.follow.mesh.position.z);
-			/*scene.camera.oldfpsyaw = scene.camera.oldfpsyaw || 0;
-			scene.camera.newfpsyaw = Math.atan2(scene.camera.follow.body.velocity.x, scene.camera.follow.body.velocity.z) + Math.PI || scene.camera.oldfpsyaw;
-			scene.camera.oldfpsroll = scene.camera.oldfpsroll || 0;
-			scene.camera.newfpsroll = Math.atan2(scene.camera.follow.body.velocity.y, scene.camera.follow.body.velocity.z) + Math.PI || scene.camera.oldfpsroll;
 			scene.camera.position.x = scene.camera.follow.mesh.position.x;
-			scene.camera.position.y = scene.camera.follow.mesh.position.y;
+			scene.camera.position.y = scene.camera.follow.mesh.position.y + 0.5;
 			scene.camera.position.z = scene.camera.follow.mesh.position.z;
-			scene.camera.rotation.x = scene.camera.newfpsroll * Math.cos(scene.camera.newfpsyaw);
-			scene.camera.rotation.y = scene.camera.newfpsyaw;
-			scene.camera.rotation.z = scene.camera.newfpsroll * Math.sin(scene.camera.newfpsyaw);*/
+			scene.camera.rotation.x = scene.camera.rotation.z = 0;
+			if (Math.abs(scene.camera.follow.body.velocity.x) < 0.1 && Math.abs(scene.camera.follow.body.velocity.z) < 0.1)
+				scene.camera.rotation.ynew = scene.camera.dir[0] * Settings.SENSITIVITY;
+			else
+				scene.camera.rotation.ynew = Math.atan2(-scene.camera.follow.body.velocity.x, -scene.camera.follow.body.velocity.z);
+			scene.camera.rotation.y = (scene.camera.rotation.y + scene.camera.rotation.ynew) / 2;
 		}
 		scene.camera.updateMatrixWorld();
 	// Render
