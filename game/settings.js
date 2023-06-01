@@ -13,5 +13,4 @@ Settings.MAXFPS         = parseInt(Settings._settings[7]);
 Settings.FOG            = parseInt(Settings._settings[8]);
 Settings.LIGHTING       = parseInt(Settings._settings[9]);
 Settings.HIPOLYBALL     = parseInt(Settings._settings[10]);
-Settings.DEBUGMESH      = parseInt(Settings._settings[11]);
 export default Settings;

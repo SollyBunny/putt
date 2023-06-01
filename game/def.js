@@ -1,7 +1,7 @@
 
 import * as CANNON from "../lib/cannon.min.js";
 
-export const debugmove = true; // turn this to true if you are a gamer skript kiddy hacker man
+export const debug = true; // turn this on if you are a script kiddy, or actually need to debug something
 export let a; // the holy debug variable
 
 export const Messages = {

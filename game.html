@@ -44,6 +44,8 @@
 				overflow: visible;
 				white-space: nowrap;
 				text-shadow: 2px 2px 4px black;
+				pointer-events: none;
+				user-select: none;
 			}
 			#roomcodecontainer {
 				position: absolute;
@@ -75,7 +77,6 @@
 			#rstroke, #rhole {
 				text-align: center;
 			}
-
 		</style>
 	</head>
 	<body>
@@ -90,6 +91,10 @@
 			<div id="rmapname"> ? </div>
 			<div> Stroke </div> <div id="rstroke"> 0 </div>
 			<div> Hole   </div> <div id="rhole"  > 0 </div>
+			<div id="debug" style="display:none">
+				<div> Pos </div> <div id="rpos"> 0, 0, 0 </div>
+				<div> Vel </div> <div id="rvel"> 0, 0, 0 </div>
+			</div>
 		</div>
 		<script defer async type="module" src="./game/main.js"></script>
 	</body>

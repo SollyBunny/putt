@@ -6,23 +6,47 @@ import * as CANNON from "../lib/cannon.min.js";
 import CannonDebugRenderer from "../lib/cannon.dbg.js";
 import Settings from "./settings.js";
 import Multi from "./multi.js";
-import { debugmove } from "./def.js";
-import { Place, Player } from "./thing.js";
+import { debug } from "./def.js";
+import { Place } from "./thing.js";
 import { MapTutorial } from "./maps.js";
 
 const can = document.getElementById("can"); // What we are drawing on
-const e_rstroke  = document.getElementById("rstroke");
+const e_rstroke = document.getElementById("rstroke");
+const e_rpos = document.getElementById("rpos");
+const e_rvel = document.getElementById("rvel");
+const e_debug = document.getElementById("debug");
+
+let debugmesh;
+let debugmeshenabled = false;
 
 // Keys
 let keys = {}; // Key Pair : Key Pressed
 window.onkeydown = event => { 
+	keys[event.key] = true;
+};
+window.onkeyup = event => {
+	keys[event.key] = false;
 	if (event.key === "Escape") {
 		window.top.postMessage(["GAME"], "*");
-		return;
+	} else if (event.key === "m") {
+		if (debugmeshenabled === false) {
+			if (!debugmesh) {
+				debugmesh = new CannonDebugRenderer(scene, world);
+				debugmesh.material.color.set(0xFF0000);
+				debugmesh.material.wireframeLinewidth = 15;
+				debugmesh.material.linewidth = 15;
+			}
+			debugmesh.add();
+			e_debug.style.display = "contents";
+			debugmeshenabled = true;
+		} else {
+			debugmesh.remove();
+			e_debug.style.display = "none";
+			debugmeshenabled = false;
+		}
+		event.preventDefault(); // Prevent dev console stuff
 	}
-	keys[event.key] = true;
 }; 
-window.onkeyup = event => { keys[event.key] = false; }; 
 
 // THREE.JS Setup
 export const render = new THREE.WebGLRenderer({
@@ -37,6 +61,7 @@ scene.camera.dis = 20;
 scene.camera.dismov = 20;
 scene.camera.start = undefined;
 scene.camera.shoot = undefined;
+scene.camera.frustum = new THREE.Frustum();
 
 { // Hemisphere light
 	const light = new THREE.HemisphereLight(0xFFFFFF, 0, 1, 1);
@@ -48,12 +73,12 @@ scene.camera.shoot = undefined;
 		scene.fogmaterial = new THREE.MeshBasicMaterial({
 			color: 0xFFFFFF,
 			transparent: true,
-			opacity: 0.1
+			opacity: 0.5
 		});
 		const geometry = new THREE.PlaneGeometry(1024, 1024);
 		for (let i = 1; i < 10; ++i) {
 			const fog = new THREE.Mesh(geometry, scene.fogmaterial);
-			fog.position.y = -10 - i;
+			fog.position.y = -10 - i * 2;
 			fog.rotation.x = Math.PI / -2;
 			scene.fogmesh.add(fog);
 		}
@@ -96,13 +121,6 @@ arrow.rotation.x = Math.PI / -2;
 arrow.visible = false;
 arrow.renderOrder = 99999;
 scene.add(arrow);
-let debug;
-if (Settings.DEBUGMESH) {
-	debug = new CannonDebugRenderer(scene, world);
-	debug.material.color.set(0xFF0000);
-	debug.material.wireframeLinewidth = 15;
-	debug.material.linewidth = 15;
-}
 
 // Frame
 let start = Date.now();
@@ -135,13 +153,21 @@ function frame(tt) {
 		}
 		for (let i = 0; i < place.mods.text.length; ++i) {
 			m = place.mods.text[i];
-			m.mesh.lookAt(scene.camera.position);
-			//console.log(m.mesh)
-			if (m.mesh.quaternion.angleTo(scene.camera.quaternion) < 0.01) continue;
-			proj = m.mesh.position.clone().project(scene.camera);
-			proj.x = ( proj.x + 1) / 2 * can.width;
-			proj.y = (-proj.y + 1) / 2 * can.height;
-			place.mods.text[i].text.style.transform = `translate(calc(${proj.x}px - 50%),calc(${proj.y}px - 50%))`;
+			const matrix = new THREE.Matrix4().multiplyMatrices(scene.camera.projectionMatrix, scene.camera.matrixWorldInverse)
+			scene.camera.frustum.setFromProjectionMatrix(matrix)
+			if (scene.camera.frustum.containsPoint(m.mesh.position)) {
+				proj = m.mesh.position.clone().project(scene.camera);
+				proj.x = ( proj.x + 1) / 2 * can.width;
+				proj.y = (-proj.y + 1) / 2 * can.height;
+				place.mods.text[i].text.style.transform = `translate(calc(${proj.x}px - 50%),calc(${proj.y}px - 50%))`;
+				if (m.mesh.visible === false) {
+					place.mods.text[i].text.style.display = "block";
+					m.mesh.visible = true;
+				}
+			} else if (m.mesh.visible === true) {
+				place.mods.text[i].text.style.display = "none";
+				m.mesh.visible = false;
+			}
 		}
 		for (let i = 0; i < place.players.length; ++i) place.players[i].onupdate(tx);
 	// Arrow
@@ -155,7 +181,7 @@ function frame(tt) {
 			else                   arrow.scale.y /= 4;
 		}
 	// Debug Move
-		if (debugmove) {
+		if (debug) {
 			if        (keys["w"]) {
 				place.player.body.velocity.x -= tx / 20  * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
 				place.player.body.velocity.z -= tx / 20  * Math.cos(scene.camera.dir[0] * Settings.SENSITIVITY);
@@ -182,7 +208,11 @@ function frame(tt) {
 		scene.camera.lookAt(scene.camera.follow.mesh.position.x, scene.camera.follow.mesh.position.y, scene.camera.follow.mesh.position.z);
 		scene.camera.updateMatrixWorld();
 	// Render
-		if (debug) debug.update();
+		if (debugmeshenabled) {
+			debugmesh.update();
+			e_rpos.textContent = `${Math.round(place.player.body.position.x * 100) / 100}, ${Math.round(place.player.body.position.y * 100) / 100}, ${Math.round(place.player.body.position.z * 100) / 100}`;
+			e_rvel.textContent = `${Math.round(place.player.body.velocity.x * 100) / 100}, ${Math.round(place.player.body.velocity.y * 100) / 100}, ${Math.round(place.player.body.velocity.z * 100) / 100}`;
+		}
 		render.render(scene, scene.camera)
 	window.requestAnimationFrame(frame);
 }
@@ -254,7 +284,6 @@ can.onpointermove = event => {
 // Main
 
 let data = MapTutorial;
-console.log(data)
 
 export const place = new Place();
 place.world = world;
@@ -276,9 +305,14 @@ window.onmessage = event => {
 	place.add();
 };
 
-if (debugmove) {
+if (debug) { // Expose things to console
+	window.render = render;
+	window.camera = scene.camera;
+	window.players = place.players;
 	window.player = place.player;
 	window.place = place;
+	window.Settings = Settings;
+	window.Multi = Multi;
 	window.CANNON = CANNON;
 	window.THREE = THREE;
 }
