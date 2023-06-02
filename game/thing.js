@@ -618,7 +618,7 @@ export class Bumpyfloor extends Thing {
 				bounding[2] = pos[i][0];
 			if (pos[i][2] < bounding[0])
 				bounding[1] = pos[i][2];
-			else if (pos[i][2] > bounding[2])
+			else if (pos[i][2] > bounding[3])
 				bounding[3] = pos[i][2];
 		}
 		let temp;
@@ -634,6 +634,9 @@ export class Bumpyfloor extends Thing {
 		}
 		const width  = bounding[2] - bounding[0];
 		const height = bounding[3] - bounding[1];
+		if (width === 0 || height === 0) {
+			console.log(pos)
+		}
 		this.geometry = new THREE.PlaneGeometry(width, height, width, height);
 		const vertices = this.geometry.attributes.position.array;
 		const colors = new Float32Array(vertices.length * 3);
@@ -1006,7 +1009,7 @@ export class Text extends Thing {
 		super(parent, Types.TEXT);
 		this.mesh = new THREE.Object3D();
 		this.mesh.position.x = pos[0];
-		this.mesh.position.y = pos[1] + 5;
+		this.mesh.position.y = pos[1] + 2;
 		this.mesh.position.z = pos[2];
 		this.mesh.frustumCulled = true;
 	}
