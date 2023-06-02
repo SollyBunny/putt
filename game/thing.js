@@ -252,16 +252,6 @@ export class Player extends Thing {
 		this.textset(name);
 		this.parent.mods.text.push(this);
 	}
-	reset() {
-		this.body.position.x = this.body.position.z = this.body.velocity.x = this.body.velocity.y = this.body.velocity.z = this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = 0;
-		this.body.position.y = 5;
-		this.body.allowSleep = false;
-		this.body.sleepState = 0;
-		this.isshoot = true;
-		this.ishole  = false;
-		this.sleepytime = 0;
-		this.lastsafe = new CANNON.Vec3();
-	}
 	die() {
 		this.sleepytime = 0;
 		this.body.allowSleep = false;
