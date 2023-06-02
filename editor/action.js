@@ -308,3 +308,5 @@ function render() {
 	}
 	e_svg.innerHTML = l4 + l3 + l2 + l1;
 }
+
+render();

@@ -45,3 +45,8 @@ e_draw.onpointermove = event => {
 	e_draw.style.backgroundPosition = `${offset[0]}px ${offset[1]}px`;
 	e_svg.style.transform = `translate(calc(${offset[0]}px),calc(${offset[1]}px))`;
 }
+
+offset[0] = e_draw.clientWidth / 2;
+offset[1] = e_draw.clientHeight / 2;
+e_draw.style.backgroundPosition = `${offset[0]}px ${offset[1]}px`;
+e_svg.style.transform = `translate(calc(${offset[0]}px),calc(${offset[1]}px))`;
