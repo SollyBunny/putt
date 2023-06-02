@@ -91,7 +91,7 @@ scene.camera.frustum = new THREE.Frustum();
 }
 { // Dust
 	if (Settings.DUST) {
-		const particlesnum = 2000;
+		const particlesnum = 1000;
 		const particlespos = new Float32Array(particlesnum * 3);
 		const particlesvel = new Float32Array(particlesnum * 3);
 		for (let i = 0; i < particlesnum * 3; i += 3) {

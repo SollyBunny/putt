@@ -121,7 +121,6 @@ module.exports.msg = (ws, msg) => {
 				if (hole !== i.hole) hole = false;
 				i.send(JSON.stringify([Messages.HOLE, ws.id, msg[1]]));
 			});
-			console.log("Hello", ws.room.players.map(i => i.hole));
 			if (hole !== false) {
 				ws.room.hole = hole;
 				ws.room.players.forEach(i => {
@@ -149,7 +148,7 @@ module.exports.msg = (ws, msg) => {
 			break;
 	}
 };
-module.exports.close = (ws) => { // optional
+module.exports.close = ws => {
 	console.log("Putt: Close", ws.ip);
 	if (!ws.room) return;
 	ws.room.players = ws.room.players.filter(i => {
@@ -199,4 +198,4 @@ setInterval(() => {
 			m.send(JSON.stringify([Messages.TICKSYNC, i.tick]))
 		})
 	})
-}, 2000);
+}, 5000);
