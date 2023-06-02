@@ -55,7 +55,7 @@ module.exports.msg = (ws, msg) => {
 				owner: ws,
 				tick: 0,
 				start: Date.now(),
-				mapname: ws.url.query[2].startsWith("+") ? ws.url.query[2].slice(1) : "Tutorial",
+				mapname: ws.url.query[2].startsWith("+") ? ws.url.query[2].slice(1) : "tutorial",
 			};
 			ws.id    = 0;
 			ws.name  = decodeURIComponent(ws.url.query[0]);
@@ -175,6 +175,23 @@ module.exports.close = (ws) => { // optional
 		});
 	}
 };
+
+module.exports.handle = (req, res) => {
+	res.writeHead(200, {
+		"Content-Type": "text/json",
+		"Access-Control-Allow-Origin": "*",
+		"Cache-Control": "no-cache"
+	})
+	res.write(JSON.stringify(Object.values(rooms).map(i => [
+		i.code,
+		i.players.length,
+		i.owner.name,
+		i.mapname,
+		i.hole
+	])));
+	res.end();
+};
+
 setInterval(() => {
 	Object.values(rooms).forEach(i => {
 		i.tick = Date.now() - i.start;

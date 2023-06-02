@@ -167,21 +167,21 @@
 						margin: 1vmin;
 						text-align: left;
 					}
-						#menumainleft > button {
+						#menumainleft button {
 							background: #333;
 							text-align: left;
 							width: 100%;
 							margin-bottom: 1vmin;
 						}
-						#menumainleft > button * {
+						#menumainleft button * {
 							pointer-events: none;
 						}
 						.roomsel {
 							background: #444 !important;
 							outline: 1px solid white;
 						}
-						#menumainleft > * > div {
-							font-size: 75%;
+						#rrooms {
+							display: contents;
 						}
 
 				#game, #editor {
@@ -270,10 +270,11 @@
 					<div id="menumaincontainer">
 						<div id="menumainleft">
 							<h6> Create Room </h6>
-							<button onclick="roomsel()" class="roomsel" value="tutorial"> <div> Tutorial </div> Learn the basics of Putt Party with this short tutorial </button>
-							<button onclick="roomsel()" value="offline"> <div> Offline </div> Play the game offline, you can also playtest maps from the editor </button>
-							<button onclick="roomsel()" value="online"> <div> Online </div> Create a new online room </button>
+							<button onclick="roomsel()" class="roomsel" value="tutorial"> <h6> Tutorial </h6> Learn the basics of Putt Party with this short tutorial </button>
+							<button onclick="roomsel()" value="offline"> <h6> Offline </h6> Play the game offline, you can also playtest maps from the editor </button>
+							<button onclick="roomsel()" value="online"> <h6> Online </h6> Create a new online room </button>
 							<h6> Room List </h6>
+							<div id="rrooms"></div>
 						</div>
 						<div id="menumainright">
 							<br> <br>
@@ -305,6 +306,7 @@
 			const e_menu       = document.getElementById("menu");
 			const e_game       = document.getElementById("game");
 			const e_rmapname   = document.getElementById("rmapname");
+			const e_rrooms     = document.getElementById("rrooms");
 			let settings = localStorage["s"];
 			let settingspopulated = false;
 			let roomcode = "";
@@ -375,6 +377,7 @@
 				} else if (event.target.value === "offline" || event.target.value === "online") {
 					e_rmapname.disabled = false;
 				} else {
+					e_rmapname.value = event.target.mapname;
 					e_rmapname.disabled = true;
 				}
 			}
@@ -397,7 +400,7 @@
 				} else if (roomcode === "online") {
 					url += `+${e_rmapname.value}`;
 				} else {
-					url += e_rmapname.value;
+					url += roomcode;
 				}
 				if (event.ctrlKey) {
 					const e = document.createElement("a");
@@ -407,7 +410,28 @@
 					return;
 				}
 				e_game.src = url;
-				e_menu.style.transform = "translateY(-100vh)";
+				e_menu.style.transform = "translateY(-150vh)";
+			}
+			function roomrefresh() {
+				fetch("./putt/server").then(res => res.json()).then(data => {
+					e_rrooms.innerHTML = "";
+					data.forEach(i => {
+						const el = document.createElement("button");
+						el.value = i[0];
+						el.mapname = i[3];
+						el.onclick = roomsel;
+						const title = document.createElement("h6");
+						title.textContent = `${i[3]} (Hole #${i[4] + 1}) (${i[0]})`;
+						el.appendChild(title);
+						const body = document.createElement("div");
+						body.textContent = `Owner: ${i[2]} , Players: ${i[1]}`;
+						el.appendChild(body);
+						e_rrooms.appendChild(el);
+					});
+				}).catch(e => {
+					console.error(e);
+					e_rrooms.innerHTML = `<div style="color:red">Error fetching rooms ${e}</div>`;
+				})
 			}
 			// Main
 			e_menuiframe.contentDocument.body.innerHTML = "<h2 style='margin:0;position:absolute;left:0;top:11vh;width:100vw;text-align:center;color:white'>Loading Editor</h2>"
@@ -427,7 +451,7 @@
 				} else {
 					e_menu.style.transform = "";
 				}
-			}
+			};
 			window.onmessage = () => {
 				if (!event.data.length) return;
 				if (event.data[0] === "GAME") {
@@ -453,7 +477,8 @@
 					}
 					e_menu.style.transform = "translateY(-100vh)";
 				}
-			}
+			};
+			roomrefresh();
 		</script>
 	</body>
 </html

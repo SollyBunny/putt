@@ -79,8 +79,6 @@ class Multi {
 			e_roomcode.textContent = this.roomcode;
 		}
 		window.history.replaceState({}, "", `${document.location.pathname}?${this.roomcode}`);
-		
-		
 		this.onstart(this, hole);
 		delete this.onstart;
 	}
@@ -175,9 +173,9 @@ class Multi {
 			case Messages.JOINSYNC:
 				console.log("Joinsync", msg[1], msg);
 				this.connected = true;
+				this.place.player.id = msg[1];
 				this.playersindex[this.place.player.id] = this.place.player;
 				if (msg[3] !== this.mapname) this.setmap(msg[3]);
-				
 				msg[5].forEach(i => {
 					p = this.place.addplayer(i[1], i[2]);
 					p.id = i[0];

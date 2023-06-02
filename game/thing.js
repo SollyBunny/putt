@@ -222,6 +222,7 @@ export class Player extends Thing {
 	constructor(parent, name, color) {
 		super(parent, Types.PLAYER, undefined, undefined, name);
 		this.stroke = 0;
+		this.hole   = 0;
 		this.name   = name;
 		this.color  = new THREE.Color(color);
 		/*if (Settings.LIGHTING) {
@@ -275,6 +276,7 @@ export class Player extends Thing {
 	}
 	sethole(hole) {
 		this.hole = hole;
+		console.log(`Set ${this.id} to hole ${hole}`);
 		if (this.parent.player === this) {
 			e_rhole.textContent = hole + 1;
 			const dx = this.parent.holes[hole].mesh.position.x - this.parent.starts[hole].mesh.position.x;
