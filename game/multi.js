@@ -25,7 +25,7 @@ const e_roomcode = document.getElementById("roomcode");
 class Multi {
 	constructor(place, roomcode, onstart) {
 		this.place = place;
-		this.roomcode = roomcode || "-Tutorial";
+		this.roomcode = roomcode || "-tutorial";
 		this.onstart = onstart;
 		this.connected = false;
 		if (this.roomcode.startsWith("-")) { // offline
@@ -69,23 +69,28 @@ class Multi {
 			ws.onmessage = this.onmsg.bind(this);
 			// Note: only set roomcode when succsesfully connected so we don't blue golfball the player
 		} else {
-			e_roomcode.parentElement.style.display = "none";
 			this.start(0);
 		}
 	}
 	start(hole) {
-		if (this.onstart) {
-			this.onstart(this, hole);
-			delete this.onstart;
+		if (!this.onstart) return;
+		if (!this.roomcode.startsWith("-")) {
+			e_roomcode.parentElement.style.display = "block";
+			e_roomcode.textContent = this.roomcode;
 		}
+		window.history.replaceState({}, "", `${document.location.pathname}?${this.roomcode}`);
+		
+		
+		this.onstart(this, hole);
+		delete this.onstart;
 	}
 	setmap(name) {
-		this.mapname = name || "Tutorial";
+		this.mapname = name || "tutorial";
 		this.mapdata = Maps[this.mapname];
 		if (!this.mapdata) {
-			alert(`Map "${this.mapname}" not found, defaulting to "Tutorial"`);
-			this.mapname = "Tutorial";
-			this.mapdata = Maps["Tutorial"];
+			alert(`Map "${this.mapname}" not found, defaulting to "tutorial"`);
+			this.mapname = "tutorial";
+			this.mapdata = Maps["tutorial"];
 			if (this.roomcode.startsWith("+"))
 				this.roomcode = `+${this.mapname}`;
 			else if (this.roomcode.startsWith("-"))
@@ -127,7 +132,7 @@ class Multi {
 				msg = new Float32Array(data);
 				p = this.playersindex[msg[13]];
 				if (!p) return;
-				if (p.id === this.place.player.id) {
+				if (p.id == this.place.player.id) {
 					console.warn("Syncing self?");
 					return;
 				}
@@ -170,19 +175,16 @@ class Multi {
 			case Messages.JOINSYNC:
 				console.log("Joinsync", msg[1], msg);
 				this.connected = true;
-				this.place.addplayer(Settings.NAME, Settings.COLOR, true);
-				this.place.player.id = msg[1];
 				this.playersindex[this.place.player.id] = this.place.player;
 				if (msg[3] !== this.mapname) this.setmap(msg[3]);
-				this.start(msg[4]);
+				
 				msg[5].forEach(i => {
 					p = this.place.addplayer(i[1], i[2]);
 					p.id = i[0];
 					this.playersindex[p.id] = p;
 				});
 				this.roomcode = msg[2];
-				e_roomcode.textContent = this.roomcode;
-				window.history.replaceState({}, "", `${document.location.pathname}?${this.roomcode}`);
+				this.start(msg[4]);
 				break;
 			case Messages.TICKSYNC:
 				this.place.tick = msg[1];

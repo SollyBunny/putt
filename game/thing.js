@@ -1,6 +1,5 @@
 import * as THREE from "../lib/three.module.min.js";
 import * as CANNON from "../lib/cannon.min.js";
-import Multi from "./multi.js";
 import Settings from "./settings.js";
 import { ConvexGeometry, mergeVertices } from "../lib/three.ext.js";
 import { Types, Effects, Modifiers, Physics } from "./def.js";
@@ -297,7 +296,7 @@ export class Player extends Thing {
 		this.mesh.material.opacity = 0.5;
 		this.body.sleep();
 		if (this.id === this.parent.player.id)
-			Multi.hole(this.hole);
+			this.parent.multi.hole(this.hole);
 	}
 	onhit() {
 		this.stroke += 1;

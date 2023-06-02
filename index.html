@@ -37,7 +37,7 @@
 			h3, h4, h5, h6 {
 				margin: 0;
 			}
-			input, button {
+			input, button, select {
 				padding: 2vmin;
 				margin: 1vmin;
 				border-radius: 1vmin;
@@ -47,11 +47,17 @@
 				background: #333;
 				transition: outline 0.2s ease;
 			}
-			input:hover, input:focus, button:hover {
+			input:hover, input:focus, button:hover, select:focus, select:hover {
 				outline: 1px solid white;
 			}
-			input:focus {
+			input:focus, select:focus {
 				background: #444;
+			}
+			button:disabled, input:disabled, select:disabled {
+				outline: none !important;
+				background: #333 !important;
+				cursor: not-allowed !important;
+				opacity: 0.7 !important;
 			}
 			#menu {
 				text-align: center;
@@ -155,6 +161,7 @@
 				#menumaincontainer {
 					display: grid;
 					grid-template-columns: auto auto;
+					grid-gap: 4vmin;
 				}
 					#menumainleft {
 						margin: 1vmin;
@@ -263,14 +270,21 @@
 					<div id="menumaincontainer">
 						<div id="menumainleft">
 							<h6> Create Room </h6>
-							<button onclick="roomsel()" class="roomsel" id="tutorial"> <div> Tutorial </div> Learn the basics of Putt Party with this short tutorial </button>
-							<button onclick="roomsel()" id="offline"> <div> Offline </div> Play the game offline, you can also playtest maps from the editor </button>
-							<button onclick="roomsel()" id=""> <div> Online </div> Create a new online room </button>
+							<button onclick="roomsel()" class="roomsel" value="tutorial"> <div> Tutorial </div> Learn the basics of Putt Party with this short tutorial </button>
+							<button onclick="roomsel()" value="offline"> <div> Offline </div> Play the game offline, you can also playtest maps from the editor </button>
+							<button onclick="roomsel()" value="online"> <div> Online </div> Create a new online room </button>
 							<h6> Room List </h6>
 						</div>
 						<div id="menumainright">
-							<input id="menuinput" oninput="input()" type="text" placeholder="Room Code"> <br>
-							<button onclick="play()" id="menubutton"> Create Room </button>
+							<br> <br>
+							<label for="rmapname"><h6> Map Name </h6></label>
+							<select id="rmapname" disabled>
+								<option value="tutorial"> Tutorial </option>
+								<option value="blank"> Blank </option>
+							</select>
+							<br> <br>
+							<h6> Here we go! </h6>
+							<button onclick="play()" id="menubutton"> Go! </button>
 						</div>
 					</div>
 					<button class="menushortcut left"  onclick="page(-1)"> <a disabled href=" " title="Settings"> ⚙️ </a> </button>
@@ -285,14 +299,15 @@
 		</div>
 		<script defer>
 			const e_menubutton = document.getElementById("menubutton");
-			const e_menuinput  = document.getElementById("menuinput");
 			const e_menuiframe = document.getElementById("editor");
 			const e_menuitem   = document.getElementById("menuitem");
 			const e_menugrid   = document.getElementById("menugrid");
 			const e_menu       = document.getElementById("menu");
 			const e_game       = document.getElementById("game");
+			const e_rmapname   = document.getElementById("rmapname");
 			let settings = localStorage["s"];
 			let settingspopulated = false;
+			let roomcode = "";
 			// settings
 			function settingsset() {
 				if (event.target.type === "checkbox") {
@@ -351,8 +366,17 @@
 			}
 			// Events
 			function roomsel() {
+				e_menubutton.disabled = false;
 				document.getElementsByClassName("roomsel")[0].classList.remove("roomsel");
 				event.target.classList.add("roomsel");
+				if (event.target.value === "tutorial") {
+					e_rmapname.value = "tutorial";
+					e_rmapname.disabled = true;
+				} else if (event.target.value === "offline" || event.target.value === "online") {
+					e_rmapname.disabled = false;
+				} else {
+					e_rmapname.disabled = true;
+				}
 			}
 			function page(p) {
 				if (p === -3 && e_menuiframe.src.length === 0) {
@@ -363,24 +387,26 @@
 				}
 				e_menuitem.style.transform = `translateX(${p}00vw)`;
 			}
-			function input() {
-				if (event.target.value.length === 0) {
-					menubutton.innerHTML = "Create Room";
-				} else {
-					menubutton.innerHTML = "Join Room";
-				}
-			}
 			function play() {
-				let v = "./putt/game.html";
-				if (e_menuinput.value) v += `?${menuinput.value}`;
+				let url = "./putt/game.html?";
+				let roomcode = document.getElementsByClassName("roomsel")[0].value;
+				if (roomcode === "tutorial") {
+					url += "-tutorial"
+				} else if (roomcode === "offline") {
+					url += `-${e_rmapname.value}`;
+				} else if (roomcode === "online") {
+					url += `+${e_rmapname.value}`;
+				} else {
+					url += e_rmapname.value;
+				}
 				if (event.ctrlKey) {
 					const e = document.createElement("a");
-					e.href = v;
+					e.href = url;
 					e.target = "_blank";
 					e.click();
 					return;
 				}
-				e_game.src = v;
+				e_game.src = url;
 				e_menu.style.transform = "translateY(-100vh)";
 			}
 			// Main

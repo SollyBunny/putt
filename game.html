@@ -57,9 +57,16 @@
 				color: white;
 				text-align: right !important;
 			}
-			#roomcode {
-				user-select: all;
-			}
+				#roomcode {
+					user-select: all;
+					cursor: pointer;
+					font-size: 120%;
+					font-weight: 900;
+					color: white;
+					background: none;
+					border: none;
+					outline: none;
+				}
 			#infocontainer {
 				position: absolute;
 				top: 0;
@@ -84,8 +91,8 @@
 			<canvas id="can" oncontextmenu="event.preventDefault();"> Your browser doesn't support Canvas API </canvas>
 			<div id="rtext"> </div>
 		</div>
-		<div id="roomcodecontainer">
-			Room Code <br> <a onclick="navigator.clipboard.writeText(event.target.innerHTML);" href="#" id="roomcode"> ? </a>
+		<div id="roomcodecontainer" style="display:none">
+			Room Code <br> <button onclick="navigator.clipboard.writeText(event.target.innerHTML);alert('Copied!')" id="roomcode"> ? </button>
 		</div>
 		<div id="infocontainer">
 			<div id="rmapname"> ? </div>

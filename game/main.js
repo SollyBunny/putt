@@ -299,7 +299,9 @@ can.onpointermove = event => {
 // Main
 
 export const place = new Place(scene, world);
+place.addplayer(Settings.NAME, Settings.COLOR, true);
 export const multi = new Multi(place, document.location.search.slice(1), (multi, hole) => {
+	place.multi = this;
 	place.setdata(multi.mapdata);
 	place.add();
 	place.sethole(hole);
@@ -309,10 +311,10 @@ export const multi = new Multi(place, document.location.search.slice(1), (multi,
 		window.camera = scene.camera;
 		window.players = place.players;
 		window.player = place.player;
+		window.multi = place.multi;
 		window.place = place;
 		window.scene = scene;
 		window.world = world;
-		window.multi = multi;
 		window.Settings = Settings;
 		window.Multi = Multi;
 		window.CANNON = CANNON;
