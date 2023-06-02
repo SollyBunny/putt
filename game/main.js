@@ -47,6 +47,8 @@ window.onkeyup = event => {
 		event.preventDefault(); // Prevent dev console stuff
 	} else if (event.key === "f") {
 		fpsenabled = !fpsenabled;
+	} else if (event.key === "r") {
+		place.player.die();
 	}
 }; 
 
@@ -87,6 +89,28 @@ scene.camera.frustum = new THREE.Frustum();
 		scene.add(scene.fogmesh);
 	}
 }
+{ // Dust
+	if (Settings.DUST) {
+		const particlesnum = 2000;
+		const particlespos = new Float32Array(particlesnum * 3);
+		const particlesvel = new Float32Array(particlesnum * 3);
+		for (let i = 0; i < particlesnum * 3; i += 3) {
+			particlespos[i    ] = Math.random() * 100 - 50;
+			particlespos[i + 1] = Math.random() * 50 - 10;
+			particlespos[i + 2] = Math.random() * 100 - 50;
+		}
+		scene.dustmesh = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(particlespos, 3)), new THREE.PointsMaterial({
+			color: 0xFFFFFF,
+			size: 0.1,
+			sizeAttenuation: true
+		}));
+		scene.dustmesh.num = particlesnum;
+		scene.dustmesh.pos = particlespos;
+		scene.dustmesh.vel = particlesvel;
+		scene.add(scene.dustmesh);
+	}
+}
+
 window.onresize = () => {
 	scene.camera.aspect = can.clientWidth / can.clientHeight;
 	scene.camera.updateProjectionMatrix();
@@ -137,6 +161,9 @@ function frame(tt) {
 		}
 		to = tt;
 		place.tick = Date.now() - start;
+	// Frustrum
+		const matrix = new THREE.Matrix4().multiplyMatrices(scene.camera.projectionMatrix, scene.camera.matrixWorldInverse)
+		scene.camera.frustum.setFromProjectionMatrix(matrix);
 	// Update
 		world.step(1 / fps, tx, 5);
 		if (place.player.body.sleepState === 0)
@@ -156,8 +183,6 @@ function frame(tt) {
 		}
 		for (let i = 0; i < place.mods.text.length; ++i) {
 			m = place.mods.text[i];
-			const matrix = new THREE.Matrix4().multiplyMatrices(scene.camera.projectionMatrix, scene.camera.matrixWorldInverse)
-			scene.camera.frustum.setFromProjectionMatrix(matrix)
 			if (scene.camera.frustum.containsPoint(m.mesh.position)) {
 				proj = m.mesh.position.clone().project(scene.camera);
 				proj.x = ( proj.x + 1) / 2 * can.width;
@@ -173,6 +198,35 @@ function frame(tt) {
 			}
 		}
 		for (let i = 0; i < place.players.length; ++i) place.players[i].onupdate(tx);
+		if (Settings.DUST) {
+			let n;
+			let p = new THREE.Vector3();
+			for (let i = 0; i < scene.dustmesh.pos.length; i += 3) {
+				n = Math.random();
+				if (n < 0.1) {
+					scene.dustmesh.vel[i + 1] += n - 0.05;
+				} else if (n < 0.2) {
+					scene.dustmesh.vel[i] += n - 0.1;
+				} else if (n < 0.3) {
+					scene.dustmesh.vel[i + 2] += n - 0.15;
+				} else if (n < 0.6) {
+					p.x = scene.dustmesh.pos[i    ];
+					p.y = scene.dustmesh.pos[i + 1];
+					p.z = scene.dustmesh.pos[i + 2];
+					if (!scene.camera.frustum.containsPoint(p)) {
+						scene.dustmesh.pos[i    ] = scene.camera.position.x + Math.random() * 100 - 50;
+						scene.dustmesh.pos[i + 1] = scene.camera.position.y + Math.random() * 50 - 25;
+						scene.dustmesh.pos[i + 2] = scene.camera.position.z + Math.random() * 100 - 50;
+						scene.dustmesh.vel[i] = scene.dustmesh.vel[i + 1] = scene.dustmesh.vel[i + 2] = 0;
+						continue;
+					}
+				}
+				scene.dustmesh.pos[i    ] += scene.dustmesh.vel[i    ];
+				scene.dustmesh.pos[i + 1] += scene.dustmesh.vel[i + 1];
+				scene.dustmesh.pos[i + 2] += scene.dustmesh.vel[i + 2];
+			}
+			scene.dustmesh.geometry.attributes.position.needsUpdate = true;
+		}
 	// Arrow
 		if (scene.camera.shoot) {
 			arrow.position.x = scene.camera.follow.mesh.position.x;

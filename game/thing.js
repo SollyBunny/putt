@@ -509,17 +509,28 @@ export class Floor extends Thing {
 			break;
 		}
 		let faces = [];
+		let center;
 		if (x === undefined) {
+			center = [
+				(this.geometry.boundingBox.min.x + this.geometry.boundingBox.max.x) / 2,
+				(this.geometry.boundingBox.min.y + this.geometry.boundingBox.max.y) / 2,
+				(this.geometry.boundingBox.min.z + this.geometry.boundingBox.max.z) / 2
+			];
 			this.geometry = mergeVertices(this.geometry, 0);
 			faces = []; // Generate faces for physics
 			for (let i = 0; i < this.geometry.index.array.length; i += 3) {
 				faces.push([
 					this.geometry.index.array[i],
 					this.geometry.index.array[i + 1],
-					this.geometry.index.array[i + 2],
+					this.geometry.index.array[i + 2]
 				]);
 			}
 		} else { // there is a hole
+			center = [
+				x,
+				pos[0][1],
+				z
+			];
 			for (let i = 0; i < 20; ++i) { // Generate 20 points on a circle
 				points.push(new THREE.Vector3(
 					x + Math.sin(Math.PI * 2 * (i / 20)) * 0.7,
@@ -559,6 +570,9 @@ export class Floor extends Thing {
 		}
 		points = []; // Format geometry points to CANNON.Vec3 for physics
 		for (let i = 0; i < this.geometry.attributes.position.array.length; i += 3) {
+			this.geometry.attributes.position.array[i] -= center[0];
+			this.geometry.attributes.position.array[i + 1] -= center[1];
+			this.geometry.attributes.position.array[i + 2] -= center[2];
 			points.push(new CANNON.Vec3(
 				this.geometry.attributes.position.array[i],
 				this.geometry.attributes.position.array[i + 1],
@@ -566,6 +580,9 @@ export class Floor extends Thing {
 			));
 		}
 		this.mesh = new THREE.Mesh(this.geometry, this.flat ? this.parent.materials.FLOOR1 : this.parent.materials.FLOOR2);
+		this.mesh.position.x = center[0];
+		this.mesh.position.y = center[1];
+		this.mesh.position.z = center[2];
 		this.body = new CANNON.Body({
 			mass: 0,
 			shape: new CANNON.ConvexPolyhedron({
@@ -574,6 +591,9 @@ export class Floor extends Thing {
 			}),
 			material: Physics.FLOOR
 		});
+		this.body.position.x = center[0];
+		this.body.position.y = center[1];
+		this.body.position.z = center[2];
 		this.parent.world.addBody(this.body);
 	}
 }
