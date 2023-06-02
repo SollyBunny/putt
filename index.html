@@ -167,23 +167,27 @@
 						margin: 1vmin;
 						text-align: left;
 					}
-						#menumainleft button {
+						#menumainleft > h6 {
+							line-height: 4vmin;
+						}
+						#menumainleft > div button {
 							background: #333;
 							text-align: left;
 							width: 100%;
 							margin-bottom: 1vmin;
 						}
-						#menumainleft button * {
+						#menumainleft > divbutton * {
 							pointer-events: none;
 						}
 						.roomsel {
 							background: #444 !important;
 							outline: 1px solid white;
 						}
-						#rrooms {
-							display: contents;
+						#menumainroomrefresh {
+							margin: 0 !important;
+							padding: 1vmin;
+							margin-left: 1vmin !important;
 						}
-
 				#game, #editor {
 					border: none;
 					position: absolute;
@@ -270,10 +274,12 @@
 					<div id="menumaincontainer">
 						<div id="menumainleft">
 							<h6> Create Room </h6>
-							<button onclick="roomsel()" class="roomsel" value="tutorial"> <h6> Tutorial </h6> Learn the basics of Putt Party with this short tutorial </button>
-							<button onclick="roomsel()" value="offline"> <h6> Offline </h6> Play the game offline, you can also playtest maps from the editor </button>
-							<button onclick="roomsel()" value="online"> <h6> Online </h6> Create a new online room </button>
-							<h6> Room List </h6>
+							<div>
+								<button onclick="roomsel()" class="roomsel" value="tutorial"> <h6> Tutorial </h6> Learn the basics of Putt Party with this short tutorial </button>
+								<button onclick="roomsel()" value="offline"> <h6> Offline </h6> Play the game offline, you can also playtest maps from the editor </button>
+								<button onclick="roomsel()" value="online"> <h6> Online </h6> Create a new online room </button>
+							</div>
+							<h6> Room List <button id="menumainroomrefresh" onclick="event.preventDefault();roomrefresh()"> <a disabled href=" " title="Refresh"> ♻️ </a> </button> </h6>
 							<div id="rrooms"></div>
 						</div>
 						<div id="menumainright">
