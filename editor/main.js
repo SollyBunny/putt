@@ -63,16 +63,16 @@ window.onkeydown = event => {
 		case "0":
 			toolset(undefined, Types.SELECT);
 			break;
-	} } else { switch (k) {
-		case "escape":
-			if      (e_toolboxcontainer.style.display  === "block") e_toolboxcontainer.style.display  = "none";
-			else if (e_palletecontainer.style.display  === "block") e_palletecontainer.style.display  = "none";
-			else if (e_modifiercontainer.style.display === "block") e_modifiercontainer.style.display = "none";
-			else toolset(Types.SELECT);
-			break;
+	} } else if (k === "escape") { 
+		if (e_toolboxcontainer.style.display  === "block") e_toolboxcontainer.style.display  = "none";
+		else if (e_palletecontainer.style.display  === "block") e_palletecontainer.style.display  = "none";
+		else if (e_modifiercontainer.style.display === "block") e_modifiercontainer.style.display = "none";
+		else toolset(Types.SELECT);
+	} else if (document.activeElement.tagName !== "INPUT") { switch (k) {
 		case "backspace":
+		case "delete":
 			if (e_rcontainer.style.display === "block")
 				del();
-			return;
+			break;
 	} }
 }

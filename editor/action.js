@@ -229,14 +229,14 @@ function click() {
 		case Types.TRIANGLE:
 		case Types.SQUARE:
 		case Types.WIND:
+		case Types.POWERUP:
 			historyadd();
 			objs.push([
 				tool,
 				[mouse[0], mouse[1], mouse[2]]
 			]);
-			if (Typesmodifiers[tool]) {
+			if (Typesmodifiers[tool])
 				objs[objs.length - 1][2] = [ JSON.parse(JSON.stringify(Typesmodifiers[tool])) ];
-			}
 			render();
 			tooledit(objs.length - 1);
 			break;
@@ -283,9 +283,6 @@ function render() {
 			case Types.BOOSTER:
 				l2 += `<rect x="${m[1][0] * 20 - 20}" y="${m[1][2] * 20 - 20}" width="40" height="40" /><text style="fill:white" x="${m[1][0] * 20}" y="${m[1][2] * 20}">Booster</text>`;
 				break;
-			case Types.JUMPPAD:
-				l2 += `<rect x="${m[1][0] * 20 - 20}" y="${m[1][2] * 20 - 20}" width="40" height="40" /><text style="fill:white" x="${m[1][0] * 20}" y="${m[1][2] * 20}">Jump Pad</text>`;
-				break;
 			case Types.BUMPER:
 				l2 += `<circle cx="${m[1][0] * 20}" cy="${m[1][2] * 20}" r="20" /><text style="fill:white" x="${m[1][0] * 20}" y="${m[1][2] * 20}">Bumper</text>`;
 				break;
@@ -303,6 +300,9 @@ function render() {
 				break;
 			case Types.SQUARE:
 				l2 += `<rect x="${m[1][0] * 20 - 20}" y="${m[1][2] * 20 - 20}" width="40" height="40" /><text style="fill:white" x="${m[1][0] * 20}" y="${m[1][2] * 20}">Square</text>`;
+				break;
+			case Types.POWERUP:
+				l2 += `<rect x="${m[1][0] * 20 - 20}" y="${m[1][2] * 20 - 20}" width="40" height="40" /><text style="fill:white" x="${m[1][0] * 20}" y="${m[1][2] * 20}">Powerup</text>`;
 				break;
 		}
 	}

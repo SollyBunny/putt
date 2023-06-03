@@ -23,8 +23,7 @@ function possinput(n, id) {
 	} else {
 		event.target.classList.remove("error");
 		historyadd();
-		console.log(n, id, e)
-		objs[sel][1][n][id] = e;
+		objs[sel][2][n][id][1] = e;
 		render();
 	}
 }

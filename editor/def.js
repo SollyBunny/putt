@@ -52,6 +52,7 @@ const Types = {
 	TRIANGLE   : 12,
 	SQUARE     : 13,
 	WIND       : 14,
+	POWERUP    : 15,
 };
 
 const Typesname = [
@@ -70,6 +71,7 @@ const Typesname = [
 	/* TRIANGLE   : */ "Triangle",
 	/* SQUARE     : */ "Square",
 	/* WIND       : */ "Wind",
+	/* POWERUP    : */ "Powerup",
 ];
 Typesname[Types.LAYERUP  ] = "Layer Up";
 Typesname[Types.LAYERDOWN] = "Layer Down";
@@ -97,4 +99,5 @@ const Typesmodifiers = [
 	/* TRIANGLE   : */ [Modifiers.SPIN, Modifiersdefault[Modifiers.SPIN]],
 	/* SQUARE     : */ [Modifiers.SPIN, Modifiersdefault[Modifiers.SPIN]],
 	/* WIND       : */ undefined,
+	/* POWERUP    : */ undefined,
 ]

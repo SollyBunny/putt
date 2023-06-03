@@ -1,7 +1,7 @@
 import * as THREE from "../lib/three.module.min.js";
 import * as CANNON from "../lib/cannon.min.js";
 import Settings from "./settings.js";
-import { ConvexGeometry, mergeVertices } from "../lib/three.ext.js";
+import { ConvexGeometry, mergeVertices, RoundedBoxGeometry } from "../lib/three.ext.js";
 import { Types, Effects, Modifiers, Physics } from "./def.js";
 
 const e_rtext    = document.getElementById("rtext"); // To use as a canvas for player names
@@ -26,13 +26,14 @@ const holecolor = [
 export class Place {
 	// Can't call it map because of JS reserving so many names
 	materials = {
-		FLOOR1: new THREE.MeshPhongMaterial({ flatShading: true }), // Used for flat floor
-		FLOOR2: new THREE.MeshPhongMaterial({ flatShading: true }), // Used for bumpy / special floor
-		MG:     new THREE.MeshLambertMaterial(), // Used for triangle, square, spinner, wind
-		FG:     new THREE.MeshLambertMaterial(), // Used for wall
-		SG:     new THREE.MeshLambertMaterial(), // Used for bouncer
-		HOLE:   new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
-		START:  new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
+		FLOOR1:  new THREE.MeshPhongMaterial({ flatShading: true }), // Used for flat floor
+		FLOOR2:  new THREE.MeshPhongMaterial({ flatShading: true }), // Used for bumpy / special floor
+		MG:      new THREE.MeshLambertMaterial(), // Used for triangle, square, spinner, wind
+		FG:      new THREE.MeshLambertMaterial(), // Used for wall
+		SG:      new THREE.MeshLambertMaterial(), // Used for bouncer
+		HOLE:    new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
+		START:   new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
+		POWERUP: new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.5 }), // Used for powerups
 	}
 	constructor(scene, world) {
 		this.scene = scene;
@@ -84,6 +85,7 @@ export class Place {
 					case Types.SQUARE     : j = new Square     (this, m[1]); break;
 					case Types.TRIANGLE   : j = new Triangle   (this, m[1]); break;
 					case Types.TEXT       : j = new Text       (this, m[1]); break;
+					case Types.POWERUP    : j = new Powerup    (this, m[1]); break;
 				}
 				if (m[2]) {
 					for (let k = 0; k < m[2].length; ++k) {
@@ -155,9 +157,10 @@ export class Place {
 		this.mods.move     = [];
 		this.mods.easemove = [];
 		this.mods.spin     = [];
-		this.starts = [];
-		this.holes  = [];
-		this.things = [];
+		this.starts   = [];
+		this.holes    = [];
+		this.powerups = [];
+		this.things   = [];
 		this.tick = 0;
 	}
 }
@@ -295,7 +298,11 @@ export class Player extends Thing {
 		Effects.HIT.play().catch(e => {});
 	}
 	oncollide(e) {
-		Effects.BOUNCE.play().catch(e => {});
+		if (e.body.parent.type === Types.POWERUP) {
+			e.body.parent.onget(e.target.parent);
+		} else {
+			Effects.BOUNCE.play().catch(e => {});
+		}
 	}
 	onupdate(tx) {
 		// if (this.parent.scene) { // Project to 2d
@@ -1008,5 +1015,45 @@ export class Text extends Thing {
 export class Wind extends Thing {
 	constructor(parent, pos) {
 		super(parent, Types.WIND);
+	}
+}
+
+export class Powerup extends Thing {
+	geometry = new RoundedBoxGeometry(
+		1.2,
+		1.2,
+		1.2,
+		3,
+		0.2
+	);
+	shape = new CANNON.Box(new CANNON.Vec3(1, 1, 1));
+	constructor(parent, pos) {
+		super(parent, Types.POWERUP);
+		this.parent.powerups.push(this);
+		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.POWERUP);
+		this.mesh.position.x = pos[0];
+		this.mesh.position.y = pos[1] + 1;
+		this.mesh.position.z = pos[2];
+		this.body = new CANNON.Body({
+			mass: 0,
+			position: new CANNON.Vec3(pos[0], pos[1] + 1, pos[2]),
+			shape: this.shape,
+			material: Physics.WALL,
+			isTrigger: true
+		});
+		this.got = false;
+	}
+	unget() {
+		this.got = false;
+		this.mesh.visible = true;
+	}
+	onget(who) {
+		if (this.got) return;
+		if (who.id === this.parent.player.id) {
+			Effects.YAY.play().catch(e => {});
+		}
+		this.got = true;
+		this.mesh.visible = false;
+		window.setTimeout(this.unget.bind(this), 5000);
 	}
 }

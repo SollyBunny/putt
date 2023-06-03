@@ -37,6 +37,7 @@ export const Types = {
 	TRIANGLE   : 12,
 	SQUARE     : 13,
 	WIND       : 14,
+	POWERUP    : 15,
 };
 
 export const Modifiers = {
@@ -48,12 +49,13 @@ export const Modifiers = {
 	BOUNCE   : 5,
 	VELOCITY : 6,
 	COLOR    : 7,
-	TELEPORT : 8
+	TELEPORT : 8,
 };
 
 export const Effects = {
 	BOUNCE : new Audio("assets/bounce.wav"),
 	HIT    : new Audio("assets/hit.wav"),
+	YAY    : new Audio("assets/yay.wav"),
 };
 
 export const Physics = {

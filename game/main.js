@@ -197,6 +197,13 @@ function frame(tt) {
 				m.mesh.visible = false;
 			}
 		}
+		for (let i = 0; i < place.powerups.length; ++i) {
+			m = place.powerups[i];
+			if (m.got) continue;
+			m.mesh.rotation.x = place.tick / 1000;
+			m.mesh.rotation.y = place.tick / 1000;
+			m.mesh.rotation.z = place.tick / 1000;
+		}
 		for (let i = 0; i < place.players.length; ++i) place.players[i].onupdate(tx);
 		if (Settings.DUST) {
 			let n;
