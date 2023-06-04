@@ -54,9 +54,12 @@ export const Modifiers = {
 };
 
 export const Effects = {
-	BOUNCE : new Audio("assets/bounce.wav"),
-	HIT    : new Audio("assets/hit.wav"),
-	YAY    : new Audio("assets/yay.wav"),
+	BOUNCE  : new Audio("assets/bounce.wav"),
+	HIT     : new Audio("assets/hit.wav"),
+	YAY     : new Audio("assets/yay.wav"),
+	INFLATE : new Audio("assets/inflate.wav"),
+	DEFLATE : new Audio("assets/deflate.wav"),
+
 };
 
 export const Physics = {

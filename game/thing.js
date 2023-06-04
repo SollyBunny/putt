@@ -372,11 +372,13 @@ export class Player extends Thing {
 				}, 10000);
 				break;
 			case 4: // Big Balls
+				Effects.INFLATE.play().catch(e => {});	
 				this.parent.players.forEach(i => {
 					player.mesh.scale.multiplyScalar(3);
 					player.body.shapes[0].radius *= 3;
 				});
 				window.setTimeout(() => {
+					Effects.DEFLATE.play().catch(e => {});
 					this.parent.players.forEach(i => {
 						player.mesh.scale.multiplyScalar(1 / 3);
 						player.body.shapes[0].radius /= 3;
