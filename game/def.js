@@ -73,8 +73,9 @@ export const Powerups = [
 	["Sticky Walls", "Turn the walls to honey", "hsl(60,100%,50%)", "🍯"],
 	["Icy Floors", "Turn the floors to ice", "hsl(65,100%,50%)", "🧊"],
 	["Big Balls", "Make dem balls big", "hsl(70,100%,50%)", "⚽"],
-	["Reverse Shot", "Make the next shot reversed", "hsl(75,100%,50%)", "🤔"],
-	["Insane Shot", "Make the next shot uncontrollable", "hsl(80,100%,50%)", "💥"],
+	["No Walls", "Make walls disappear", "hsl(75,100%,50%)", "🧱"],
+	["Reverse Shot", "Make the next shot reversed", "hsl(80,100%,50%)", "🤔"],
+	["Insane Shot", "Make the next shot uncontrollable", "hsl(85,100%,50%)", "💥"],
 	// Offensive powerups
 	["Bumper", "Place a temporary bumper on the map", "hsl(0,100%,50%)", "🐪"],
 	["Steal", "Steal someone's powerup", "hsl(10,100%,50%)", "🏴‍☠"],

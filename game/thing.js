@@ -30,7 +30,7 @@ export class Place {
 		FLOOR1:  new THREE.MeshPhongMaterial({ flatShading: true }), // Used for flat floor
 		FLOOR2:  new THREE.MeshPhongMaterial({ flatShading: true }), // Used for bumpy / special floor
 		MG:      new THREE.MeshLambertMaterial(), // Used for triangle, square, spinner, wind
-		FG:      new THREE.MeshLambertMaterial(), // Used for wall
+		FG:      new THREE.MeshLambertMaterial({ transparent: true }), // Used for wall
 		SG:      new THREE.MeshLambertMaterial(), // Used for bouncer
 		HOLE:    new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
 		START:   new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
@@ -162,6 +162,7 @@ export class Place {
 		this.starts   = [];
 		this.holes    = [];
 		this.powerups = [];
+		this.walls    = [];
 		this.things   = [];
 		this.tick = 0;
 	}
@@ -331,32 +332,43 @@ export class Player extends Thing {
 			case 1: // Teleport
 				break;
 			case 2: // Sticky Walls
-				const oldwallrestitution = Physics.WALL.restitution;
-				const oldwallcolor = this.parent.materials.FG.color.clone();
-				this.parent.materials.FG.color.r *= 2;
-				this.parent.materials.FG.color.g *= 2;
-				this.parent.materials.FG.color.b /= 4;
-				Physics.WALL.restitution = 0;
-				window.setTimeout(() => {
-					Physics.WALL.restitution = oldwallrestitution;
-					this.parent.materials.FG.color = oldwallcolor;
+				if (this.parent.timeoutsticky) {
+					window.clearTimeout(this.parent.timeoutsticky);
+				} else {
+					this.parent.materials.FG.color.r *= 2;
+					this.parent.materials.FG.color.g *= 2;
+					this.parent.materials.FG.color.b /= 4;
+					Physics.WALL.restitution = 0;
+				}
+				this.parent.timeoutsticky = window.setTimeout(() => {
+					delete this.parent.timeoutsticky;
+					this.parent.materials.FG.color.r /= 2;
+					this.parent.materials.FG.color.g /= 2;
+					this.parent.materials.FG.color.b *= 4;
+					Physics.WALL.restitution = 1;
 				}, 10000);
 				break;
 			case 3: // Icy Floors
-				const oldfloorfriction = Physics.WALL.friction;
-				const oldfloor1color = this.parent.materials.FLOOR1.color.clone();
-				const oldfloor2color = this.parent.materials.FLOOR2.color.clone();
-				this.parent.materials.FLOOR1.color.r /= 2;
-				this.parent.materials.FLOOR1.color.g *= 8;
-				this.parent.materials.FLOOR1.color.b *= 8;
-				this.parent.materials.FLOOR2.color.r /= 2;
-				this.parent.materials.FLOOR2.color.g *= 8;
-				this.parent.materials.FLOOR2.color.b *= 8;
-				Physics.FLOOR.friction = 0;
-				window.setTimeout(() => {
-					Physics.FLOOR.friction = oldfloorfriction;
-					this.parent.materials.FLOOR1.color = oldfloor1color;
-					this.parent.materials.FLOOR2.color = oldfloor2color;
+				if (this.parent.timeouticy) {
+					window.clearTimeout(this.parent.timeouticy);
+				} else {
+					this.parent.materials.FLOOR1.color.r /= 2;
+					this.parent.materials.FLOOR1.color.g *= 8;
+					this.parent.materials.FLOOR1.color.b *= 8;
+					this.parent.materials.FLOOR2.color.r /= 2;
+					this.parent.materials.FLOOR2.color.g *= 8;
+					this.parent.materials.FLOOR2.color.b *= 8;
+					Physics.FLOOR.friction = 0;
+				}
+				this.parent.timeouticy = window.setTimeout(() => {
+					delete this.parent.timeouticy;
+					this.parent.materials.FLOOR1.color.r *= 2;
+					this.parent.materials.FLOOR1.color.g /= 8;
+					this.parent.materials.FLOOR1.color.b /= 8;
+					this.parent.materials.FLOOR2.color.r *= 2;
+					this.parent.materials.FLOOR2.color.g /= 8;
+					this.parent.materials.FLOOR2.color.b /= 8;
+					Physics.FLOOR.friction = 1;
 				}, 10000);
 				break;
 			case 4: // Big Balls
@@ -371,15 +383,27 @@ export class Player extends Thing {
 					});
 				}, 10000);
 				break;
-			case 5: // Reverse Shot
+			case 5: // No Walls
+				this.parent.materials.FG.opacity = 0.2;
+				this.parent.walls.forEach(i => {
+					i.body.isTrigger = true;
+				});
+				window.setTimeout(() => {
+					this.parent.materials.FG.opacity = 1;
+					this.parent.walls.forEach(i => {
+						i.body.isTrigger = false;
+					});
+				}, 10000);
 				break;
-			case 6: // Insane Shot
+			case 6: // Reverse Shot
 				break;
-			case 7: // Bumper
+			case 7: // Insane Shot
 				break;
-			case 8: // Steal
+			case 8: // Bumper
 				break;
-			case 9: // Swap
+			case 9: // Steal
+				break;
+			case 10: // Swap
 				break;
 		}
 		console.log(this, index);
@@ -777,6 +801,7 @@ export class Bumpyfloor extends Thing {
 export class Wall extends Thing {
 	constructor(parent, pos) {
 		super(parent, Types.WALL);
+		this.parent.walls.push(this);
 		this.mesh = new THREE.Object3D();
 		this.body = new CANNON.Body({
 			mass: 0,
