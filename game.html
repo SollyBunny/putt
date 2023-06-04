@@ -94,14 +94,19 @@
 				color: white;
 				display: grid;
 			}
-				#powerupcontainer div {
-					width: 5vmin;
-					height: 5vmin;
-					padding: 1vmin;
+				#powerupcontainer button {
+					outline: none;
+					border: none;
+					width: 8vmin;
+					height: 8vmin;
 					margin: 1vmin;
 					overflow: hidden;
 					background: rgba(22, 22, 22, 0.5);
 					border-radius: 1vmin;
+					color: white;
+				}
+				#powerupcontainer button:not(:disabled) {
+					cursor: pointer;
 				}
 		</style>
 	</head>
@@ -123,9 +128,9 @@
 			</div>
 		</div>
 		<div id="powerupcontainer">
-			<div></div>
-			<div></div>
-			<div></div>
+			<button disabled></button>
+			<button disabled></button>
+			<button disabled></button>
 		</div>
 		<script defer async type="module" src="./game/main.js"></script>
 	</body>

@@ -2,11 +2,12 @@ import * as THREE from "../lib/three.module.min.js";
 import * as CANNON from "../lib/cannon.min.js";
 import Settings from "./settings.js";
 import { ConvexGeometry, mergeVertices, RoundedBoxGeometry } from "../lib/three.ext.js";
-import { Types, Effects, Modifiers, Physics } from "./def.js";
+import { Types, Effects, Modifiers, Physics, Powerups } from "./def.js";
 
-const e_rtext    = document.getElementById("rtext"); // To use as a canvas for player names
-const e_rmapname = document.getElementById("rmapname");
-const e_rhole    = document.getElementById("rhole");
+const e_rtext     = document.getElementById("rtext"); // To use as a canvas for player names
+const e_rmapname  = document.getElementById("rmapname");
+const e_rhole     = document.getElementById("rhole");
+const e_cpowerups = document.getElementById("powerupcontainer").children;
 
 const holecolor = [
 	new THREE.Color(1, 0, 0),
@@ -86,6 +87,7 @@ export class Place {
 					case Types.TRIANGLE   : j = new Triangle   (this, m[1]); break;
 					case Types.TEXT       : j = new Text       (this, m[1]); break;
 					case Types.POWERUP    : j = new Powerup    (this, m[1]); break;
+					default: continue;
 				}
 				if (m[2]) {
 					for (let k = 0; k < m[2].length; ++k) {
@@ -241,19 +243,21 @@ export class Player extends Thing {
 				transparent: true,
 			})
 		);
+		this.mesh.renderOrder = 10000;
 		this.body = new CANNON.Body({
 			mass: 0.3,
 			shape: this.shape,
 			material: this.physics
 		});
-		this.body.position.y = 5;
-		this.name = name;
+		this.body.position.y = 2;
+		
 		this.isshoot = true;
 		this.ishole  = false;
 		this.sleepytime = 0;
 		this.lastsafe = new CANNON.Vec3();
 		this.textset(name);
 		this.parent.mods.text.push(this);
+		this.powerups = [];
 	}
 	die() {
 		this.sleepytime = 0;
@@ -296,6 +300,59 @@ export class Player extends Thing {
 	onhit() {
 		this.stroke += 1;
 		Effects.HIT.play().catch(e => {});
+	}
+	onpowerup(id) {
+		let index;
+		if      (this.powerups[0] === undefined) index = 0;
+		else if (this.powerups[1] === undefined) index = 1;
+		else if (this.powerups[2] === undefined) index = 2;
+		else return;
+		console.log(`${this.id} got powerup ${id}`);
+		this.powerups[index] = id;
+		if (this.id === this.parent.player.id) {
+			e_cpowerups[index].onclick = this.onpowerupuse.bind(this, index);
+			e_cpowerups[index].disabled = false;
+			e_cpowerups[index].title = `${Powerups[id][0]} - ${Powerups[id][1]}`;
+			e_cpowerups[index].style.background = Powerups[id][2];
+			e_cpowerups[index].innerHTML = Powerups[id][3];
+		}
+	}
+	onpowerupuse(index) {
+		if (this.id === this.parent.player.id) {
+			e_cpowerups[index].onclick = null;
+			e_cpowerups[index].disabled = true;
+			e_cpowerups[index].title = "";
+			e_cpowerups[index].style.background = "inherit";
+			e_cpowerups[index].innerHTML = "";
+		}
+		const powerup = this.powerups[index];
+		delete this.powerups[index];
+		switch (powerup) {
+			case 0: // Powerup Box
+				this.parent.multi.powerup(undefined);
+				this.parent.multi.powerup(undefined);
+				this.parent.multi.powerup(undefined);
+				break;
+			case 1: // Teleport
+				break;
+			case 2: // Sticky Walls
+				break;
+			case 3: // Icy Walls
+				break;
+			case 4: // Big Balls
+				break;
+			case 5: // Reverse Shot
+				break;
+			case 6: // Insane Shot
+				break;
+			case 7: // Bumper
+				break;
+			case 8: // Steal
+				break;
+			case 9: // Swap
+				break;
+		}
+		console.log(this, index);
 	}
 	oncollide(e) {
 		if (e.body.parent.type === Types.POWERUP) {
@@ -1029,6 +1086,7 @@ export class Powerup extends Thing {
 	shape = new CANNON.Box(new CANNON.Vec3(1, 1, 1));
 	constructor(parent, pos) {
 		super(parent, Types.POWERUP);
+		this.id = this.parent.powerups.length;
 		this.parent.powerups.push(this);
 		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.POWERUP);
 		this.mesh.position.x = pos[0];
@@ -1051,6 +1109,7 @@ export class Powerup extends Thing {
 		if (this.got) return;
 		if (who.id === this.parent.player.id) {
 			Effects.YAY.play().catch(e => {});
+			this.parent.multi.powerup(this.id);
 		}
 		this.got = true;
 		this.mesh.visible = false;

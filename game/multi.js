@@ -1,6 +1,6 @@
 import Settings from "./settings.js";
 import Maps from "./maps.js";
-import { Messages } from "./def.js";
+import { Messages, Powerups } from "./def.js";
 
 export let ws = undefined;
 
@@ -117,10 +117,17 @@ class Multi {
 		ws.send(JSON.stringify([ Messages.HIT ]));
 	}
 	hole(hole) {
-		if (!this.connected)
-			place.sethole(hole + 1);
-		else
+		if (this.connected)
 			ws.send(JSON.stringify([ Messages.HOLE, hole ]));
+		else
+			place.sethole(hole + 1);
+			
+	}
+	powerup(id) {
+		if (this.connected)
+			ws.send(JSON.stringify([ Messages.POWERUP, id ]));
+		else
+			this.place.player.onpowerup(Math.floor(Math.random() * Powerups.length));
 	}
 	onmsg(msg) {
 		let p;
@@ -213,6 +220,9 @@ class Multi {
 			case Messages.NEXTHOLE:
 				this.place.sethole(msg[1]);
 				break;
+			case Messages.POWERUP:
+				if (msg[1] !== this.place.player.id && msg[2] !== undefined) this.place.powerups[msg[2]].onget();
+				this.playersindex[msg[1]].onpowerup(msg[3]);
 		}
 	};
 }

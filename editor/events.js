@@ -23,7 +23,7 @@ function possinput(n, id) {
 	} else {
 		event.target.classList.remove("error");
 		historyadd();
-		objs[sel][2][n][id][1] = e;
+		objs[sel][1][n][id] = e;
 		render();
 	}
 }
@@ -146,15 +146,14 @@ function tooledit(id) {
 				case Modifiers.SPIN:
 				case Modifiers.VELOCITY:
 				case Modifiers.TELEPORT:
-					console.log("I ADDED A BOUNCE")
-					o += `<div class="pos"><input type="number" step="0.1" oninput="possinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" step="0.1" oninput="possinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" step="0.1" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"></div>`;
+					o += `<div class="pos"><input type="number" step="0.1" oninput="modinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" step="0.1" oninput="modinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" step="0.1" oninput="modinput(${i},2)" value="${obj[2][i][1][2]}"></div>`;
 					break;
 				case Modifiers.BOUNCE:
 					o += `<input type="text" value="${obj[2][i][1]}" oninput="modinput(i)">`;
 					break;				
 				case Modifiers.MOVE:
 				case Modifiers.EASEMOVE:
-					o += `<div class="pos4"><input type="number" step="0.1" oninput="possinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" step="0.1" oninput="possinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" step="0.1" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"><input type="number" step="0.1" oninput="possinput(${i},3)" value="${obj[2][i][1][3]}"></div>`;
+					o += `<div class="pos4"><input type="number" step="0.1" oninput="modinput(${i},0)" value="${obj[2][i][1][0]}"><input type="number" step="0.1" oninput="modinput(${i},1)" value="${obj[2][i][1][1]}"><input type="number" step="0.1" oninput="possinput(${i},2)" value="${obj[2][i][1][2]}"><input type="number" step="0.1" oninput="modinput(${i},3)" value="${obj[2][i][1][3]}"></div>`;
 					break;
 				case Modifiers.COLOR:
 					o += `<input type="text" value="${obj[2][i][1].toString(16).toUpperCase().padStart(6, "0")}" oninput="modinput(i)">`;

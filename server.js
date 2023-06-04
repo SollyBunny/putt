@@ -14,7 +14,10 @@ const Messages = {
 	HIT       : 8,
 	NEWMAP    : 9,
 	READY     : 10,
+	POWERUP   : 11,
 };
+
+const POWERUPNUM = 10;
 
 function random4chars() {
 	let result = "";
@@ -132,6 +135,12 @@ module.exports.msg = (ws, msg) => {
 			ws.room.players.forEach(i => {
 				if (i.id === ws.id) return;
 				i.send(JSON.stringify([Messages.HIT, ws.id]));
+			});
+			break;
+		case Messages.POWERUP:
+			const powerupnum = Math.floor(Math.random() * POWERUPNUM);
+			ws.room.players.forEach(i => {
+				i.send(JSON.stringify([Messages.POWERUP, ws.id, msg[1], powerupnum]));
 			});
 			break;
 		case Messages.NEWMAP:

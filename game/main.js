@@ -141,11 +141,12 @@ const arrow = new THREE.Mesh(
 		color: Settings.COLOR,
 		depthTest: false,
 		depthWrite: false,
+		transparent: true
 	})
 );
 arrow.rotation.x = Math.PI / -2;
 arrow.visible = false;
-arrow.renderOrder = 99999;
+arrow.renderOrder = 1000;
 scene.add(arrow);
 
 // Frame
@@ -168,7 +169,7 @@ function frame(tt) {
 		world.step(1 / fps, tx, 5);
 		if (place.player.body.sleepState === 0)
 			multi.update(); // I'm a multiplayer now!
-		let m, proj, l;
+		let m, proj;
 		for (let i = 0; i < place.mods.spin.length; ++i) {
 			m = place.mods.spin[i];
 			m.mesh.rotation.x = place.tick / 1000 * m.modspin[0];
@@ -197,12 +198,12 @@ function frame(tt) {
 				m.mesh.visible = false;
 			}
 		}
+		proj = place.tick / 1000;
 		for (let i = 0; i < place.powerups.length; ++i) {
+			proj *= -1;
 			m = place.powerups[i];
 			if (m.got) continue;
-			m.mesh.rotation.x = place.tick / 1000;
-			m.mesh.rotation.y = place.tick / 1000;
-			m.mesh.rotation.z = place.tick / 1000;
+			m.mesh.rotation.x = m.mesh.rotation.y = m.mesh.rotation.z = proj;
 		}
 		for (let i = 0; i < place.players.length; ++i) place.players[i].onupdate(tx);
 		if (Settings.DUST) {
