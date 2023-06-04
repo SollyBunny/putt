@@ -405,6 +405,7 @@ export class Player extends Thing {
 	oncollide(e) {
 		if (e.body.parent.type === Types.POWERUP) {
 			if (e.target.parent.id === e.target.parent.parent.player.id) {
+				if (e.body.parent.got) return;
 				Effect(Effect.YAY);
 				e.target.parent.parent.multi.powerup(e.body.parent.id);
 			} else {

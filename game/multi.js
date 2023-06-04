@@ -127,7 +127,7 @@ class Multi {
 		if (this.connected) {
 			ws.send(JSON.stringify([ Messages.POWERUP, id ]));
 		} else {
-			this.place.powerups[id].onget();
+			if (id !== undefined) this.place.powerups[id].onget();
 			this.place.player.onpowerup(Math.floor(Math.random() * Powerups.length));
 		}
 	}
