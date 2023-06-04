@@ -123,7 +123,6 @@ window.onresize();
 export const world = new CANNON.World();
 world.gravity.set(0, -1, 0) // m/s²
 world.solver.iterations = 30;
-world.allowSleep = true;
 
 // Special objects
 const arrow = new THREE.Mesh(
@@ -167,7 +166,7 @@ function frame(tt) {
 		scene.camera.frustum.setFromProjectionMatrix(matrix);
 	// Update
 		world.step(1 / fps, tx, 5);
-		if (place.player.body.sleepState === 0)
+		if (place.player.isshoot === false)
 			multi.update(); // I'm a multiplayer now!
 		let m, proj;
 		for (let i = 0; i < place.mods.spin.length; ++i) {

@@ -60,7 +60,7 @@ export const Effects = {
 };
 
 export const Physics = {
-	FLOOR : new CANNON.Material({ restitution: 0.5, friction: 0 }),
+	FLOOR : new CANNON.Material({ restitution: 0.5, friction: 1 }),
 	WALL  : new CANNON.Material({ restitution: 1  , friction: 0 }),
 	HOLE  : new CANNON.Material({ restitution: 0  , friction: 0 }),
 };

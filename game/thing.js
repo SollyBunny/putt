@@ -34,7 +34,7 @@ export class Place {
 		SG:      new THREE.MeshLambertMaterial(), // Used for bouncer
 		HOLE:    new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
 		START:   new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
-		POWERUP: new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.5 }), // Used for powerups
+		POWERUP: new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.7, side: THREE.DoubleSide }), // Used for powerups
 	}
 	constructor(scene, world) {
 		this.scene = scene;
@@ -250,19 +250,14 @@ export class Player extends Thing {
 			material: this.physics
 		});
 		this.body.position.y = 2;
-		
 		this.isshoot = true;
 		this.ishole  = false;
-		this.sleepytime = 0;
 		this.lastsafe = new CANNON.Vec3();
 		this.textset(name);
 		this.parent.mods.text.push(this);
 		this.powerups = [];
 	}
 	die() {
-		this.sleepytime = 0;
-		this.body.allowSleep = false;
-		this.body.sleepState = 0;
 		this.isshoot = false;
 		this.ishole = false;
 		this.mesh.material.opacity = 1;
@@ -273,7 +268,6 @@ export class Player extends Thing {
 	}
 	sethole(hole) {
 		this.hole = hole;
-		console.log(`Set ${this.id} to hole ${hole}`);
 		if (this.parent.player === this) {
 			e_rhole.textContent = hole + 1;
 			const dx = this.parent.holes[hole].mesh.position.x - this.parent.starts[hole].mesh.position.x;
@@ -286,14 +280,13 @@ export class Player extends Thing {
 			this.parent.scene.camera.dir[1] = -90;
 		}
 		this.lastsafe.x = this.parent.starts[hole].mesh.position.x;
-		this.lastsafe.y = this.parent.starts[hole].mesh.position.y + 5;
+		this.lastsafe.y = this.parent.starts[hole].mesh.position.y + 2;
 		this.lastsafe.z = this.parent.starts[hole].mesh.position.z;
 		this.die();
 	}
 	onhole() {
 		this.ishole = true;
 		this.mesh.material.opacity = 0.5;
-		this.body.sleep();
 		if (this.id === this.parent.player.id)
 			this.parent.multi.hole(this.hole);
 	}
@@ -303,9 +296,9 @@ export class Player extends Thing {
 	}
 	onpowerup(id) {
 		let index;
-		if      (this.powerups[0] === undefined) index = 0;
+		if      (this.powerups[2] === undefined) index = 2;
 		else if (this.powerups[1] === undefined) index = 1;
-		else if (this.powerups[2] === undefined) index = 2;
+		else if (this.powerups[0] === undefined) index = 0;
 		else return;
 		console.log(`${this.id} got powerup ${id}`);
 		this.powerups[index] = id;
@@ -318,28 +311,65 @@ export class Player extends Thing {
 		}
 	}
 	onpowerupuse(index) {
+		const powerup = this.powerups[index];
+		delete this.powerups[index];
 		if (this.id === this.parent.player.id) {
 			e_cpowerups[index].onclick = null;
 			e_cpowerups[index].disabled = true;
 			e_cpowerups[index].title = "";
 			e_cpowerups[index].style.background = "inherit";
 			e_cpowerups[index].innerHTML = "";
+			if (powerup === 0) {
+				this.parent.multi.powerup(undefined);
+				this.parent.multi.powerup(undefined);
+				this.parent.multi.powerup(undefined);
+			}
 		}
-		const powerup = this.powerups[index];
-		delete this.powerups[index];
 		switch (powerup) {
 			case 0: // Powerup Box
-				this.parent.multi.powerup(undefined);
-				this.parent.multi.powerup(undefined);
-				this.parent.multi.powerup(undefined);
 				break;
 			case 1: // Teleport
 				break;
 			case 2: // Sticky Walls
+				const oldwallrestitution = Physics.WALL.restitution;
+				const oldwallcolor = this.parent.materials.FG.color.clone();
+				this.parent.materials.FG.color.r *= 2;
+				this.parent.materials.FG.color.g *= 2;
+				this.parent.materials.FG.color.b /= 4;
+				Physics.WALL.restitution = 0;
+				window.setTimeout(() => {
+					Physics.WALL.restitution = oldwallrestitution;
+					this.parent.materials.FG.color = oldwallcolor;
+				}, 10000);
 				break;
-			case 3: // Icy Walls
+			case 3: // Icy Floors
+				const oldfloorfriction = Physics.WALL.friction;
+				const oldfloor1color = this.parent.materials.FLOOR1.color.clone();
+				const oldfloor2color = this.parent.materials.FLOOR2.color.clone();
+				this.parent.materials.FLOOR1.color.r /= 2;
+				this.parent.materials.FLOOR1.color.g *= 8;
+				this.parent.materials.FLOOR1.color.b *= 8;
+				this.parent.materials.FLOOR2.color.r /= 2;
+				this.parent.materials.FLOOR2.color.g *= 8;
+				this.parent.materials.FLOOR2.color.b *= 8;
+				Physics.FLOOR.friction = 0;
+				window.setTimeout(() => {
+					Physics.FLOOR.friction = oldfloorfriction;
+					this.parent.materials.FLOOR1.color = oldfloor1color;
+					this.parent.materials.FLOOR2.color = oldfloor2color;
+				}, 10000);
 				break;
 			case 4: // Big Balls
+				this.parent.players.forEach(i => {
+					player.mesh.scale.multiplyScalar(3);
+					player.body.shapes[0].radius *= 3;
+				});
+				window.setTimeout(() => {
+					this.parent.players.forEach(i => {
+						player.mesh.scale.multiplyScalar(1 / 3);
+						player.body.shapes[0].radius /= 3;
+					});
+				}, 10000);
 				break;
 			case 5: // Reverse Shot
 				break;
@@ -375,7 +405,6 @@ export class Player extends Thing {
 		this.mesh.quaternion.y = this.body.quaternion.z;
 		this.mesh.quaternion.z = this.body.quaternion.y;
 		this.mesh.quaternion.w = this.body.quaternion.w;
-		this.body.allowSleep   = false;
 		/*if (this.light) {
 			this.light.position.x = this.body.position.x;
 			this.light.position.y = this.body.position.y + 1;
@@ -392,18 +421,10 @@ export class Player extends Thing {
 		) < 0.5) {
 			this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = this.body.velocity.x = this.body.velocity.z = 0;
 			this.isshoot = true;
-			this.body.allowSleep = true;
 		} else {
 			this.isshoot = false;
 			this.body.velocity.x *= 0.99 ** (tx / 15);
 			this.body.velocity.z *= 0.99 ** (tx / 15);
-			this.body.sleepState = 0;
-		}
-		if (this.body.allowSleep) {
-			this.sleepytime += tx;
-			if (this.sleepytime < 200) this.body.allowSleep = false;
-		} else {
-			this.sleepytime = 0;
 		}
 	}
 }
