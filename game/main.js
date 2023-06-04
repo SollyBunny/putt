@@ -8,6 +8,7 @@ import Settings from "./settings.js";
 import Multi from "./multi.js";
 import { debug } from "./def.js";
 import { Place } from "./thing.js";
+import { ConfettiManager } from "../lib/three.ext.js"
 
 const can = document.getElementById("can"); // What we are drawing on
 const e_rstroke = document.getElementById("rstroke");
@@ -91,7 +92,7 @@ scene.camera.frustum = new THREE.Frustum();
 }
 { // Dust
 	if (Settings.DUST) {
-		const particlesnum = 1000;
+		const particlesnum = 500;
 		const particlespos = new Float32Array(particlesnum * 3);
 		const particlesvel = new Float32Array(particlesnum * 3);
 		for (let i = 0; i < particlesnum * 3; i += 3) {
@@ -109,6 +110,14 @@ scene.camera.frustum = new THREE.Frustum();
 		scene.dustmesh.vel = particlesvel;
 		scene.add(scene.dustmesh);
 	}
+}
+{ // Confetti
+	scene.confetti = new ConfettiManager(
+		scene,
+		[0xFF0000, 0xFFFF00, 0x00FF00, 0x0000FF],
+		100,
+		5
+	);
 }
 
 window.onresize = () => {
@@ -234,6 +243,7 @@ function frame(tt) {
 			}
 			scene.dustmesh.geometry.attributes.position.needsUpdate = true;
 		}
+		scene.confetti.update();
 	// Arrow
 		if (scene.camera.shoot) {
 			arrow.position.x = scene.camera.follow.mesh.position.x;
@@ -267,9 +277,17 @@ function frame(tt) {
 	// Camera
 		if (place.player.isshoot || fpsenabled === false) {
 			scene.camera.dis = (scene.camera.dis + scene.camera.dismov) / 2;
-			scene.camera.position.x = scene.camera.follow.mesh.position.x + Math.sin( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
-			scene.camera.position.y = scene.camera.follow.mesh.position.y + Math.sin(-scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
-			scene.camera.position.z = scene.camera.follow.mesh.position.z + Math.cos( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.position.x = Math.sin( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.position.y = Math.sin(-scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			scene.camera.position.z = Math.cos( scene.camera.dir[0] * Settings.SENSITIVITY) * Math.cos(scene.camera.dir[1] * Settings.SENSITIVITY) * scene.camera.dis;
+			if (keys["c"]) {
+				scene.camera.position.x *= 0.25;
+				scene.camera.position.y *= 0.25;
+				scene.camera.position.z *= 0.25;
+			}
+			scene.camera.position.x += scene.camera.follow.mesh.position.x;
+			scene.camera.position.y += scene.camera.follow.mesh.position.y;
+			scene.camera.position.z += scene.camera.follow.mesh.position.z;
 			scene.camera.lookAt(scene.camera.follow.mesh.position.x, scene.camera.follow.mesh.position.y, scene.camera.follow.mesh.position.z);
 		} else {
 			scene.camera.position.x = scene.camera.follow.mesh.position.x;

@@ -1,24 +1,25 @@
 
 import * as CANNON from "../lib/cannon.min.js";
-
+import * as THREE from "../lib/three.module.min.js";
 export const debug = true; // turn this on if you are a script kiddy, or actually need to debug something
 export let a; // the holy debug variable
 
 export const Messages = {
-	WARN      : -2,
-	ERROR     : -1,
-	MSG       : 0,
-	JOINSYNC  : 1,
-	TICKSYNC  : 2,
-	JOIN      : 3,
-	LEAVE     : 4,
-	SYNC      : 5,
-	HOLE      : 6,
-	NEXTHOLE  : 7,
-	HIT       : 8,
-	NEWMAP    : 9,
-	READY     : 10,
-	POWERUP   : 11,
+	WARN       : -2,
+	ERROR      : -1,
+	MSG        : 0,
+	JOINSYNC   : 1,
+	TICKSYNC   : 2,
+	JOIN       : 3,
+	LEAVE      : 4,
+	SYNC       : 5,
+	HOLE       : 6,
+	NEXTHOLE   : 7,
+	HIT        : 8,
+	NEWMAP     : 9,
+	READY      : 10,
+	POWERUP    : 11,
+	POWERUPUSE : 12,
 };
 
 export const Types = {
@@ -53,20 +54,26 @@ export const Modifiers = {
 	TELEPORT : 8,
 };
 
-export const Effects = {
-	BOUNCE  : new Audio("assets/bounce.wav"),
-	HIT     : new Audio("assets/hit.wav"),
-	YAY     : new Audio("assets/yay.wav"),
-	INFLATE : new Audio("assets/inflate.wav"),
-	DEFLATE : new Audio("assets/deflate.wav"),
-
-};
-
 export const Physics = {
 	FLOOR : new CANNON.Material({ restitution: 0.5, friction: 1 }),
 	WALL  : new CANNON.Material({ restitution: 1  , friction: 0 }),
 	HOLE  : new CANNON.Material({ restitution: 0  , friction: 0 }),
 };
+
+export const Rainbow = [
+	new THREE.Color(1, 0, 0),
+	new THREE.Color(1, 0.5, 0),
+	new THREE.Color(1, 1, 0),
+	new THREE.Color(0.5, 1, 0),
+	new THREE.Color(0, 1, 0),
+	new THREE.Color(0, 1, 0.5),
+	new THREE.Color(0, 1, 1),
+	new THREE.Color(0, 0.5, 1),
+	new THREE.Color(0, 0, 1),
+	new THREE.Color(0.5, 0, 1),
+	new THREE.Color(1, 0, 1),
+	new THREE.Color(1, 0, 0.5),
+];
 
 export const Powerups = [
 	// Local powerups

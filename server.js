@@ -1,20 +1,21 @@
 // TODO clean this code
 
 const Messages = {
-	WARN      : -2,
-	ERROR     : -1,
-	MSG       : 0,
-	JOINSYNC  : 1,
-	TICKSYNC  : 2,
-	JOIN      : 3,
-	LEAVE     : 4,
-	SYNC      : 5,
-	HOLE      : 6,
-	NEXTHOLE  : 7,
-	HIT       : 8,
-	NEWMAP    : 9,
-	READY     : 10,
-	POWERUP   : 11,
+	WARN       : -2,
+	ERROR      : -1,
+	MSG        : 0,
+	JOINSYNC   : 1,
+	TICKSYNC   : 2,
+	JOIN       : 3,
+	LEAVE      : 4,
+	SYNC       : 5,
+	HOLE       : 6,
+	NEXTHOLE   : 7,
+	HIT        : 8,
+	NEWMAP     : 9,
+	READY      : 10,
+	POWERUP    : 11,
+	POWERUPUSE : 12,
 };
 
 const POWERUPNUM = 10;
@@ -141,6 +142,12 @@ module.exports.msg = (ws, msg) => {
 			const powerupnum = Math.floor(Math.random() * POWERUPNUM);
 			ws.room.players.forEach(i => {
 				i.send(JSON.stringify([Messages.POWERUP, ws.id, msg[1], powerupnum]));
+			});
+			break;
+		case Messages.POWERUPUSE:
+			ws.room.players.forEach(i => {
+				if (i.id === ws.id) return;
+				i.send(JSON.stringify([Messages.POWERUPUSE, ws.id, msg[1]]));
 			});
 			break;
 		case Messages.NEWMAP:

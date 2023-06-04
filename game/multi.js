@@ -124,10 +124,16 @@ class Multi {
 			
 	}
 	powerup(id) {
-		if (this.connected)
+		if (this.connected) {
 			ws.send(JSON.stringify([ Messages.POWERUP, id ]));
-		else
+		} else {
+			this.place.powerups[id].onget();
 			this.place.player.onpowerup(Math.floor(Math.random() * Powerups.length));
+		}
+	}
+	powerupuse(index) {
+		if (!this.connected) return;
+		ws.send(JSON.stringify([ Messages.POWERUPUSE, index ]));
 	}
 	onmsg(msg) {
 		let p;
@@ -221,8 +227,12 @@ class Multi {
 				this.place.sethole(msg[1]);
 				break;
 			case Messages.POWERUP:
-				if (msg[1] !== this.place.player.id && msg[2] !== undefined) this.place.powerups[msg[2]].onget();
-				this.playersindex[msg[1]].onpowerup(msg[3]);
+				if (msg[2] !== undefined) this.place.powerups[msg[2]].onget();
+				this.playersindex[msg[1]].onpowerup(msg[2]);
+				break;
+			case Messages.POWERUPUSE:
+				this.playersindex[msg[1]].onpowerupuse(msg[2]);
+				break;
 		}
 	};
 }

@@ -1,28 +1,14 @@
 import * as THREE from "../lib/three.module.min.js";
 import * as CANNON from "../lib/cannon.min.js";
 import Settings from "./settings.js";
+import Effect from "./effect.js";
 import { ConvexGeometry, mergeVertices, RoundedBoxGeometry } from "../lib/three.ext.js";
-import { Types, Effects, Modifiers, Physics, Powerups } from "./def.js";
+import { Types, Modifiers, Physics, Powerups, Rainbow } from "./def.js";
 
 const e_rtext     = document.getElementById("rtext"); // To use as a canvas for player names
 const e_rmapname  = document.getElementById("rmapname");
 const e_rhole     = document.getElementById("rhole");
 const e_cpowerups = document.getElementById("powerupcontainer").children;
-
-const holecolor = [
-	new THREE.Color(1, 0, 0),
-	new THREE.Color(1, 0.5, 0),
-	new THREE.Color(1, 1, 0),
-	new THREE.Color(0.5, 1, 0),
-	new THREE.Color(0, 1, 0),
-	new THREE.Color(0, 1, 0.5),
-	new THREE.Color(0, 1, 1),
-	new THREE.Color(0, 0.5, 1),
-	new THREE.Color(0, 0, 1),
-	new THREE.Color(0.5, 0, 1),
-	new THREE.Color(1, 0, 1),
-	new THREE.Color(1, 0, 0.5),
-];
 
 export class Place {
 	// Can't call it map because of JS reserving so many names
@@ -271,13 +257,9 @@ export class Player extends Thing {
 		this.hole = hole;
 		if (this.parent.player === this) {
 			e_rhole.textContent = hole + 1;
-			const dx = this.parent.holes[hole].mesh.position.x - this.parent.starts[hole].mesh.position.x;
-			const dy = this.parent.holes[hole].mesh.position.y - this.parent.starts[hole].mesh.position.y;
-			this.parent.scene.camera.dir[0] = Math.atan2(dx, dy) * 180 / Math.PI;
-			if (dx < 0 && dy < 0)
-				this.parent.scene.camera.dir[0] -= 110;
-			else
-				this.parent.scene.camera.dir[0] += 135;
+			const dx = this.parent.holes[hole].body.position.x - this.parent.starts[hole].mesh.position.x;
+			const dz = this.parent.holes[hole].body.position.z - this.parent.starts[hole].mesh.position.z;
+			this.parent.scene.camera.dir[0] = (Math.atan2(dx, dz) + Math.PI) / Settings.SENSITIVITY;
 			this.parent.scene.camera.dir[1] = -90;
 		}
 		this.lastsafe.x = this.parent.starts[hole].mesh.position.x;
@@ -288,12 +270,19 @@ export class Player extends Thing {
 	onhole() {
 		this.ishole = true;
 		this.mesh.material.opacity = 0.5;
-		if (this.id === this.parent.player.id)
+		this.parent.scene.confetti.spawn(
+			this.parent.holes[this.hole].body.position.x,
+			this.parent.holes[this.hole].body.position.y + 1,
+			this.parent.holes[this.hole].body.position.z
+		);
+		if (this.id === this.parent.player.id) {
+			Effect(Effect.YAY);
 			this.parent.multi.hole(this.hole);
+		}
 	}
 	onhit() {
 		this.stroke += 1;
-		Effects.HIT.play().catch(e => {});
+		Effect(Effect.HIT);
 	}
 	onpowerup(id) {
 		let index;
@@ -325,6 +314,7 @@ export class Player extends Thing {
 				this.parent.multi.powerup(undefined);
 				this.parent.multi.powerup(undefined);
 			}
+			this.parent.multi.powerupuse(index);
 		}
 		switch (powerup) {
 			case 0: // Powerup Box
@@ -372,13 +362,13 @@ export class Player extends Thing {
 				}, 10000);
 				break;
 			case 4: // Big Balls
-				Effects.INFLATE.play().catch(e => {});	
+				Effect(Effect.INFLATE);
 				this.parent.players.forEach(i => {
 					player.mesh.scale.multiplyScalar(3);
 					player.body.shapes[0].radius *= 3;
 				});
 				window.setTimeout(() => {
-					Effects.DEFLATE.play().catch(e => {});
+					Effect(Effect.DEFLATE);
 					this.parent.players.forEach(i => {
 						player.mesh.scale.multiplyScalar(1 / 3);
 						player.body.shapes[0].radius /= 3;
@@ -414,9 +404,14 @@ export class Player extends Thing {
 	}
 	oncollide(e) {
 		if (e.body.parent.type === Types.POWERUP) {
-			e.body.parent.onget(e.target.parent);
+			if (e.target.parent.id === e.target.parent.parent.player.id) {
+				Effect(Effect.YAY);
+				e.target.parent.parent.multi.powerup(e.body.parent.id);
+			} else {
+				e.body.parent.onget();
+			}
 		} else {
-			Effects.BOUNCE.play().catch(e => {});
+			Effect(Effect.BOUNCE);
 		}
 	}
 	onupdate(tx) {
@@ -465,7 +460,7 @@ export class Start extends Thing {
 		this.id = this.parent.starts.length;
 		this.parent.starts.push(this);
 		this.material = this.parent.materials.START.clone();
-		this.material.color = holecolor[this.id];
+		this.material.color = Rainbow[this.id];
 		this.mesh = new THREE.Mesh(
 			new THREE.CircleGeometry(0.5, 20),
 			this.material
@@ -477,7 +472,7 @@ export class Start extends Thing {
 		if (Settings.LIGHTING) {
 			const light = this.light.clone();
 			light.position.set(pos[0], pos[1] + 1, pos[1]);
-			light.color = holecolor[this.id];
+			light.color = Rainbow[this.id];
 			this.mesh.add(light);
 		}
 	}
@@ -523,7 +518,7 @@ export class Hole extends Thing {
 		this.parent.holes.push(this);
 		this.mesh = new THREE.Object3D();
 		this.material = this.parent.materials.HOLE.clone();
-		this.material.color = holecolor[this.id];
+		this.material.color = Rainbow[this.id];
 		let mesh;
 		{ // cylinder bottom
 			mesh = new THREE.Mesh(this.geometrybottom, this.material); 
@@ -542,7 +537,7 @@ export class Hole extends Thing {
 		if (Settings.LIGHTING) {
 			const light = this.light.clone();
 			light.position.set(pos[0], pos[1] + 5, pos[1]);
-			light.color = holecolor[this.id];
+			light.color = Rainbow[this.id];
 			this.mesh.add(light);
 		}
     	this.body = new CANNON.Body({
@@ -563,7 +558,7 @@ export class Hole extends Thing {
 	}
 }
 
-export class Bouncer extends Thing {
+export class Bumper extends Thing {
 	geometry = new THREE.TorusGeometry(0.8, 0.5, 20, 20).rotateX(Math.PI / 2);
 	shape = new CANNON.Sphere(1.2);
 	constructor(parent, pos) {
@@ -940,7 +935,6 @@ export class Triangle extends Thing {
 			bevelSegments: 5,
 		}
 	).rotateX(Math.PI / 2);
-	//shape = new CANNON.Sphere(1); // TODO get an actuall triangle
 	shape = new CANNON.ConvexPolyhedron({
 		vertices: [
 			// Bottom face
@@ -1149,12 +1143,13 @@ export class Powerup extends Thing {
 		this.got = false;
 		this.mesh.visible = true;
 	}
-	onget(who) {
+	onget() {
 		if (this.got) return;
-		if (who.id === this.parent.player.id) {
-			Effects.YAY.play().catch(e => {});
-			this.parent.multi.powerup(this.id);
-		}
+		this.parent.scene.confetti.spawn(
+			this.mesh.position.x,
+			this.mesh.position.y,
+			this.mesh.position.z
+		);
 		this.got = true;
 		this.mesh.visible = false;
 		window.setTimeout(this.unget.bind(this), 5000);
