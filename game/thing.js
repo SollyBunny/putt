@@ -29,9 +29,9 @@ export class Place {
 	materials = {
 		FLOOR1:  new THREE.MeshPhongMaterial({ flatShading: true }), // Used for flat floor
 		FLOOR2:  new THREE.MeshPhongMaterial({ flatShading: true }), // Used for bumpy / special floor
-		MG:      new THREE.MeshLambertMaterial(), // Used for triangle, square, spinner, wind
-		FG:      new THREE.MeshLambertMaterial({ transparent: true }), // Used for wall
-		SG:      new THREE.MeshLambertMaterial(), // Used for bouncer
+		WALL:    new THREE.MeshLambertMaterial({ transparent: true }), // Used for wall
+		OBJ:     new THREE.MeshLambertMaterial(), // Used for obstacles
+		BOUNCE:  new THREE.MeshLambertMaterial(), // Used for bouncer, booster
 		HOLE:    new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
 		START:   new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
 		POWERUP: new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.7, side: THREE.DoubleSide }), // Used for powerups
@@ -49,9 +49,9 @@ export class Place {
 			this.materials.FLOOR2.color.r = this.materials.FLOOR1.color.r * 0.5;
 			this.materials.FLOOR2.color.g = this.materials.FLOOR1.color.g * 0.5;
 			this.materials.FLOOR2.color.b = this.materials.FLOOR1.color.b * 0.5;
-			this.materials.MG  .color.setHex(data[1][3]); // Used for triangle, square, spinner, wind
-			this.materials.FG  .color.setHex(data[1][2]); // Used for wall
-			this.materials.SG  .color.setHex(data[1][3]); // Used for bouncer
+			this.materials.WALL.color.setHex(data[1][2]); // Used for wall
+			this.materials.OBJ.color.setHex(data[1][3]); // Used for obstacles
+			this.materials.BOUNCE.color.setHex(data[1][3]); // Used for bouncer, booster
 			this.materials.HOLE.color.setHex(data[1][2]); // Used for hole
 		// Set maps 
 			/*new THREE.TextureLoader().load(
@@ -335,16 +335,16 @@ export class Player extends Thing {
 				if (this.parent.timeoutsticky) {
 					window.clearTimeout(this.parent.timeoutsticky);
 				} else {
-					this.parent.materials.FG.color.r *= 2;
-					this.parent.materials.FG.color.g *= 2;
-					this.parent.materials.FG.color.b /= 4;
+					this.parent.materials.WALL.color.r *= 2;
+					this.parent.materials.WALL.color.g *= 2;
+					this.parent.materials.WALL.color.b /= 4;
 					Physics.WALL.restitution = 0;
 				}
 				this.parent.timeoutsticky = window.setTimeout(() => {
 					delete this.parent.timeoutsticky;
-					this.parent.materials.FG.color.r /= 2;
-					this.parent.materials.FG.color.g /= 2;
-					this.parent.materials.FG.color.b *= 4;
+					this.parent.materials.WALL.color.r /= 2;
+					this.parent.materials.WALL.color.g /= 2;
+					this.parent.materials.WALL.color.b *= 4;
 					Physics.WALL.restitution = 1;
 				}, 10000);
 				break;
@@ -386,12 +386,14 @@ export class Player extends Thing {
 				}, 10000);
 				break;
 			case 5: // No Walls
-				this.parent.materials.FG.opacity = 0.2;
+				this.parent.materials.WALL.opacity = 0.2;
+				this.parent.materials.WALL.depthWrite = false; // Allow ball to appear inside wall
 				this.parent.walls.forEach(i => {
 					i.body.isTrigger = true;
 				});
 				window.setTimeout(() => {
-					this.parent.materials.FG.opacity = 1;
+					this.parent.materials.WALL.opacity = 1;
+					this.parent.materials.WALL.depthWrite = true;
 					this.parent.walls.forEach(i => {
 						i.body.isTrigger = false;
 					});
@@ -561,12 +563,12 @@ export class Hole extends Thing {
 	}
 }
 
-export class Bumper extends Thing {
+export class Bouncer extends Thing {
 	geometry = new THREE.TorusGeometry(0.8, 0.5, 20, 20).rotateX(Math.PI / 2);
 	shape = new CANNON.Sphere(1.2);
 	constructor(parent, pos) {
-		super(parent, Types.BUMPER);
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.SG);
+		super(parent, Types.BOUNCER);
+		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.BOUNCE);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.5;
 		this.mesh.position.z = pos[2];
@@ -825,7 +827,7 @@ export class Wall extends Thing {
 				else
 					geometry.attributes.position.array[m + 1] += pos[i - 1][1];
 			}
-			mesh = new THREE.Mesh(geometry, this.parent.materials.FG);
+			mesh = new THREE.Mesh(geometry, this.parent.materials.WALL);
 			mesh.position.x = pos[i][0];
 			mesh.position.z = pos[i][2]
 			mesh.rotation.y = Math.atan2(
@@ -877,8 +879,8 @@ export class Booster extends Thing {
 	geometry = new THREE.BoxGeometry(2, 0.1, 2);
 	shape = new CANNON.Box(new CANNON.Vec3(1, 0.1, 1));
 	constructor(parent, pos) {
-		super(parent, Types.Jumppad);
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.SG);
+		super(parent, Types.BOOSTER);
+		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.BOUNCE);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.1;
 		this.mesh.position.z = pos[2];
@@ -888,7 +890,6 @@ export class Booster extends Thing {
 			shape: this.shape,
 			material: Physics.WALL
 		});
-		
 	}
 }
 
@@ -899,8 +900,7 @@ export class Square extends Thing {
 			new THREE.Vector2( 0.8, -0.8),
 			new THREE.Vector2( 0.8,  0.8),
 			new THREE.Vector2(-0.8,  0.8),
-		]),
-		{
+		]), {
 			steps: 1,
 			depth: 0,
 			bevelEnabled: true,
@@ -912,7 +912,7 @@ export class Square extends Thing {
 	shape = new CANNON.Box(new CANNON.Vec3(1, 0.5, 1));
 	constructor(parent, pos) {
 		super(parent, Types.SQUARE);
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.FG);
+		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.OBJ);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.5;
 		this.mesh.position.z = pos[2];
@@ -931,8 +931,7 @@ export class Triangle extends Thing {
 			new THREE.Vector2(-0.6, -0.8),
 			new THREE.Vector2( 0.8, -0.8),
 			new THREE.Vector2( 0.8,  0.6),
-		]),
-		{
+		]), {
 			steps: 1,
 			depth: 0,
 			bevelEnabled: true,
@@ -971,7 +970,7 @@ export class Triangle extends Thing {
 	});
 	constructor(parent, pos) {
 		super(parent, Types.TRIANGLE);
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.FG);
+		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.OBJ);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.5;
 		this.mesh.position.z = pos[2];
@@ -991,8 +990,7 @@ export class Ispinner extends Thing {
 			new THREE.Vector2( 0.2, -1.2),
 			new THREE.Vector2( 0.2,  1.2),
 			new THREE.Vector2(-0.2,  1.2),
-		]),
-		{
+		]), {
 			steps: 1,
 			depth: 0,
 			bevelEnabled: true,
@@ -1004,7 +1002,7 @@ export class Ispinner extends Thing {
 	shape = new CANNON.Box(new CANNON.Vec3(0.4, 0.5, 1.4));
 	constructor(parent, pos) {
 		super(parent, Types.ISPINNER);
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.FG);
+		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.OBJ);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.5;
 		this.mesh.position.z = pos[2];
@@ -1028,8 +1026,7 @@ export class Tspinner extends Thing {
 			new THREE.Vector2( 0.2,  0.2),
 			new THREE.Vector2( 0.2,  1.2),
 			new THREE.Vector2(-0.2,  1.2),
-		]),
-		{
+		]), {
 			steps: 1,
 			depth: 0,
 			bevelEnabled: true,
@@ -1042,7 +1039,7 @@ export class Tspinner extends Thing {
 	shapeb = new CANNON.Box(new CANNON.Vec3(0.6, 0.5, 0.4));
 	constructor(parent, pos) {
 		super(parent, Types.TSPINNER);
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.FG);
+		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.OBJ);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.5;
 		this.mesh.position.z = pos[2];
@@ -1075,8 +1072,7 @@ export class Xspinner extends Thing {
 			new THREE.Vector2(-1.2,  0.2),
 			new THREE.Vector2(-1.2, -0.2),
 			new THREE.Vector2(-0.2, -0.2),
-		]),
-		{
+		]), {
 			steps: 1,
 			depth: 0,
 			bevelEnabled: true,
@@ -1088,7 +1084,7 @@ export class Xspinner extends Thing {
 	shape = new CANNON.Box(new CANNON.Vec3(0.4, 0.5, 1.4));
 	constructor(parent, pos) {
 		super(parent, Types.XSPINNER);
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.FG);
+		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.OBJ);
 		this.mesh.position.x = pos[0];
 		this.mesh.position.y = pos[1] + 0.5;
 		this.mesh.position.z = pos[2];
