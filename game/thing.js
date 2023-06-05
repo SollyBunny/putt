@@ -364,15 +364,21 @@ export class Player extends Thing {
 			case 4: // Big Balls
 				Effect(Effect.INFLATE);
 				this.parent.players.forEach(i => {
-					player.mesh.scale.multiplyScalar(3);
-					player.body.shapes[0].radius *= 3;
+					i.body.shapes[0].radius *= 3;
 				});
+				function inflate(n, f) {
+					this.parent.players.forEach(i => {
+						i.mesh.scale.addScalar(f);
+					});
+					if ((n--) > 0) window.setTimeout(inflate.bind(this, n - 1, f), 10);
+				}
+				inflate.apply(this, [100, 0.03]);
 				window.setTimeout(() => {
 					Effect(Effect.DEFLATE);
 					this.parent.players.forEach(i => {
-						player.mesh.scale.multiplyScalar(1 / 3);
-						player.body.shapes[0].radius /= 3;
+						i.body.shapes[0].radius /= 3;
 					});
+					inflate.apply(this, [100, -0.03]);
 				}, 10000);
 				break;
 			case 5: // No Walls
