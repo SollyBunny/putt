@@ -18,7 +18,7 @@ const Messages = {
 	POWERUPUSE : 12,
 };
 
-const POWERUPNUM = 10;
+const POWERUPNUM = 13;
 
 function random4chars() {
 	let result = "";

@@ -8,7 +8,7 @@
 			@font-face {
 				font-family: "varela";
 				font-display: swap;
-				src: url("./putt/assets/varela.woff2") format("woff2"), url("./putt/assets/varela.ttf") format("truetype");
+				src: url("assets/varela.woff2") format("woff2"), url("assets/varela.ttf") format("truetype");
 			}
 			* {
 				font-family: "varela";
@@ -220,7 +220,7 @@
 							<div class="text"> Source on GitHub! (SollyBunny) </div>
 						</a>
 						<a href="https://fonts.google.com/specimen/Varela+Round" target="_blank">
-							<image width="64" height="64" class="icon" style="border-radius:100%" src="putt/assets/joeprince.jpg"></image>
+							<image width="64" height="64" class="icon" style="border-radius:100%" src="assets/joeprince.jpg"></image>
 							<div class="text"> The font Varela (Joe Prince) </div>
 						</a>
 						<a href="https://threejs.org/">
@@ -238,7 +238,7 @@
 							<div class="text"> Three.JS used for 3D rendering </div>
 						</a>
 						<a href="https://pmndrs.github.io/cannon-es/">
-							<image width="64" height="64" class="icon" style="border-radius:100%" src="putt/assets/stefanhedman.png"></image>
+							<image width="64" height="64" class="icon" style="border-radius:100%" src="assets/stefanhedman.png"></image>
 							<div class="text"> Cannon.ES (contuation of Cannon.JS) used for physics </div>
 						</a>
 					</div>
@@ -302,7 +302,7 @@
 				<div id="menueditor">
 					<iframe id="editor"> </iframe>
 					<button class="menushortcut left" onclick="page(-2)"> <a disabled href=" " title="Back"> ⬅️ </a> </button>
-					<button class="menushortcut active right"> <a disabled href="putt/editor.html" target="_blank" title="Open in new tab"> ⬆️ </a> </button>
+					<button class="menushortcut active right"> <a disabled href="editor.html" target="_blank" title="Open in new tab"> ⬆️ </a> </button>
 				</div>
 			</div>
 		</div>
@@ -392,7 +392,7 @@
 			}
 			function page(p) {
 				if (p === -3 && e_menuiframe.src.length === 0) {
-					e_menuiframe.src = "putt/editor.html";
+					e_menuiframe.src = "editor.html";
 				} else if (p == -1 && settingspopulated === false) {
 					settingspopulate();
 					settingspopulated = true;
@@ -400,7 +400,7 @@
 				e_menuitem.style.transform = `translateX(${p}00vw)`;
 			}
 			function play() {
-				let url = "./putt/game.html?";
+				let url = "game.html?";
 				let roomcode = document.getElementsByClassName("roomsel")[0].value;
 				if (roomcode === "tutorial") {
 					url += "-tutorial"
@@ -422,7 +422,7 @@
 				e_menu.style.transform = "translateY(-150vh)";
 			}
 			function roomrefresh() {
-				fetch("./putt/server").then(res => res.json()).then(data => {
+				fetch("server").then(res => res.json()).then(data => {
 					e_rrooms.innerHTML = "";
 					data.forEach(i => {
 						const el = document.createElement("button");

@@ -84,12 +84,14 @@ export const Powerups = [
 	["Icy Floors", "Turn the floors to ice", "hsl(65,100%,50%)", "🧊"],
 	["Big Balls", "Make dem balls big", "hsl(70,100%,50%)", "⚽"],
 	["No Walls", "Make walls disappear", "hsl(75,100%,50%)", "🧱"],
-	["Reverse Shot", "Make the next shot reversed", "hsl(80,100%,50%)", "🤔"],
-	["Insane Shot", "Make the next shot uncontrollable", "hsl(85,100%,50%)", "💥"],
+	["No Obstacles", "Make obstacles disappear", "hsl(80,100%,50%)", "🚧"],
+	["Reverse Shot", "Make the next shot reversed", "hsl(85,100%,50%)", "🤔"],
+	["Insane Shot", "Make the next shot uncontrollable", "hsl(90,100%,50%)", "💥"],
 	// Offensive powerups
 	["Bumper", "Place a temporary bumper on the map", "hsl(0,100%,50%)", "🐪"],
 	["Steal", "Steal someone's powerup", "hsl(10,100%,50%)", "🏴‍☠"],
 	["Swap", "Swap with another player", "hsl(20,100%,50%)", "🥷"],
+	["Cube", "Turn someone into a cube", "hsl(30,100%,50%)", "🪨"],
 ];
 
 

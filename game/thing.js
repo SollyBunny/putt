@@ -205,7 +205,8 @@ export class Thing {
 }
 
 export class Player extends Thing {
-	geometry = new THREE.IcosahedronGeometry(0.3, Settings.HIPOLYBALL ? 5 : 1);
+	radius   = 0.3;
+	geometry = new THREE.IcosahedronGeometry(0.3, Settings.HIPOLYBALL ? 5 : 2);
 	shape    = new CANNON.Sphere(0.3);
 	physics  = new CANNON.Material({
 		restitution: 1,
@@ -243,6 +244,7 @@ export class Player extends Thing {
 		this.textset(name);
 		this.parent.mods.text.push(this);
 		this.powerups = [];
+		this.inflatetimeouts = []; // This is a stack
 	}
 	die() {
 		this.isshoot = false;
@@ -252,6 +254,27 @@ export class Player extends Thing {
 		this.body.position.y = this.lastsafe.y;
 		this.body.position.z = this.lastsafe.z;
 		this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = this.body.velocity.x = this.body.velocity.y = this.body.velocity.z = 0;
+		this.body.shapes[0].radius = this.radius;
+		this.mesh.scale.setScalar(1);
+		this.inflatetimeouts.forEach(window.clearTimeout);
+		this.inflatetimeouts = [];
+	}
+	inflateanimaton(amount, n) {
+		this.mesh.scale.addScalar(amount);
+		if ((n--) > 0)
+			window.setTimeout(this.inflateanimaton.bind(this, amount, n - 1), 10);
+	}
+	inflate(amount) {
+		this.body.shapes[0].radius *= amount;
+		this.inflateanimaton(amount / 100, 100);
+		this.inflatetimeouts.push(
+			window.setTimeout(this.deflate.bind(this, amount), 10000)
+		);
+	}
+	deflate(amount) {
+		this.body.shapes[0].radius *= amount;
+		this.inflateanimaton(amount / -100, 100);
+		this.inflatetimeouts.pop();
 	}
 	sethole(hole) {
 		this.hole = hole;
@@ -364,22 +387,8 @@ export class Player extends Thing {
 			case 4: // Big Balls
 				Effect(Effect.INFLATE);
 				this.parent.players.forEach(i => {
-					i.body.shapes[0].radius *= 3;
+					i.inflate(3);
 				});
-				function inflate(n, f) {
-					this.parent.players.forEach(i => {
-						i.mesh.scale.addScalar(f);
-					});
-					if ((n--) > 0) window.setTimeout(inflate.bind(this, n - 1, f), 10);
-				}
-				inflate.apply(this, [100, 0.03]);
-				window.setTimeout(() => {
-					Effect(Effect.DEFLATE);
-					this.parent.players.forEach(i => {
-						i.body.shapes[0].radius /= 3;
-					});
-					inflate.apply(this, [100, -0.03]);
-				}, 10000);
 				break;
 			case 5: // No Walls
 				this.parent.materials.WALL.opacity = 0.2;
@@ -395,15 +404,19 @@ export class Player extends Thing {
 					});
 				}, 10000);
 				break;
-			case 6: // Reverse Shot
+			case 6: // No Obstacles
 				break;
-			case 7: // Insane Shot
+			case 7: // Reverse Shot
 				break;
-			case 8: // Bumper
+			case 8: // Insane Shot
 				break;
-			case 9: // Steal
+			case 9: // Bumper
 				break;
-			case 10: // Swap
+			case 10: // Steal
+				break;
+			case 11: // Swap
+				break;
+			case 12: // Cube
 				break;
 		}
 		console.log(this, index);
@@ -417,7 +430,7 @@ export class Player extends Thing {
 			} else {
 				e.body.parent.onget();
 			}
-		} else {
+		} else if (e.target.parent.isshoot === false) {
 			Effect(Effect.BOUNCE);
 		}
 	}
