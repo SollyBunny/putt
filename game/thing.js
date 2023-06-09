@@ -198,8 +198,9 @@ export class Thing {
 		e.body.velocity.z = Math.cos(d) * e.target.modbounce;
 	}
 	velocity(e) {
+		if (e.body.velocity.y < 0) e.body.velocity.y = 0;
 		e.body.velocity.x += e.target.modvelocity[0];
-		e.body.velocity.y  = e.target.modvelocity[1];
+		e.body.velocity.y += e.target.modvelocity[1];
 		e.body.velocity.z += e.target.modvelocity[2];
 	}
 }
@@ -272,7 +273,7 @@ export class Player extends Thing {
 		);
 	}
 	deflate(amount) {
-		this.body.shapes[0].radius *= amount;
+		this.body.shapes[0].radius /= amount;
 		this.inflateanimaton(amount / -100, 100);
 		this.inflatetimeouts.pop();
 	}
