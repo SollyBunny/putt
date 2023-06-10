@@ -40,6 +40,7 @@ export const Types = {
 	SQUARE     : 13,
 	WIND       : 14,
 	POWERUP    : 15,
+	PLATFORM   : 16,
 };
 
 export const Modifiers = {

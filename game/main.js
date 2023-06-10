@@ -26,13 +26,14 @@ window.onblur = event => {
 	keys = {};
 };
 window.onkeydown = event => { 
-	keys[event.key] = true;
+	keys[event.key.toLowerCase()] = true;
 };
 window.onkeyup = event => {
-	keys[event.key] = false;
-	if (event.key === "Escape") {
+	const k = event.key.toLowerCase();
+	keys[k] = false;
+	if (k === "escape") {
 		window.top.postMessage(["GAME"], "*");
-	} else if (event.key === "m") {
+	} else if (k === "m") {
 		if (debugmeshenabled === false) {
 			if (!debugmesh) {
 				debugmesh = new CannonDebugRenderer(scene, world);
@@ -49,9 +50,15 @@ window.onkeyup = event => {
 			debugmeshenabled = false;
 		}
 		event.preventDefault(); // Prevent dev console stuff
-	} else if (event.key === "f") {
+	} else if (k === "k") {
+		scene.confetti.spawn(
+			player.body.position.x,
+			player.body.position.y + 1,
+			player.body.position.z
+		);
+	} else if (k === "f") {
 		fpsenabled = !fpsenabled;
-	} else if (event.key === "r") {
+	} else if (k === "r") {
 		place.player.die();
 	}
 }; 
@@ -119,7 +126,7 @@ scene.camera.frustum = new THREE.Frustum();
 		scene,
 		[0xFF0000, 0xFFFF00, 0x00FF00, 0x0000FF],
 		100,
-		5
+		10
 	);
 }
 
@@ -252,6 +259,39 @@ function frame(tt) {
 			arrow.position.x = scene.camera.follow.mesh.position.x;
 			arrow.position.y = scene.camera.follow.mesh.position.y;
 			arrow.position.z = scene.camera.follow.mesh.position.z;
+			if (scene.camera.shoot[1] === 1) {
+				const h = place.tick / 100 % 6;
+				const x = 1 - Math.abs((h % 2) - 1);
+				if (h < 1) {
+					arrow.material.color.r = 1;
+					arrow.material.color.g = x;
+					arrow.material.color.b = 0;
+				} else if (h < 2) {
+					arrow.material.color.r = x;
+					arrow.material.color.g = 1;
+					arrow.material.color.b = 0;
+				} else if (h < 3) {
+					arrow.material.color.r = 0;
+					arrow.material.color.g = 1;
+					arrow.material.color.b = x;
+				} else if (h < 4) {
+					arrow.material.color.r = 0;
+					arrow.material.color.g = x;
+					arrow.material.color.b = 1;
+				} else if (h < 5) {
+					arrow.material.color.r = x;
+					arrow.material.color.g = 0;
+					arrow.material.color.b = 1;
+				} else {
+					arrow.material.color.r = 1;
+					arrow.material.color.g = 0;
+					arrow.material.color.b = x;
+				}
+			} else {
+				arrow.material.color.r = scene.camera.follow.mesh.material.color.r * scene.camera.shoot[1] * 2;
+				arrow.material.color.g = scene.camera.follow.mesh.material.color.g * scene.camera.shoot[1] * 2;
+				arrow.material.color.b = scene.camera.follow.mesh.material.color.b * scene.camera.shoot[1] * 2;
+			}
 			arrow.rotation.z = scene.camera.shoot[0];
 			arrow.scale.y = Math.round(scene.camera.shoot[1] * 6);
 			if (arrow.scale.y < 1) arrow.scale.y = 0;
@@ -273,7 +313,7 @@ function frame(tt) {
 				place.player.body.velocity.z -= tx / 20 * Math.sin(scene.camera.dir[0] * Settings.SENSITIVITY);
 			} if (keys[" "]) {
 				place.player.body.velocity.y += tx / 100;
-			} if (keys["Shift"]) {
+			} if (keys["shift"]) {
 				place.player.body.velocity.x = place.player.body.velocity.y = place.player.body.velocity.z = 0;
 			}
 		}
@@ -342,8 +382,8 @@ can.onpointerup = can.onpointercancel = () => {
 	can.releasePointerCapture(event.pointerId);
 	if (scene.camera.shoot) {
 		if (arrow.scale.y > 0) {
-			place.player.body.velocity.x = -Math.sin(scene.camera.shoot[0]) * scene.camera.shoot[1] * 7;
-			place.player.body.velocity.z = -Math.cos(scene.camera.shoot[0]) * scene.camera.shoot[1] * 7;
+			place.player.body.velocity.x = -Math.sin(scene.camera.shoot[0]) * scene.camera.shoot[1] * 10;
+			place.player.body.velocity.z = -Math.cos(scene.camera.shoot[0]) * scene.camera.shoot[1] * 10;
 			place.player.lastsafe.x = place.player.body.position.x;
 			place.player.lastsafe.y = place.player.body.position.y;
 			place.player.lastsafe.z = place.player.body.position.z;

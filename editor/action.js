@@ -1,10 +1,10 @@
 
-function cyrb53(seed) {
+function cyrb53(data, seed) {
 	seed = seed | 0;
 	let h1 = 0xdeadbeef ^ seed;
 	let h2 = 0x41c6ce57 ^ seed;
-	for (let i = 0, ch; i < this.length; ++i) {
-		ch = this.charCodeAt(i);
+	for (let i = 0, ch; i < data.length; ++i) {
+		ch = data.charCodeAt(i);
 		h1 = Math.imul(h1 ^ ch, 2654435761);
 		h2 = Math.imul(h2 ^ ch, 1597334677);
 	}
@@ -190,8 +190,8 @@ function click() {
 			break;
 		case Types.FLOOR:
 		case Types.BUMPYFLOOR:
+		case Types.PLATFORM:
 		case Types.WALL:
-		case Types.HALFWALL:
 		case Types.DECOR:
 			historyadd();
 			if (sel && objs[sel][0] === tool) { // add to current object if selected item is of same type
@@ -259,6 +259,9 @@ function render() {
 				break;
 			case Types.FLOOR:
 				l4 += "<polygon points=\"" + m[1].map(j => { return (j[0] * 20) + "," + (j[2] * 20); }).join(" ") + "\" />";
+				break;
+			case Types.PLATFORM:
+				l4 += "<polygon style='fill:gray' points=\"" + m[1].map(j => { return (j[0] * 20) + "," + (j[2] * 20); }).join(" ") + "\" />";
 				break;
 			case Types.BUMPYFLOOR:
 				l4 += "<polygon style='stroke:gray' points=\"" + m[1].map(j => { return (j[0] * 20) + "," + (j[2] * 20); }).join(" ") + "\" />";

@@ -53,6 +53,7 @@ const Types = {
 	SQUARE     : 13,
 	WIND       : 14,
 	POWERUP    : 15,
+	PLATFORM   : 16,
 };
 
 const Typesname = [
@@ -72,6 +73,7 @@ const Typesname = [
 	/* SQUARE     : */ "Square",
 	/* WIND       : */ "Wind",
 	/* POWERUP    : */ "Powerup",
+	/* PLATFORM   : */ "Platform",
 ];
 Typesname[Types.LAYERUP  ] = "Layer Up";
 Typesname[Types.LAYERDOWN] = "Layer Down";
@@ -100,4 +102,5 @@ const Typesmodifiers = [
 	/* SQUARE     : */ [Modifiers.SPIN, Modifiersdefault[Modifiers.SPIN]],
 	/* WIND       : */ undefined,
 	/* POWERUP    : */ undefined,
+	/* PLATFORM   : */ undefined,
 ]

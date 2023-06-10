@@ -73,6 +73,7 @@ export class Place {
 					case Types.TRIANGLE   : j = new Triangle   (this, m[1]); break;
 					case Types.TEXT       : j = new Text       (this, m[1]); break;
 					case Types.POWERUP    : j = new Powerup    (this, m[1]); break;
+					case Types.PLATFORM   : j = new Platform   (this, m[1]); break;
 					default: continue;
 				}
 				if (m[2]) {
@@ -719,7 +720,6 @@ export class Floor extends Thing {
 		this.body.position.x = center[0];
 		this.body.position.y = center[1];
 		this.body.position.z = center[2];
-		this.parent.world.addBody(this.body);
 	}
 }
 
@@ -1180,5 +1180,65 @@ export class Powerup extends Thing {
 		this.got = true;
 		this.mesh.visible = false;
 		window.setTimeout(this.unget.bind(this), 5000);
+	}
+}
+
+export class Platform extends Thing {
+	constructor(parent, pos) {
+		super(parent, Types.FLOOR);
+		this.flat = undefined;
+		let points = [];
+		for (let i = 0; i < pos.length; ++i) {
+			if (this.flat === undefined)
+				this.flat = pos[i][1];
+			else if (this.flat !== false && this.flat !== pos[i][1])
+				this.flat = false;
+			points.push(new THREE.Vector3(pos[i][0], pos[i][1], pos[i][2]));
+			points.push(new THREE.Vector3(pos[i][0], pos[i][1] - 1, pos[i][2]));
+		}
+		if (this.flat !== false) this.flat = true;
+		this.geometry = new ConvexGeometry(points);
+		this.geometry.computeBoundingBox();
+		this.geometry = mergeVertices(this.geometry, 0);
+		let center = [
+			(this.geometry.boundingBox.min.x + this.geometry.boundingBox.max.x) / 2,
+			(this.geometry.boundingBox.min.y + this.geometry.boundingBox.max.y) / 2,
+			(this.geometry.boundingBox.min.z + this.geometry.boundingBox.max.z) / 2
+		];
+		let faces = []; // Generate faces for physics
+		for (let i = 0; i < this.geometry.index.array.length; i += 3) {
+			faces.push([
+				this.geometry.index.array[i],
+				this.geometry.index.array[i + 1],
+				this.geometry.index.array[i + 2]
+			]);
+		}
+		points = []; // Format geometry points to CANNON.Vec3 for physics
+		for (let i = 0; i < this.geometry.attributes.position.array.length; i += 3) {
+			this.geometry.attributes.position.array[i] -= center[0];
+			this.geometry.attributes.position.array[i + 1] -= center[1];
+			this.geometry.attributes.position.array[i + 2] -= center[2];
+			points.push(new CANNON.Vec3(
+				this.geometry.attributes.position.array[i],
+				this.geometry.attributes.position.array[i + 1],
+				this.geometry.attributes.position.array[i + 2],
+			));
+		}
+		this.geometry.computeBoundingBox();
+		this.mesh = new THREE.Mesh(this.geometry, this.flat ? this.parent.materials.FLOOR1 : this.parent.materials.FLOOR2);
+		this.mesh.position.x = center[0];
+		this.mesh.position.y = center[1];
+		this.mesh.position.z = center[2];
+		this.body = new CANNON.Body({
+			mass: 0,
+			shape: new CANNON.ConvexPolyhedron({
+				vertices: points,
+				faces: faces
+			}),
+			material: Physics.FLOOR
+		});
+		this.body.position.x = center[0];
+		this.body.position.y = center[1];
+		this.body.position.z = center[2];
 	}
 }
