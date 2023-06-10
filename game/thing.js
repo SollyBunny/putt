@@ -6,8 +6,9 @@ import { ConvexGeometry, mergeVertices, RoundedBoxGeometry } from "../lib/three.
 import { Types, Modifiers, Physics, Powerups, Rainbow } from "./def.js";
 
 const e_rtext     = document.getElementById("rtext"); // To use as a canvas for player names
-const e_rmapname  = document.getElementById("rmapname");
-const e_rhole     = document.getElementById("rhole");
+const e_rmapname  = document.getElementById("rmapname"); // Store mapname
+const e_rhole     = document.getElementById("rhole"); // Hole N
+const e_rscore    = document.getElementById("rscore"); // Stores player scorecard
 const e_cpowerups = document.getElementById("powerupcontainer").children;
 
 export class Place {
@@ -128,11 +129,12 @@ export class Place {
 		}
 		console.log(this, this.players)
 		this.players.push(player);
-		player.add();
 		return player;
 	}
 	add() {
+		e_rscore.style.gridTemplateColumns = `3fr repeat(${this.holes.length}, 1fr) 1fr`;
 		this.things.forEach(i => { i.add(); });
+		this.players.forEach(i => { i.add(); });
 		e_rmapname.textContent = this.data[0][0];
 		this.scene.background.setHex(this.data[1][0]);
 		if (Settings.FOG) {
@@ -222,7 +224,8 @@ export class Player extends Thing {
 	});
 	constructor(parent, name, color) {
 		super(parent, Types.PLAYER, undefined, undefined, name);
-		this.stroke = 0;
+		this.stroke = [];
+		this.total  = 0;
 		this.hole   = 0;
 		this.name   = name;
 		this.color  = new THREE.Color(color);
@@ -253,16 +256,46 @@ export class Player extends Thing {
 		this.parent.mods.text.push(this);
 		this.powerups = [];
 		this.inflatetimeouts = []; // This is a queue
+		this.e_name = document.createElement("div");
+		this.e_name.textContent = this.name;
+		this.e_name.className = "name";
+		this.e_rtotal = document.createElement("div");
+		this.e_rtotal.innerHTML = "0";
+		this.e_rtotal.className = "total";
+		this.e_cscore = [];
+	}
+	add() {
+		Thing.prototype.add.call(this);
+		e_rscore.appendChild(this.e_name);
+		for (let i = 0; i < this.parent.holes.length; ++i) {
+			this.e_cscore[i] = document.createElement("div");
+			this.e_cscore[i].innerHTML = this.stroke[i] || 0;
+			this.e_cscore[i].classList.add("hole" + i);
+			if (this.hole === i) this.e_cscore[i].classList.add("holesel");
+			e_rscore.appendChild(this.e_cscore[i]);
+		}
+		e_rscore.appendChild(this.e_rtotal);
+	}
+	del() {
+		Thing.prototype.del.call(this);
+		e_rscore.removeChild(this.e_name);
+		this.e_cscore.forEach(i => {
+			e_rscore.removeChild(i);
+		});
+		e_rscore.removeChild(this.e_rtotal);
 	}
 	die() {
 		this.isshoot = false;
 		this.ishole = false;
 		this.mesh.material.opacity = 1;
+		this.body.force.setZero();
+		this.body.inertia.setZero();
 		this.body.position.x = this.lastsafe.x;
 		this.body.position.y = this.lastsafe.y;
 		this.body.position.z = this.lastsafe.z;
 		this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = this.body.velocity.x = this.body.velocity.y = this.body.velocity.z = 0;
 		this.body.shapes[0].radius = this.radius;
+		this.body.updateInertiaWorld();
 		this.mesh.scale.setScalar(1);
 		this.inflatetimeouts.forEach(window.clearTimeout);
 		this.inflatetimeouts = [];
@@ -285,7 +318,11 @@ export class Player extends Thing {
 		this.inflatetimeouts.pop();
 	}
 	sethole(hole) {
-		this.hole = hole;
+		if (this.hole !== hole) {
+			if (this.e_cscore[this.hole]) this.e_cscore[this.hole].classList.remove("holesel");
+			this.hole = hole;
+			if (this.e_cscore[this.hole]) this.e_cscore[this.hole].classList.add("holesel");
+		}
 		if (this.parent.player === this) {
 			e_rhole.textContent = hole + 1;
 			const dx = this.parent.holes[hole].body.position.x - this.parent.starts[hole].mesh.position.x;
@@ -312,7 +349,13 @@ export class Player extends Thing {
 		}
 	}
 	onhit() {
-		this.stroke += 1;
+		this.total += 1;
+		this.e_rtotal.innerHTML = this.total;
+		if (this.stroke[this.hole] === undefined)
+			this.stroke[this.hole] = 1;
+		else
+			this.stroke[this.hole] += 1;
+		this.e_cscore[this.hole].innerHTML = this.stroke[this.hole];
 		Effect(Effect.HIT);
 	}
 	onpowerup(id) {
@@ -427,7 +470,6 @@ export class Player extends Thing {
 			case 12: // Cube
 				break;
 		}
-		console.log(this, index);
 	}
 	oncollide(e) {
 		if (e.body.parent.type === Types.POWERUP) {

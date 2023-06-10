@@ -83,7 +83,14 @@ class Multi {
 		delete this.onstart;
 	}
 	setmap(name) {
-		this.mapname = name || "tutorial";
+		if (name === undefined) {
+			if (this.mapname === undefined)
+				this.name = "tutorial";
+		} else if (name === this.mapname) {
+			return;
+		} else {
+			this.mapname = name;
+		}
 		this.mapdata = Maps[this.mapname];
 		if (!this.mapdata) {
 			alert(`Map "${this.mapname}" not found, defaulting to "tutorial"`);
@@ -188,10 +195,11 @@ class Multi {
 				this.connected = true;
 				this.place.player.id = msg[1];
 				this.playersindex[this.place.player.id] = this.place.player;
-				if (msg[3] !== this.mapname) this.setmap(msg[3]);
+				this.setmap(msg[3]);
 				msg[5].forEach(i => {
 					p = this.place.addplayer(i[1], i[2]);
 					p.id = i[0];
+					p.add();
 					this.playersindex[p.id] = p;
 				});
 				this.roomcode = msg[2];
@@ -204,6 +212,7 @@ class Multi {
 				console.log("Join", msg[1]);
 				p = this.place.addplayer(msg[2], msg[3]);
 				p.id = msg[1];
+				p.add();
 				this.playersindex[p.id] = p;
 				break;
 			case Messages.LEAVE:

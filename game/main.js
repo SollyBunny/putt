@@ -15,7 +15,6 @@ const e_rstroke = document.getElementById("rstroke");
 const e_rpos = document.getElementById("rpos");
 const e_rvel = document.getElementById("rvel");
 const e_debug = document.getElementById("debug");
-
 let debugmesh;
 let debugmeshenabled = false;
 let fpsenabled = false;
@@ -355,7 +354,7 @@ function frame(tt) {
 }
 
 // Drag / Zoom Behaviour
-can.addEventListener("mousewheel", event => {
+can.addEventListener("wheel", event => {
 	scene.camera.dismov += event.deltaY / 10;
 	if (scene.camera.dismov < 5)
 		scene.camera.dismov = 5;

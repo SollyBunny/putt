@@ -84,6 +84,42 @@
 			#rstroke, #rhole {
 				text-align: center;
 			}
+			#scorecontainer {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				background: rgba(22, 22, 22, 0.5);
+				border-radius: 0 1vmin 0 0;
+				padding: 1vmin;
+				color: white;
+			}
+				#rscore {
+					display: grid;
+					color: #888;
+				}
+				#rscore div {
+					padding: 0.5vmin;
+					margin: 0.5vmin;
+					border-radius: 0 1vmin 0 0;
+				}
+				.name   { color: white; background-color: rgb(22,22,22,0.5) }
+				.total  { color: white; background-color: rgb(255,255,255,0.1) }
+				.hole0  { background-color: rgb(255,0,0,0.5) }
+				.hole1  { background-color: rgb(255,128,0,0.5) }
+				.hole2  { background-color: rgb(255,255,0,0.5) }
+				.hole3  { background-color: rgb(128,255,0,0.5) }
+				.hole4  { background-color: rgb(0,255,0,0.5) }
+				.hole5  { background-color: rgb(0,255,128,0.5) }
+				.hole6  { background-color: rgb(0,255,255,0.5) }
+				.hole7  { background-color: rgb(0,128,255,0.5) }
+				.hole8  { background-color: rgb(0,0,255,0.5) }
+				.hole9  { background-color: rgb(128,0,255,0.5) }
+				.hole10 { background-color: rgb(255,0,255,0.5) }
+				.hole11 { background-color: rgb(255,0,128,0.5) }
+				.holesel {
+					color: white !important;
+					font-weight: 900;
+				}
 			#powerupcontainer {
 				position: absolute;
 				bottom: 0;
@@ -127,6 +163,10 @@
 				<div> Pos </div> <div id="rpos"> 0, 0, 0 </div>
 				<div> Vel </div> <div id="rvel"> 0, 0, 0 </div>
 			</div>
+		</div>
+		<div id="scorecontainer">
+			<div> Score </div>
+			<div id="rscore"></div>
 		</div>
 		<div id="powerupcontainer">
 			<button disabled></button>
