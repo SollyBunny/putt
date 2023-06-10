@@ -7,7 +7,6 @@ import { Types, Modifiers, Physics, Powerups, Rainbow } from "./def.js";
 
 const e_rtext     = document.getElementById("rtext"); // To use as a canvas for player names
 const e_rmapname  = document.getElementById("rmapname"); // Store mapname
-const e_rhole     = document.getElementById("rhole"); // Hole N
 const e_rscore    = document.getElementById("rscore"); // Stores player scorecard
 const e_cpowerups = document.getElementById("powerupcontainer").children;
 
@@ -216,6 +215,7 @@ export class Thing {
 
 export class Player extends Thing {
 	radius   = 0.3;
+	mass     = 0.3;
 	geometry = new THREE.IcosahedronGeometry(0.3, Settings.HIPOLYBALL ? 5 : 2);
 	shape    = new CANNON.Sphere(0.3);
 	physics  = new CANNON.Material({
@@ -244,7 +244,7 @@ export class Player extends Thing {
 		);
 		this.mesh.renderOrder = 10000;
 		this.body = new CANNON.Body({
-			mass: 0.3,
+			mass: this.mass,
 			shape: this.shape,
 			material: this.physics
 		});
@@ -295,6 +295,7 @@ export class Player extends Thing {
 		this.body.position.z = this.lastsafe.z;
 		this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = this.body.velocity.x = this.body.velocity.y = this.body.velocity.z = 0;
 		this.body.shapes[0].radius = this.radius;
+		this.body.mass = this.mass;
 		this.body.updateInertiaWorld();
 		this.mesh.scale.setScalar(1);
 		this.inflatetimeouts.forEach(window.clearTimeout);
@@ -324,7 +325,6 @@ export class Player extends Thing {
 			if (this.e_cscore[this.hole]) this.e_cscore[this.hole].classList.add("holesel");
 		}
 		if (this.parent.player === this) {
-			e_rhole.textContent = hole + 1;
 			const dx = this.parent.holes[hole].body.position.x - this.parent.starts[hole].mesh.position.x;
 			const dz = this.parent.holes[hole].body.position.z - this.parent.starts[hole].mesh.position.z;
 			this.parent.scene.camera.dir[0] = (Math.atan2(dx, dz) + Math.PI) / Settings.SENSITIVITY;
@@ -336,7 +336,12 @@ export class Player extends Thing {
 		this.die();
 	}
 	onhole() {
+		this.lastsafe.x = this.parent.holes[this.hole].body.position.x;
+		this.lastsafe.y = this.parent.holes[this.hole].body.position.y - 1;
+		this.lastsafe.z = this.parent.holes[this.hole].body.position.z;
+		this.die();
 		this.ishole = true;
+		this.body.mass = 0;
 		this.mesh.material.opacity = 0.5;
 		this.parent.scene.confetti.spawn(
 			this.parent.holes[this.hole].body.position.x,
@@ -485,39 +490,37 @@ export class Player extends Thing {
 		}
 	}
 	onupdate(tx) {
-		// if (this.parent.scene) { // Project to 2d
-		// 	let project = this.mesh.position.project(this.parent.scene.camera);
-		// 	project.x = ( project.x + 1) / 2 * can.width;
-		// 	project.y = (-project.y + 1) / 2 * can.height;
-		// 	this.text.style.transform = `translate(${project.x}px,${project.y}px)`;
-		// }
-		this.mesh.position.x   = this.body.position.x;
-		this.mesh.position.y   = this.body.position.y;
-		this.mesh.position.z   = this.body.position.z;
-		this.mesh.quaternion.x = this.body.quaternion.x;
-		this.mesh.quaternion.y = this.body.quaternion.z;
-		this.mesh.quaternion.z = this.body.quaternion.y;
-		this.mesh.quaternion.w = this.body.quaternion.w;
 		/*if (this.light) {
 			this.light.position.x = this.body.position.x;
 			this.light.position.y = this.body.position.y + 1;
 			this.light.position.z = this.body.position.z;
 		}*/
-		if (this.ishole) {
-		
-		} else if (this.body.position.y < -15) {
+		this.mesh.position.x   = this.body.position.x;
+		this.mesh.position.y   = this.body.position.y;
+		this.mesh.position.z   = this.body.position.z;
+		if (this.ishole) return;
+		if (this.body.position.y < -15) {
 			this.die();
-		} else if (Math.sqrt(
-			this.body.velocity.x ** 2 +
-			this.body.velocity.y ** 2 +
-			this.body.velocity.z ** 2
-		) < 0.5) {
+			return;
+		}
+		this.mesh.quaternion.x = this.body.quaternion.x;
+		this.mesh.quaternion.y = this.body.quaternion.z;
+		this.mesh.quaternion.z = this.body.quaternion.y;
+		this.mesh.quaternion.w = this.body.quaternion.w;
+		if (
+			Math.sqrt(
+				this.body.velocity.x ** 2 +
+				this.body.velocity.y ** 2
+			) < 0.5 &&
+			Math.abs(this.body.velocity.z) < 0.1
+		) {
 			this.body.angularVelocity.x = this.body.angularVelocity.y = this.body.angularVelocity.z = this.body.velocity.x = this.body.velocity.z = 0;
 			this.isshoot = true;
 		} else {
 			this.isshoot = false;
 			this.body.velocity.x *= 0.99 ** (tx / 15);
 			this.body.velocity.z *= 0.99 ** (tx / 15);
+
 		}
 	}
 }
@@ -617,13 +620,11 @@ export class Hole extends Thing {
 		});
 	}
 	oncollide(e) {
+		if (e.body.ishole) return;
 		if (e.body.parent.hole !== e.target.parent.id) {
 			e.body.parent.sethole(e.body.parent.hole);
 			return;
 		};
-		e.body.parent.mesh.position.x = e.target.position.x;
-		e.body.parent.mesh.position.y = e.target.position.y;
-		e.body.parent.mesh.position.z = e.target.position.z;
 		e.body.parent.onhole();
 	}
 }

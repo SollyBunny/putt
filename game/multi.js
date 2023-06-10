@@ -74,7 +74,7 @@ class Multi {
 	}
 	start(hole) {
 		if (!this.onstart) return;
-		if (!this.roomcode.startsWith("-")) {
+			if (!this.roomcode.startsWith("-")) {
 			e_roomcode.parentElement.style.display = "block";
 			e_roomcode.textContent = this.roomcode;
 		}
@@ -237,7 +237,7 @@ class Multi {
 				break;
 			case Messages.POWERUP:
 				if (msg[2] !== undefined) this.place.powerups[msg[2]].onget();
-				this.playersindex[msg[1]].onpowerup(msg[2]);
+				this.playersindex[msg[1]].onpowerup(msg[3]);
 				break;
 			case Messages.POWERUPUSE:
 				this.playersindex[msg[1]].onpowerupuse(msg[2]);

@@ -11,7 +11,6 @@ import { Place } from "./thing.js";
 import { ConfettiManager } from "../lib/three.ext.js"
 
 const can = document.getElementById("can"); // What we are drawing on
-const e_rstroke = document.getElementById("rstroke");
 const e_rpos = document.getElementById("rpos");
 const e_rvel = document.getElementById("rvel");
 const e_debug = document.getElementById("debug");
@@ -184,8 +183,6 @@ function frame(tt) {
 		scene.camera.frustum.setFromProjectionMatrix(matrix);
 	// Update
 		world.step(1 / fps, tx, 5);
-		if (place.player.isshoot === false)
-			multi.update(); // I'm a multiplayer now!
 		let m, proj;
 		for (let i = 0; i < place.mods.spin.length; ++i) {
 			m = place.mods.spin[i];
@@ -343,6 +340,9 @@ function frame(tt) {
 			scene.camera.rotation.y = (scene.camera.rotation.y + scene.camera.rotation.ynew) / 2;
 		}
 		scene.camera.updateMatrixWorld();
+	// Multi
+		if (place.player.isshoot === false && place.player.ishole === false)
+			multi.update(); // I'm a multiplayer now!
 	// Render
 		if (debugmeshenabled) {
 			debugmesh.update();
@@ -388,7 +388,6 @@ can.onpointerup = can.onpointercancel = () => {
 			place.player.lastsafe.z = place.player.body.position.z;
 			multi.hit();
 			place.player.onhit();
-			e_rstroke.innerHTML = place.player.stroke;
 		}
 		scene.camera.shoot = undefined;
 		arrow.visible = false;
