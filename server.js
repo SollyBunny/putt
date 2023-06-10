@@ -50,55 +50,63 @@ module.exports.msg = (ws, msg) => {
 			ws.url.query[2].length < 1 ||
 			(ws.room === undefined && ws.url.query[2].length > 0)
 		) {
-			ws.room = random4chars(); // TODO collision check
-			ws.room = rooms[ws.room] = {
-				ID: 1,
-				code: ws.room,
-				players: [ws],
-				hole: 0,
-				owner: ws,
-				tick: 0,
-				start: Date.now(),
-				mapname: ws.url.query[2].startsWith("+") ? ws.url.query[2].slice(1) : "tutorial",
-			};
-			ws.id    = 0;
-			ws.name  = decodeURIComponent(ws.url.query[0]);
-			ws.color = parseInt(ws.url.query[1]) || 0;
-			ws.hole  = 0;
-			ws.send(JSON.stringify([
-				Messages.JOINSYNC,
-				ws.id,
-				ws.room.code,
-				ws.room.mapname,
-				0,
-				[]
-			]));
-			if (!ws.url.query[2].startsWith("+") && ws.url.query[2].length > 0) // supplied room code, but it was invalid (NOTE: must come after CREATE message as alert blocks ws stream)
-				ws.send(JSON.stringify([Messages.WARN, "Invalid room code, creating new room"]));
-			console.log("Putt: Create", ws.ip);
-		} else {
-			ws.id    = ws.room.ID
-			ws.room.ID += 1;
-			ws.name  = decodeURIComponent(ws.url.query[0]);
-			ws.color = parseInt(ws.url.query[1]) || 0;
-			ws.hole  = ws.room.hole;
-			ws.room.players.forEach(i => {
-				i.send(JSON.stringify([Messages.JOIN, ws.id, ws.name, ws.color]));
-			});
-			ws.send(JSON.stringify([
-				Messages.JOINSYNC,
-				ws.id,
-				ws.room.code,
-				ws.room.mapname,
-				ws.room.hole,
-				ws.room.players.map(i => {
-					return [i.id, i.name, i.color];
-				})
-			]));
-			ws.room.players.push(ws);
-			if (ws.room.owner === undefined) ws.room.owner = ws;
-			console.log("Putt: Join", ws.ip);
+			const mapname = ws.url.query[2].startsWith("+") ? ws.url.query[2].slice(1) : "tutorial";
+			for (let i in rooms) {
+				if (i.mapname === mapname && i.owner === undefined) { // empty room w/ no owner (no players)
+					ws.room = rooms[i];
+					break;
+				}
+			}
+			if (ws.room === undefined) {
+				const roomcode = random4chars(); // TODO collision check
+				ws.room = rooms[roomcode] = {
+					ID: 1,
+					code: roomcode,
+					players: [ws],
+					hole: 0,
+					owner: ws,
+					tick: 0,
+					start: Date.now(),
+					mapname: mapname
+				};
+				ws.id    = 0;
+				ws.name  = decodeURIComponent(ws.url.query[0]);
+				ws.color = parseInt(ws.url.query[1]) || 0;
+				ws.hole  = 0;
+				ws.send(JSON.stringify([
+					Messages.JOINSYNC,
+					ws.id,
+					ws.room.code,
+					ws.room.mapname,
+					0,
+					[]
+				]));
+				console.log("Putt: Create", ws.ip);
+				return;
+			}
 		}
+		ws.id    = ws.room.ID
+		ws.room.ID += 1;
+		ws.name  = decodeURIComponent(ws.url.query[0]);
+		ws.color = parseInt(ws.url.query[1]) || 0;
+		ws.hole  = ws.room.hole;
+		ws.room.owner = ws.room.owner || ws;
+		ws.room.players.forEach(i => {
+			i.send(JSON.stringify([Messages.JOIN, ws.id, ws.name, ws.color]));
+		});
+		ws.send(JSON.stringify([
+			Messages.JOINSYNC,
+			ws.id,
+			ws.room.code,
+			ws.room.mapname,
+			ws.room.hole,
+			ws.room.players.map(i => {
+				return [i.id, i.name, i.color];
+			})
+		]));
+		ws.room.players.push(ws);
+		if (ws.room.owner === undefined) ws.room.owner = ws;
+		console.log("Putt: Join", ws.ip);
 		return;
 	}
 	if (msg[0] !== 91) { // SYNC message (91 == '[')
@@ -173,7 +181,8 @@ module.exports.close = ws => {
 	});
 	if (ws.room.owner.id === ws.id) {
 		if (ws.room.players.length === 0) {
-			delete rooms[ws.room.code];
+			ws.room.owner = undefined;
+			ws.room.hole = 0;
 			return;
 		} else {
 			ws.room.owner = ws.room.players[0];
@@ -196,11 +205,11 @@ module.exports.handle = (req, res) => {
 		"Content-Type": "text/json",
 		"Access-Control-Allow-Origin": "*",
 		"Cache-Control": "no-cache"
-	})
+	});
 	res.write(JSON.stringify(Object.values(rooms).map(i => [
 		i.code,
 		i.players.length,
-		i.owner.name,
+		i.owner && i.owner.name,
 		i.mapname,
 		i.hole
 	])));

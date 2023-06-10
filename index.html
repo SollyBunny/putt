@@ -440,7 +440,10 @@
 						title.textContent = `${i[3]} (Hole #${i[4] + 1}) (${i[0]})`;
 						el.appendChild(title);
 						const body = document.createElement("div");
-						body.textContent = `Owner: ${i[2]} , Players: ${i[1]}`;
+						if (i[2])
+							body.textContent = `Owner: ${i[2]}, Players: ${i[1]}`;
+						else
+							body.textContent = `Players: ${i[1]}`;
 						el.appendChild(body);
 						e_rrooms.appendChild(el);
 					});

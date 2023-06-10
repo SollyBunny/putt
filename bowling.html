@@ -1,0 +1,74 @@
+<meta charset="UTF-8">
+<style>
+	body {
+		padding: 0;
+		margin: 0;
+		overflow: hidden;
+		background: #222;
+	}
+	button {
+		position: fixed;
+		right: 0;
+		bottom: 0;
+		padding: 1vmin;
+	}
+	.bowlingtext {
+		color: white;
+		text-shadow: 1px solid black;
+		width: 50vw;
+		height: 50vw;
+		top: 25vh;
+		left: 25vw;
+		position: fixed;
+		text-align: center;
+	}
+		@keyframes bowlinganim0 {
+			0% { opacity: 0; transform: translate(0, -200vh) rotate(1440) }
+			10% { opacity: 1; transform: unset }
+			20% { transform: rotate(10deg) translate(-20vw, -10vh)  }
+			40% { transform: rotate(-10deg) translate(20vw, -10vh) }
+			50% { opacity: 1; transform: unset }
+			100% { opacity: 0; transform: rotate(-1440deg) scale(0) translate(0, 0) }
+		}
+		@keyframes bowlinganim1 {
+			0% { opacity: 0; transform: translate(-100vw, 0) rotate(10deg) }
+			10% { opacity: 1; transform: translate(0, -30vh) rotate(-10deg) }
+			20% { transform: translate(30vw, 0) rotate(10deg) }
+			30% { transform: translate(0, 30vh) rotate(-10deg) }
+			40% { transform: translate(-30vw, 0) rotate(10deg) }
+			80% { opacity: 1; transform: translate(30vw, 0) rotate(-10deg) }
+			100% { opacity: 0; transform: translate(-200vw, 0) rotate(30deg) }
+		}
+		@keyframes bowlinganim2 {
+			0% { opacity: 0; transform: translate(-100vw, 20vh) rotate(-30deg) }
+			10% { opacity: 1; transform: unset }
+			20% { transform: rotate(720deg translate(0, 0)) }
+			20% { transform: rotate(-720deg) translate(0, -30vh) }
+			30% { transform: rotate(0) translate(0, 30vh)}
+			40% { transform: unset } 
+			80% { opacity: 1; transform: scale(0.5) rotate(-30deg) }
+			100% { opacity: 0; transform: scale(1) translate(-100vw, 20) rotate(30deg) }
+		}
+		@keyframes bowlinganimbeat {
+			0% { transform: scale(0.8); }
+			5% { transform: scale(0.9); }
+			10% { transform: scale(0.8); }
+			15% { transform: scale(1); }
+			50% { transform: scale(0.8); }
+			100% { transform: scale(0.8); }
+		}
+		.bowlingtext0 { animation: bowlinganim0 10s ease 0s 1 normal }
+		.bowlingtext1 { animation: bowlinganim1 10s ease 0s 1 normal }
+		.bowlingtext2 { animation: bowlinganim2 10s ease 0s 1 normal }
+		.bowlingtext div {
+			white-space: nowrap;
+			user-select: none;
+		}
+		.bowlingtext > div > div {
+			font-size: 500%;
+			animation: bowlinganimbeat 1s ease-in-out infinite;
+		}
+</style>
+
+<script src="game/bowling.js" type="module"></script>
+<button onclick='spawnbowlingtext("🏆", "Hole in One", "Made By Solly")'>Click for anim</button>
