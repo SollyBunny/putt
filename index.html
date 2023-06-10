@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<title> Putt Party </title>
+		<meta name="description" content="A small webapp to play golf with your friends">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<meta charset="UTF-8">
 		<style>
@@ -27,6 +28,7 @@
 			h1 {
 				width: 100vw;
 				line-height: 10vh;
+				font-size: 5vh;
 				padding: 0;
 				margin: 0;
 			}
@@ -36,6 +38,10 @@
 			}
 			h3, h4, h5, h6 {
 				margin: 0;
+			}
+			.hs {
+				font-size: 0.67em;
+				font-weight: 900;
 			}
 			input, button, select {
 				padding: 2vmin;
@@ -116,14 +122,14 @@
 						border: none;
 						border-radius: 1vmin;
 					}
-					#menugrid > div {
+					#menugrid > label {
 						text-align: left;
 					}
 					#menugrid > input {
 						text-align: right;
 						height: 4vmin;
 					}
-					#menugrid > h6, #menusettingsreset {
+					#menugrid > h3, #menusettingsreset {
 						grid-area: 1 span / 2 span;
 						margin-top: 1vmin;
 						padding: 0;
@@ -167,9 +173,6 @@
 						margin: 1vmin;
 						text-align: left;
 					}
-						#menumainleft > h6 {
-							line-height: 4vmin;
-						}
 						#menumainleft > div button {
 							background-color: #333;
 							text-align: left;
@@ -187,6 +190,8 @@
 							margin: 0 !important;
 							padding: 1vmin;
 							margin-left: 1vmin !important;
+							width: 5vmin;
+							height: 5vmin;
 						}
 				#game, #editor {
 					border: none;
@@ -202,17 +207,17 @@
 		</style>
 	</head>
 	<body>
-		<iframe id="game"> </iframe>
+		<iframe id="game" title="game"> </iframe>
 		<div id="menu">
 			 <h1> Putt Party </h1>
 			 <div id="menuitem" style="transform:translateX(-200vw)">
 				<div id="menucredits">
 					<h2> Credits </h2>
-					<h6> Wow I got clicked<br>Thanks to these people for stuff </h6>
+					<h3 class="hs"> Wow I got clicked<br>Thanks to these people for stuff </h3>
 					<div id="menucreditscontainer">
 						<a href="https://github.com/SollyBunny/putt" target="_blank">
-							<svg width="64" height="64" class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 20 20" version="1.1">
-								<circle fill="white" cx="10" cy="10" r="10"/>
+							<svg width="64" height="64" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" alt="Github">
+								<circle fill="white" cx="10" cy="10" r="10" />
 								<g transform="translate(2, 2)">
 									<path fill="black" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/>
 								</g>
@@ -220,72 +225,72 @@
 							<div class="text"> Source on GitHub! (SollyBunny) </div>
 						</a>
 						<a href="https://fonts.google.com/specimen/Varela+Round" target="_blank">
-							<image width="64" height="64" class="icon" style="border-radius:100%" src="assets/joeprince.jpg"></image>
-							<div class="text"> The font Varela (Joe Prince) </div>
+							<img width="64" height="64" class="icon" style="border-radius:100%" alt="Joe Prince" src="assets/joeprince.jpg" loading="lazy" />
+							<div class="text"> Varela Font </div>
 						</a>
 						<a href="https://threejs.org/">
-							<svg width="64" height="64" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 226.77 226.77">
-								<circle fill="white" cx="113.385" cy="113.385" r="113.385"/>
+							<svg width="64" height="64" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 226.77 226.77" alt="Three.JS">
+								<circle fill="white" cx="113.385" cy="113.385" r="113.385" />
 								<g fill="transparent" transform="translate(20 5)" stroke="#000" stroke-linecap="butt" stroke-linejoin="round" stroke-width="4">
-									<path d="m63.02 200.61-43.213-174.94 173.23 49.874z"/>
-									<path d="m106.39 50.612 21.591 87.496-86.567-24.945z"/>
-									<path d="m84.91 125.03-10.724-43.465 43.008 12.346z"/>
-									<path d="m63.458 38.153 10.724 43.465-43.008-12.346z"/>
-									<path d="m149.47 62.93 10.724 43.465-43.008-12.346z"/>
-									<path d="m84.915 125.06 10.724 43.465-43.008-12.346z"/>
+									<path d="m63.02 200.61-43.213-174.94 173.23 49.874z" />
+									<path d="m106.39 50.612 21.591 87.496-86.567-24.945z" />
+									<path d="m84.91 125.03-10.724-43.465 43.008 12.346z" />
+									<path d="m63.458 38.153 10.724 43.465-43.008-12.346z" />
+									<path d="m149.47 62.93 10.724 43.465-43.008-12.346z" />
+									<path d="m84.915 125.06 10.724 43.465-43.008-12.346z" />
 								</g>
 							</svg>
 							<div class="text"> Three.JS used for 3D rendering </div>
 						</a>
 						<a href="https://pmndrs.github.io/cannon-es/">
-							<image width="64" height="64" class="icon" style="border-radius:100%" src="assets/stefanhedman.png"></image>
+							<img width="64" height="64" class="icon" style="border-radius:100%" alt="Stefan Hedman" src="assets/stefanhedman.png" loading="lazy" />
 							<div class="text"> Cannon.JS used for 3D physics </div>
 						</a>
 					</div>
-					<h6> And of course, <bold>you</bold>, the player </h6>
-					<button class="menushortcut right" onclick="page(-1)"> <a disabled href=" " title="Back"> ➡️ </a> </button>
+					<h3 class="hs"> And of course, YOU, the player </h3>
+					<button class="menushortcut right" onclick="page(-1)" title="Back"> ➡️ </button>
 				</div>
 			 	<div id="menusettings">
 					<h2> Settings </h2>
 					<div id="menugrid">
-						<h6> General </h6>
-						<div> Name </div> <input attr="0" oninput="settingsset()" type="text" placeholder="Noob1234">
-						<div> Color </div> <input attr="1" oninput="settingsset()" type="text" placeholder="FF0000">
-						<h6> Gameplay </h6>
-						<div> Sensitivity </div> <input attr="2" oninput="settingsset()" type="number">
-						<div> Arrow Distance </div> <input attr="3" oninput="settingsset()" type="number">
-						<h6> Rendering </h6>
-						<div> FoV </div> <input attr="4" oninput="settingsset()" type="number">
-						<div> Render Dis </div> <input attr="5" oninput="settingsset()" type="number">
-						<div> BG Color </div> <input attr="6" oninput="settingsset()" type="text" placeholder="00AAFF">
-						<h6> Peformance </h6>
-						<div> Max FPS </div> <input attr="7" oninput="settingsset()" type="number">
-						<div> Fog </div> <input attr="8" oninput="settingsset()" type="checkbox">
-						<div> Dust </div> <input attr="9" oninput="settingsset()" type="checkbox">
-						<div> Lighting </div> <input attr="10" oninput="settingsset()" type="checkbox">
-						<div> Hi Poly Ball </div> <input attr="11" oninput="settingsset()" type="checkbox">
-						<h6 style="color:red"> Danger Zone </h6>
+						<h3 class="hs"> General </h3>
+						<label for="Name"> Name </label> <input id="Name" attr="0" oninput="settingsset()" type="text" placeholder="Noob1234">
+						<label for="Color"> Color </label> <input id="Color" attr="1" oninput="settingsset()" type="text" placeholder="FF0000">
+						<h3 class="hs"> Gameplay </h3>
+						<label for="Sensitivity"> Sensitivity </label> <input id="Sensitivity" attr="2" oninput="settingsset()" type="number">
+						<label for="Arrow Distance"> Arrow Distance </label> <input id="Arrow Distance" attr="3" oninput="settingsset()" type="number">
+						<h3 class="hs"> Rendering </h3>
+						<label for="FoV" > FoV </label> <input id="FoV" attr="4" oninput="settingsset()" type="number">
+						<label for="Render Dis"> Render Dis </label> <input id="Render Dis" attr="5" oninput="settingsset()" type="number">
+						<label for="BG Color"> BG Color </label> <input id="BG Color" attr="6" oninput="settingsset()" type="text" placeholder="00AAFF">
+						<h3 class="hs"> Peformance </h3>
+						<label for="Max FPS"> Max FPS </label> <input id="Max FPS" attr="7" oninput="settingsset()" type="number">
+						<label for="Fog"> Fog </label> <input id="Fog" attr="8" oninput="settingsset()" type="checkbox">
+						<label for="Dust"> Dust </label> <input id="Dust" attr="9" oninput="settingsset()" type="checkbox">
+						<label for="Lighting"> Lighting </label> <input id="Lighting" attr="10" oninput="settingsset()" type="checkbox">
+						<label for="Hi Poly Ball"> Hi Poly Ball </label> <input id="Hi Poly Ball" attr="11" oninput="settingsset()" type="checkbox">
+						<h3 class="hs" style="color:red"> Danger Zone </h3>
 						<button id="menusettingsreset" style="background:red;color:white" onclick="settingsreset()"> Reset to Default </button>
 					</div>
-					<button class="menushortcut left"  onclick="page(0)"> <a disabled href=" " title="Credits"> 💳 </a> </button>
-					<button class="menushortcut right" onclick="page(-2)"> <a disabled href=" " title="Back"> ➡️ </a> </button>
+					<button class="menushortcut left"  onclick="page(0)" title="Credits"> 💳 </button>
+					<button class="menushortcut right" onclick="page(-2)" title="Back"> ➡️ </button>
 			 	</div>
 				<div id="menumain">
 					<h2> A golfing game </h2>
 					<div id="menumaincontainer">
 						<div id="menumainleft">
-							<h6> Create Room </h6>
+							<h3 class="hs"> Create Room </h3>
 							<div>
-								<button onclick="roomsel()" class="roomsel" value="tutorial"> <h6> Tutorial </h6> Learn the basics of Putt Party with this short tutorial </button>
-								<button onclick="roomsel()" value="offline"> <h6> Offline </h6> Play the game offline, you can also playtest maps from the editor </button>
-								<button onclick="roomsel()" value="online"> <h6> Online </h6> Create a new online room </button>
+								<button onclick="roomsel()" class="roomsel" value="tutorial"> <h4 class="hs"> Tutorial </h4> Learn the basics of Putt Party with this short tutorial </button>
+								<button onclick="roomsel()" value="offline"> <h4 class="hs"> Offline </h4> Play the game offline, you can also playtest maps from the editor </button>
+								<button onclick="roomsel()" value="online"> <h4 class="hs"> Online </h4> Create a new online room </button>
 							</div>
-							<h6> Room List <button id="menumainroomrefresh" onclick="event.preventDefault();roomrefresh()"> <a disabled href=" " title="Refresh"> ♻️ </a> </button> </h6>
+							<h3 class="hs"> Room List <button id="menumainroomrefresh" onclick="event.preventDefault();roomrefresh()" title="Refresh Rooms"> ♻️ </button> </h3>
 							<div id="rrooms"></div>
 						</div>
 						<div id="menumainright">
 							<br> <br>
-							<label for="rmapname"><h6> Map Name </h6></label>
+							<label for="rmapname" class="hs"> Map Name </label><br>
 							<select id="rmapname" disabled>
 								<option value="tutorial"> Tutorial </option>
 								<option value="spinnington"> Spinnington </option>
@@ -293,21 +298,21 @@
 								<option value="cityscape"> Cityscape </option>
 							</select>
 							<br> <br>
-							<h6> Here we go! </h6>
+							<label for="menubutton" class="hs"> Here we go! </label><br>
 							<button onclick="play()" id="menubutton"> Go! </button>
 						</div>
 					</div>
-					<button class="menushortcut left"  onclick="page(-1)"> <a disabled href=" " title="Settings"> ⚙️ </a> </button>
-					<button class="menushortcut right" onclick="page(-3)"> <a disabled href=" " title="Editor"> 🔨 </a> </button>
+					<button class="menushortcut left"  onclick="page(-1)" title="Settings"> ⚙️ </button>
+					<button class="menushortcut right" onclick="page(-3)" title="Editor"> 🔨 </button>
 				</div>
 				<div id="menueditor">
-					<iframe id="editor"> </iframe>
-					<button class="menushortcut left" onclick="page(-2)"> <a disabled href=" " title="Back"> ⬅️ </a> </button>
-					<button class="menushortcut active right"> <a disabled href="editor.html" target="_blank" title="Open in new tab"> ⬆️ </a> </button>
+					<iframe id="editor" title="editor"> </iframe>
+					<button class="menushortcut left" onclick="page(-2)" title="Back"> ⬅️ </button>
+					<button class="menushortcut active right" title="Open in new tab"> <a href="editor.html" target="_blank"> ⬆️ </a> </button>
 				</div>
 			</div>
 		</div>
-		<script defer>
+		<script defer async>
 			const e_menubutton = document.getElementById("menubutton");
 			const e_menuiframe = document.getElementById("editor");
 			const e_menuitem   = document.getElementById("menuitem");
@@ -430,7 +435,8 @@
 						el.value = i[0];
 						el.mapname = i[3];
 						el.onclick = roomsel;
-						const title = document.createElement("h6");
+						const title = document.createElement("h4");
+						title.className = "hs";
 						title.textContent = `${i[3]} (Hole #${i[4] + 1}) (${i[0]})`;
 						el.appendChild(title);
 						const body = document.createElement("div");
