@@ -2,6 +2,7 @@ import * as THREE from "../lib/three.module.min.js";
 import * as CANNON from "../lib/cannon.min.js";
 import Settings from "./settings.js";
 import Effect from "./effect.js";
+import spawnbowlingtext from "./bowling.js"
 import { ConvexGeometry, mergeVertices, RoundedBoxGeometry } from "../lib/three.ext.js";
 import { Types, Modifiers, Physics, Powerups, Rainbow } from "./def.js";
 
@@ -350,6 +351,14 @@ export class Player extends Thing {
 		);
 		if (this.id === this.parent.player.id) {
 			Effect(Effect.YAY);
+			console.log(this)
+			if (this.stroke[this.hole] === undefined) {
+				spawnbowlingtext("🕴", "Hole in None", `Made by ${this.name}`);
+			} else if (this.stroke[this.hole] < 2) {
+				spawnbowlingtext("🏆", "Hole in One", `Made by ${this.name}`);
+			} else {
+				spawnbowlingtext("🏌️", `Hole in ${this.stroke[this.hole]}`, `Made by ${this.name}`);
+			}
 			this.parent.multi.hole(this.hole);
 		}
 	}

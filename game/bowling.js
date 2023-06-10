@@ -3,7 +3,6 @@ const NUMANIMATIONS = 3
 function spawnbowlingtext(img, text, subtext) {
 	const el = document.createElement("div");
 	const destroy = document.body.removeChild.bind(document.body, el);
-	el.onclick = destroy;
 	el.classList.add("bowlingtext");
 	el.classList.add("bowlingtext" + Math.floor(Math.random() * NUMANIMATIONS));
 	const e_container = document.createElement("div");
@@ -22,7 +21,7 @@ function spawnbowlingtext(img, text, subtext) {
 	}
 	el.appendChild(e_container);
 	document.body.appendChild(el);
-	window.setTimeout(destroy, 10000);
+	window.setTimeout(destroy, 5000);
 }
 
-window.spawnbowlingtext = spawnbowlingtext
+export default spawnbowlingtext;

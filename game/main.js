@@ -86,7 +86,8 @@ scene.camera.frustum = new THREE.Frustum();
 		scene.fogmaterial = new THREE.MeshBasicMaterial({
 			color: 0xFFFFFF,
 			transparent: true,
-			opacity: 0.5
+			opacity: 0.5,
+			side: THREE.DoubleSide
 		});
 		const geometry = new THREE.PlaneGeometry(1024, 1024);
 		for (let i = 1; i < 10; ++i) {
