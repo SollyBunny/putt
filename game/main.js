@@ -22,6 +22,9 @@ let fpsenabled = false;
 
 // Keys
 let keys = {}; // Key Pair : Key Pressed
+window.onblur = event => {
+	keys = {};
+};
 window.onkeydown = event => { 
 	keys[event.key] = true;
 };

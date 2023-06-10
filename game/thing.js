@@ -102,7 +102,9 @@ export class Place {
 								j.body.addEventListener("collide", j.bounce);
 								break;
 							case Modifiers.VELOCITY:
+								j.body.modvelocitycontacts = [];  // This is a queue
 								j.body.modvelocity = m[2][k][1];
+								console.log("Added vel for", i)
 								j.body.addEventListener("collide", j.velocity);
 								break;
 						}
@@ -198,7 +200,11 @@ export class Thing {
 		e.body.velocity.z = Math.cos(d) * e.target.modbounce;
 	}
 	velocity(e) {
-		if (e.body.velocity.y < 0) e.body.velocity.y = 0;
+		const now = Date.now();
+		if (now - e.body.lastvelocitycollide < 1000) return;
+		e.body.lastvelocitycollide = now;
+		if (e.body.velocity.y < 1) e.body.velocity.y = 0;
+		console.log("Collide", e.target.modvelocity)
 		e.body.velocity.x += e.target.modvelocity[0];
 		e.body.velocity.y += e.target.modvelocity[1];
 		e.body.velocity.z += e.target.modvelocity[2];
@@ -245,7 +251,7 @@ export class Player extends Thing {
 		this.textset(name);
 		this.parent.mods.text.push(this);
 		this.powerups = [];
-		this.inflatetimeouts = []; // This is a stack
+		this.inflatetimeouts = []; // This is a queue
 	}
 	die() {
 		this.isshoot = false;
