@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Putt Party Editor </title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				padding: 0;
+				margin: 0;
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+				overflow: hidden;
+				position: relative;
+				z-index: -1000;
+			}
+			#title {
+				padding: 1vmin;
+				padding-bottom: 0;
+				background: white;
+			}
+				h1 {
+					margin: 0;
+					padding: 0;
+					font-size: 100%;
+					font-weight: normal;
+				}
+			#obj {
+				padding: 1vmin;
+				display: grid;
+				grid-template-columns: repeat(8, 1fr);
+				grid-gap: 0.2vmin;
+				background: white;
+			}
+				button {
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+			#main {
+				border-top: 1px solid black;
+				border-bottom: 1px solid black;
+				flex-grow: 1;
+				background-size: 20px 20px;
+				background-image:
+					linear-gradient(grey 1px, transparent 1px),
+					linear-gradient(90deg, grey 1px, transparent 1px);
+				position: relative;
+				z-index: -100;
+			}
+				#draw {
+					position: relative;
+					z-index: -10;
+					overflow: visible;
+					pointer-events: none;
+				}
+					#draw > * {
+						stroke: black;
+						fill: white;
+						pointer-events: none;
+						user-select: none;
+					}
+					.floorpt {
+						fill: black !important;
+						r: 1px;
+					}
+					.wallpt {
+						fill: black !important;
+						r: 4px;						
+					}
+					.wallline {
+						fill: none !important;
+						stroke-width: 4px;
+					}
+					.specpt {
+						r: 7px;
+					}
+					text {
+						dominant-baseline: middle;
+						text-anchor: middle;
+						stroke-width: 0;
+					}
+					.bumper {
+						r: 20px;
+					}
+				#ptr {
+					width: 4px;
+					height: 4px;
+					margin-left: -2px;
+					margin-top: -2px;
+					border-radius: 4px;
+					background-color: black;
+					pointer-events: none;
+					position: absolute;
+					top: 0;
+				}
+			#data {
+				padding: 1vmin;
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+			}
+				#data > * > * {
+					display: inline-block;
+				}
+		</style>
+	</head>
+	<body>
+		<div id="title">
+			<h1> Putt Party Editor! </h1>
+		</div>
+		<div id="obj">
+			<button onclick="objcreate(FLOOR)"   > Floor    </button>
+			<button onclick="objcreate(WALL)"    > Wall     </button>
+			<button onclick="objcreate(START)"   > Start    </button>
+			<button onclick="objcreate(HOLE)"    > Hole     </button>
+			<button onclick="objcreate(BUMPER)"  > Bumper   </button>
+			<button onclick="objcreate(SPINNER)" > Spinner  </button>
+			<button onclick="objcreate(TRIANGLE)"> Triangle </button>
+			<button onclick="objcreate(SQUARE)"  > Square   </button>
+			<button onclick="objcreate(WIND)"    > Wind     </button>
+			<button onclick="objcreate(DELETE)"  > Delete   </button>
+			<button onclick="layershift(-1)"     > Up       </button>
+			<button onclick="layershift(1)"      > Down     </button>
+			<button onclick="undo()"             > Undo     </button>
+			<button onclick="redo()"             > Redo     </button>
+			<button onclick="save()"             > Save     </button>
+			<button onclick="load()"             > Load     </button>
+		</div>
+		<div id="main">
+			<svg id="draw" xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
+			<div id="ptr" style="transform:translate(-4px,-4px)"></div>
+		</div>
+		<div id="data">
+			<div>
+				Pos:
+				<div id="rx"> 0 </div>
+				<div id="ry"> 0 </div>
+			</div>
+			<div>
+				Layer:
+				<div id="rlayer"> 0 </div>
+			</div>
+			<div>
+				Obj:
+				<div id="robj"> Floor </div>
+			</div>
+		</div>
+		<script defer>
+
+			const FLOOR    = 0;
+			const WALL     = 1;
+			const START    = 2;
+			const HOLE     = 3;
+			const BUMPER   = 4;
+			const SPINNER  = 5;
+			const TRIANGLE = 6;
+			const SQUARE   = 7;
+			const WIND     = 8;
+			const DELETE   = -1;
+			const UP       = -2;
+			const DOWN     = -3;
+			const UNDO     = -4;
+			const REDO     = -5;
+
+			let offset = [0, 0];
+			let mouse  = [0, 0];
+			let layer  = 0;
+
+			const e_main = document.getElementById("main");
+			const e_draw = document.getElementById("draw");
+			const e_robj = document.getElementById("robj");
+			let objs = [[ FLOOR ]];
+			let undostack = [];
+			let undooffset = 0;
+
+			function render() {
+				let objstart = 0;
+				let objhole = 0;
+				let bot = "";
+				let mid = "";
+				let top = "";
+				objs.forEach(i => {
+					let type = i[0];
+					if (i.length === 1) return;
+					i = i.slice(1);
+					switch (type) {
+						case FLOOR:
+							bot += "<polygon points=\"" + i.map(m => { return (m[0] * 20) + "," + (m[1] * 20); }).join(" ") + "\" />";
+							bot += i.map(m => { return `<circle class="floorpt" cx="${m[0] * 20}" cy="${m[1] * 20}" />`; }).join("");
+							break;
+						case WALL:
+							top += "<polyline class=\"wallline\" points=\"" + i.map(m => { return (m[0] * 20) + "," + (m[1] * 20); }).join(" ") + "\" />";
+							break;
+						case START:
+							top += `<circle style="fill:${objspeccol(objstart)}" class="specpt" cx="${i[0][0] * 20}" cy="${i[0][1] * 20}" /><text style="fill:${objspeccol(objstart)}" x="${i[0][0] * 20}" y="${i[0][1] * 20 - 20}">S${objstart + 1}</text>`;
+							objstart += 1;
+							break;
+						case HOLE:
+							top += `<circle style="fill:${objspeccol(objhole)}" class="specpt" cx="${i[0][0] * 20}" cy="${i[0][1] * 20}" /><text style="fill:${objspeccol(objhole)}" x="${i[0][0] * 20}" y="${i[0][1] * 20 - 20}">H${objhole + 1}</text>`;
+							objhole += 1;
+							break;
+						case BUMPER:
+							mid += `<circle class="bumper" cx="${i[0][0] * 20}" cy="${i[0][1] * 20}" /><text style="fill:black" x="${i[0][0] * 20}" y="${i[0][1] * 20}">Bumper</text>`
+							break;
+						case SPINNER:
+							mid += `<rect x="${i[0][0] * 20 - 40}" y="${i[0][1] * 20 - 10}" width="80" height="20" /><text style="fill:black" x="${i[0][0] * 20}" y="${i[0][1] * 20}">Spinner</text>`
+							break;
+						case TRIANGLE:
+							mid += `<polygon points="${i[0][0] * 20 - 40},${i[0][1] * 20 - 20} ${i[0][0] * 20 + 20},${i[0][1] * 20 - 20} ${i[0][0] * 20 + 20},${i[0][1] * 20 + 40}" /><text style="fill:black" x="${i[0][0] * 20}" y="${i[0][1] * 20}">Triangle</text>`
+							break;
+						case SQUARE:
+							mid += `<rect x="${i[0][0] * 20 - 20}" y="${i[0][1] * 20 - 20}" width="40" height="40" /><text style="fill:black" x="${i[0][0] * 20}" y="${i[0][1] * 20}">Square</text>`
+							break;
+					}
+				});
+				e_draw.innerHTML = bot + mid + top;
+			}
+
+			function click() {
+				let c = objs.at(-1);
+				switch (c[0]) {
+					case FLOOR:
+						c.push([mouse[0], mouse[1], layer]);
+						break;
+					case WALL:
+						c.push([mouse[0], mouse[1], layer]);
+						break;
+					case START:
+					case HOLE:
+					case BUMPER:
+					case SPINNER:
+					case TRIANGLE:
+					case SQUARE:
+						c[1] = [mouse[0], mouse[1], layer];
+						objs.push([ c[0] ]);
+						break;
+					case DELETE:
+						c = objs.find(i => { // sometimes javascript makes you do things, you really shouldn't have to do 
+							return i.find(m => {
+								return mouse[0] === m[0] && mouse[1] === m[1];
+							});
+						});
+						if (!c) return;
+						if (
+							c[0] === FLOOR ||
+							c[0] === WALL
+						) {
+							objs[objs.indexOf(c)] = c.filter(i => { // again js, thanks for not having list comparison
+								return mouse[0] !== i[0] || mouse[1] !== i[1];
+							});
+						} else {
+							objs = objs.filter(i => {
+								return i !== c;
+							});
+						}
+						break;
+				}
+				undoadd();
+				render();
+			}
+
+			function objspeccol(n) {
+				switch (n) {
+					case 0: return "red";
+					case 1: return "orange";
+					case 2: return "yellow";
+					case 3: return "green";
+					case 4: return "lime";
+					case 5: return "blue";
+					case 6: return "cyan";
+					case 7: return "purple";
+					case 8: return "violet";
+					case 9: return "magenta";
+					case 10: return "pink";
+					case 11: return "brown";
+					case 12: return "grey";
+				}
+				return "black";
+			}
+
+			function objname(type) {
+				switch (type) {
+					case FLOOR   : return "Floor";
+					case WALL    : return "Wall";
+					case START   : return "Start";
+					case HOLE    : return "Hole";
+					case BUMPER  : return "Bumper";
+					case SPINNER : return "Spinner";
+					case TRIANGLE: return "Triangle";
+					case SQUARE  : return "Square";
+					case WIND    : return "Wind";
+					case DELETE  : return "Delete";
+				}
+				return "???";
+			}
+
+			function objcreate(type) {
+				e_robj.innerHTML = objname(type);
+				if (objs.at(-1).length === 1) { // object hasn't been placed
+					objs.at(-1)[0] = type;
+					return;
+				}
+				objs.push([ type ]);
+				undoadd();
+			}
+
+			function undoadd() {
+				if (undooffset !== 0) {
+					undostack = undostack.slice(0, -undooffset);
+					undooffset = 0;
+				}
+				undostack.push(JSON.parse(JSON.stringify(objs))); // shh, it's easier this way
+			}
+
+			// save load
+				async function save() { // stop handler violation
+					let c = objs.find(i => { return i[0] === START })[1];
+					let n = [];
+					objs.forEach(i => {
+						if (i.length === 1) return;
+						n.push([i[0]].concat(
+							i.slice(1).map(m => {
+								return [
+									m[0] - c[0],
+									m[1] - c[1],
+									m[2] - c[2]
+								];
+							})
+						));
+					});
+					console.log(n)
+					navigator.clipboard.writeText(JSON.stringify(n));
+				}
+				async function load() { // stop handler violation
+					let d = prompt("JSON Data");
+					try {
+						d = JSON.parse(d);
+					} catch {
+						alert("Invalid data");
+						return;
+					}
+					undoadd();
+					objs = d;
+					render();
+				}
+
+			// Keybinds
+				function undo() {
+					undooffset += 1;
+					let c = undostack.at(-undooffset - 1);
+					if (c) {
+						objs = JSON.parse(JSON.stringify(c));
+					} else {
+						objs = [ objs.at(-1) ] || [[ FLOOR ]];
+						undooffset -= 1;
+					}
+					e_robj.innerHTML = objname(objs.at(-1)[0]);
+					render();	
+				}
+				function redo() {
+					if (undooffset === 0) return;
+					let c = undostack.at(-undooffset);
+					undooffset -= 1;
+					objs = JSON.parse(JSON.stringify(c));
+					e_robj.innerHTML = objname(objs.at(-1)[0]);
+					render();
+				}
+				const e_rlayer = document.getElementById("rlayer");
+				function layershift(x) {
+					layer += x;
+					e_rlayer.innerHTML = +layer;
+				}
+				e_main.addEventListener("wheel", () => {
+					if (event.deltaY > 0) layershift(-1);
+					else                  layershift(1);
+				}, { passive: true });
+				window.onkeydown = () => {
+					// console.log(event.key);
+					switch (event.key) {
+						case "w":
+						case "ArrowUp":
+							layershift(1);
+							break;
+						case "s":
+						case "ArrowDown":
+							layershift(-1);
+							break;
+						case "a":
+						case "ArrowLeft":
+						case "z": 
+							undo();
+							break;
+						case "d":
+						case "ArrowLeft":
+						case "y":
+							redo();
+							break;
+					}
+				};
+				
+			// Drag behaviour
+				let maindragstart;
+				let maindragdone;
+				const e_ptr  = document.getElementById("ptr");
+				const e_rx   = document.getElementById("rx");
+				const e_ry   = document.getElementById("ry");
+				e_main.onpointerdown = () => {
+					e_rx.innerHTML = mouse[0] = Math.round((event.offsetX - offset[0]) / 20);
+					e_ry.innerHTML = mouse[1] = Math.round((event.offsetY - offset[1]) / 20);
+					e_ptr.style.transform = `translate(${mouse[0] * 20 + offset[0]}px,${mouse[1] * 20 + offset[1]}px)`
+					maindragstart = [
+						event.offsetX - offset[0],
+						event.offsetY - offset[1]
+					];
+					maindragdone = undefined;
+				};
+				e_main.onpointercancel = e_main.onpointerleave = () => {
+					maindragstart = undefined;
+				};
+				e_main.onpointerup = () => {
+					maindragstart = undefined;
+					if (maindragdone) return;
+					click();
+				};
+				e_main.onpointermove = () => {
+					e_rx.innerHTML = mouse[0] = Math.round((event.offsetX - offset[0]) / 20);
+					e_ry.innerHTML = mouse[1] = Math.round((event.offsetY - offset[1]) / 20);
+					e_ptr.style.transform = `translate(${mouse[0] * 20 + offset[0]}px,${mouse[1] * 20 + offset[1]}px)`
+					if (!maindragstart) return;
+					maindragdone = true;
+					offset[0] = event.offsetX - maindragstart[0];
+					offset[1] = event.offsetY - maindragstart[1];
+					e_main.style.backgroundPosition = `${offset[0]}px ${offset[1]}px`;
+					e_draw.style.transform = `translate(${offset[0]}px,${offset[1]}px)`
+				}
+		</script>
+	</body>
+</html>
+

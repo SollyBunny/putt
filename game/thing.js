@@ -349,16 +349,14 @@ export class Player extends Thing {
 			this.parent.holes[this.hole].body.position.y + 1,
 			this.parent.holes[this.hole].body.position.z
 		);
+		if (this.stroke[this.hole] === undefined)
+			spawnbowlingtext("🕴", "Hole in None", `Made by ${this.name}`);
+		else if (this.stroke[this.hole] < 2)
+			spawnbowlingtext("🏆", "Hole in One", `Made by ${this.name}`);
 		if (this.id === this.parent.player.id) {
 			Effect(Effect.YAY);
-			console.log(this)
-			if (this.stroke[this.hole] === undefined) {
-				spawnbowlingtext("🕴", "Hole in None", `Made by ${this.name}`);
-			} else if (this.stroke[this.hole] < 2) {
-				spawnbowlingtext("🏆", "Hole in One", `Made by ${this.name}`);
-			} else {
+			if (this.stroke[this.hole] > 1)
 				spawnbowlingtext("🏌️", `Hole in ${this.stroke[this.hole]}`, `Made by ${this.name}`);
-			}
 			this.parent.multi.hole(this.hole);
 		}
 	}

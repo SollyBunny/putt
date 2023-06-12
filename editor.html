@@ -15,17 +15,21 @@
 				width: 100vw;
 			}
 			nav {
-				border-bottom: 1px solid var(--fg);
+				z-index: 100;
+				background: var(--bg);
 			}
 			#body {
 				flex-grow: 1;
 				display: flex;
 			}
 				#menu {
-					padding: var(--padout)
+					padding: var(--padout);
+					box-sizing: border-box;
+					overflow: hidden;
+					z-index: 100;
+					background: var(--bg);
 				}
 					#menudrag {
-						border-right: 1px solid var(--fg);
 						width: 10px;
 						line-height: 10px;
 						font-size: 20px;
@@ -35,50 +39,67 @@
 						padding: 0;
 						margin: 0;
 						outline: none !important;
+						z-index: 100;
+					}
+					#menutool {
+						width: 100%;
+						text-align: center;
+						margin: 0;
 					}
 				#main {
 					flex-grow: 1;
 					position: relative;
 					background-image: linear-gradient(
-						transparent 180px, var(--bgh) 180px, var(--bgh) 182px, transparent 182px,
+						var(--bgh) 0, var(--bgh) 2px, transparent 2px,
 						transparent 199px
 					), linear-gradient(90deg,
-						transparent 180px, var(--bgh) 180px, var(--bgh) 182px, transparent 182px,
+						var(--bgh) 0, var(--bgh) 2px, transparent 2px,
 						transparent 199px
 					), linear-gradient(
-						var(--bgd) 0, var(--bgd) 2px, transparent 2px,
 						transparent 20px, var(--bgd) 20px, var(--bgd) 22px, transparent 22px,
 						transparent 40px, var(--bgd) 40px, var(--bgd) 42px, transparent 42px,
 						transparent 60px, var(--bgd) 60px, var(--bgd) 62px, transparent 62px,
-						transparent 80px, var(--bgl) 80px, var(--bgl) 82px, transparent 82px,
-						transparent 100px, var(--bgd) 100px, var(--bgd) 102px, transparent 102px,
+						transparent 80px, var(--bgd) 80px, var(--bgd) 82px, transparent 82px,
+						transparent 100px, var(--bgl) 100px, var(--bgl) 102px, transparent 102px,
 						transparent 120px, var(--bgd) 120px, var(--bgd) 122px, transparent 122px,
 						transparent 140px, var(--bgd) 140px, var(--bgd) 142px, transparent 142px,
 						transparent 160px, var(--bgd) 160px, var(--bgd) 162px, transparent 162px,
+						transparent 180px, var(--bgd) 180px, var(--bgd) 182px, transparent 182px,
 						transparent 199px
 					), linear-gradient(90deg,
-						var(--bgd) 0, var(--bgd) 2px, transparent 2px,
 						transparent 20px, var(--bgd) 20px, var(--bgd) 22px, transparent 22px,
 						transparent 40px, var(--bgd) 40px, var(--bgd) 42px, transparent 42px,
 						transparent 60px, var(--bgd) 60px, var(--bgd) 62px, transparent 62px,
-						transparent 80px, var(--bgl) 80px, var(--bgl) 82px, transparent 82px,
-						transparent 100px, var(--bgd) 100px, var(--bgd) 102px, transparent 102px,
+						transparent 80px, var(--bgd) 80px, var(--bgd) 82px, transparent 82px,
+						transparent 100px, var(--bgl) 100px, var(--bgl) 102px, transparent 102px,
 						transparent 120px, var(--bgd) 120px, var(--bgd) 122px, transparent 122px,
 						transparent 140px, var(--bgd) 140px, var(--bgd) 142px, transparent 142px,
 						transparent 160px, var(--bgd) 160px, var(--bgd) 162px, transparent 162px,
+						transparent 180px, var(--bgd) 180px, var(--bgd) 182px, transparent 182px,
 						transparent 199px
 					);
 					background-size: 200px 200px;
 					background-repeat: repeat;
 				}
 					#draw {
+						position: absolute;
 						overflow: visible;
+						position: relative;
 					}
+						.ptr, .ptr * {
+							pointer-events: none;
+							white-space: pre;
+							user-select: none;
+						}
 					#tools {
 						position: absolute;
 						bottom: 0;
 						left: 0;
+						z-index: 100;
+						user-select: none;
+						pointer-events: none;
 					}
+					
 		</style>
 	</head>
 	<body>
@@ -87,27 +108,54 @@
 			<button title="Load"> 📂 </button>
 			<button title="Reset"> 🔄 </button>
 			<button title="Play"> 🎮 </button>
+			<input id="name" style="float:right" type="text" placeholder="Noob's Place" oninput="place.name = event.target.value;">
 		</nav>
 		<div id="body">
-			<div id="menu">
-				<h2> Selected Item </h2>
+			<div id="menu" style="width: 30vmin">
+				<h2 id="menutool"> Selecting </h2>
 			</div>
 			<button id="menudrag">
 				.<br>.<br>.
 			</button>
 			<div id="main">
 				<svg id="draw">
-
+					<defs>
+						<filter x="0" y="0" width="1" height="1" id="bgfill">
+							<feFlood flood-color="var(--bg)" />
+							<feComposite in="SourceGraphic" />
+						</filter>
+					</defs>
+					<g id="lins" style="display: none;">
+						<circle id="circ" stroke="gray" fill="transparent" stroke-width="0.25" />
+						<line id="linh" stroke="gray" />
+						<line id="linx" stroke="white" />
+						<line id="liny" stroke="white" />
+						<text id="txth" filter="url(#bgfill)" fill="gray" dominant-baseline="middle" text-anchor="middle"></text>
+						<text id="txtx" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
+						<text id="txty" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
+					</g>
+					<g id="ptr2" class="ptr" fill="gray" style="transform:scale(0)">
+						<circle cx="1" cy="1" r="5" />
+						<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
+					</g>
+					<g id="ptr1" class="ptr" fill="white">
+						<circle cx="1" cy="1" r="5" />
+						<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
+					</g>
 				</svg>
 				<div id="tools">
 					<input id="toolsselect" name="tool" type="radio">
-					<label for="toolsselect"> <button title="Select"> 🖱️ </button></label>
+					<label for="toolsselect" onclick="toolset(0)"> <button title="Select"> 🖱️ </button></label>
 					<input id="toolsnewobj" name="tool" type="radio">
-					<label for="toolsnewobj"> <button title="New Object"> 🖊️ </button></label>
+					<label for="toolsnewobj" onclick="toolset(1)"> <button title="New Object"> 🖊️ </button></label>
 					<input id="toolsnewsrf" name="tool" type="radio">
-					<label for="toolsnewsrf"> <button title="New Surface"> 🧱 </button></label>
+					<label for="toolsnewsrf" onclick="toolset(2)"> <button title="New Surface"> 🧱 </button></label>
+					<input id="toolsdelete" name="tool" type="radio">
+					<label for="toolsdelete" onclick="toolset(3)"> <button title="Delete"> 🗑 </button></label>
 				</div>
 			</div>
-		
+				
+				<!-- <div class="ptr" id="ptrb" style="display: none;"></div> -->
 		</div>
+		<script defer async src="editor/main.js" type="module"></script>
 	</body>

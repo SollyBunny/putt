@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Putt Party Editor </title>
+		<style>
+			body {
+				padding: 0;
+				margin: 0;
+				display: flex;
+				flex-direction: column;
+				height: calc(100vh - 1vmin);
+				overflow: hidden;
+			}
+			body > * {
+				width: 100vw;
+			}
+			#title {
+				padding: 1vmin;
+				border-bottom: 1px solid black;
+			}
+			#main {
+				flex-grow: 1;
+				background-size: 20px 20px;
+				background-image:
+					linear-gradient(grey 1px, transparent 1px),
+					linear-gradient(90deg, grey 1px, transparent 1px);
+			}
+			#objs {
+				padding: 1vmin;
+			}
+			#draw {
+				overflow: visible;
+				pointer-events: none;
+			}
+			#draw > polygon {
+				fill: white;
+				stroke: black;
+			}
+			#draw > circle {
+				r: 3px;
+				fill: black;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="title">
+			Title
+		</div>
+		<div id="objs">
+			<button onclick="objnew(0)"> Floor </button>
+		</div>
+		<div id="main" onpointerdown="mainpointerdown()" onpointerup="mainpointerup()" onpointerleave="mainpointercancel()" onpointercancel="mainpointercancel()" onpointermove="mainpointermove()">
+			<svg id="draw"></svg>
+		</div>
+		<script>
+			let e_main, e_draw;
+			let maindragpos = undefined;
+			let mainoffset = [0, 0];
+			let maindrag = false;
+			let objs = [];
+			let objtype = 0;
+			let undo = [];
+			let undoff = 0;
+			function undoadd() {
+				if (undoff !== 0) {
+					undo = undo.slice(0, -undoff);
+					undoff = 0;
+				}
+				undo.push([objtype, JSON.parse(JSON.stringify(objs))]);
+			}
+			function objnew(id) {
+				objtype = id;
+				objs.push([]);
+				undoadd();
+			}
+			function render() {
+				e_draw.innerHTML = "";
+				objs.forEach(i => {
+					switch (i[0]) {
+						case 0:
+							e_draw.innerHTML += "<polygon points=\"" + i.slice(1).map(m => { return (m[0] * 20) + "," + (m[1] * 20); }).join(" ") + "\" />";
+							i.slice(1).forEach(m => {
+								e_draw.innerHTML += `<circle cx="${m[0] * 20}" cy="${m[1] * 20}" \>`;
+							})
+							break;
+					}
+				})
+			}
+			function mainpointerdown() {
+				maindragpos = [
+					event.offsetX - mainoffset[0], 
+					event.offsetY - mainoffset[1]
+				];
+				maindrag = true;
+			}
+			function mainpointercancel() {
+				maindragpos = undefined;
+				maindrag = false;
+			}
+			function mainpointerup() {
+				maindragpos = undefined;
+				if (maindrag === false) return;
+				undoadd();
+				if (objs.at(-1) === undefined) {
+					objs.push([objtype])	;
+				} else if (objs.at(-1).length === 0) {
+					objs.at(-1).push(objtype)
+				}
+				let p;
+				switch (objtype) {
+					case 0:
+						p = [
+							Math.round((event.offsetX - mainoffset[0]) / 20),
+							Math.round((event.offsetY - mainoffset[1]) / 20)
+						];
+						objs.at(-1).push(p)
+						break;
+				}
+				render();
+			}
+			function mainpointermove() {
+				if (maindragpos === undefined) return;
+				maindrag = false;
+				mainoffset[0] = event.offsetX - maindragpos[0];
+				mainoffset[1] = event.offsetY - maindragpos[1];
+				e_main.style.backgroundPosition = `${mainoffset[0]}px ${mainoffset[1]}px`;
+				e_draw.style.transform = `translate(${mainoffset[0]}px,${mainoffset[1]}px)`
+			}
+			window.onload = () => {
+				e_main = document.getElementById("main");
+				e_draw = document.getElementById("draw");
+			}
+			window.onkeydown = () => {
+				switch (event.key) {
+					case "z":
+						if (undo.at(-undoff - 1) === undefined) break;
+						undoadd();
+						objtype = undo.at(-undoff - 2)[0];
+						objs = undo.at(-undoff - 2)[1];
+						undoff += 1;
+						render();
+						break;
+					case "y":
+						undoff -= 1;
+						objtype = undo.at(-undoff - 1)[0];
+						objs = undo.at(-undoff - 1)[1];
+						render();
+						break;
+				}
+				console.log(event);
+			}
+		</script>
+	</body>
+</html>

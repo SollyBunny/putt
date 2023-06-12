@@ -41,6 +41,10 @@ body {
 }
 button, a, label {
 	cursor: pointer;
+	pointer-events: all;
+}
+button {
+	user-select: none;
 }
 .hs {
 	font-size: 0.67em;
@@ -60,7 +64,6 @@ input[type="radio"] {
 	display: none;
 }
 label {
-	pointer-events: all;
 	display: inline-block;
 }
 label button {
