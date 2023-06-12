@@ -1,0 +1,80 @@
+:root {
+	--fg: #fff;
+	--bgd: #111;
+	--bg: #222;
+	--bgl: #333;
+	--bgh: #444;
+	--padin: 2vmin;
+	--padout: 1vmin;
+	--time: 0.2s;
+}
+::-webkit-scrollbar, scrollbar {
+	width: 16px;
+	background-color: var(--bgd);
+}
+::-webkit-scrollbar-thumb, scrollbar-thumb {
+	background-color: var(--bgl);
+	border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover, scrollbar-thumb:hover {
+	background-color: var(--bgh);
+}
+html {
+	scroll-behavior: smooth;
+}
+@font-face {
+	font-family: "varela";
+	font-display: swap;
+	src: url("assets/varela.woff2") format("woff2"), url("assets/varela.ttf") format("truetype");
+}
+* {
+	font-family: "varela";
+}
+body {
+	background-color: var(--bg);
+	color: var(--fg);
+	padding: 0;
+	margin: 0;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+}
+button, a, label {
+	cursor: pointer;
+}
+.hs {
+	font-size: 0.67em;
+	font-weight: 900;
+}
+input, button, select {
+	padding: var(--padin);
+	border-radius: var(--padin);
+	margin: var(--padout);
+	outline: none;
+	border: none;
+	color: var(--fg);
+	background-color: var(--bgl);
+	transition: background-color var(--time) ease;
+}
+input[type="radio"] {
+	display: none;
+}
+label {
+	pointer-events: all;
+	display: inline-block;
+}
+label button {
+	pointer-events: none;
+}
+input:hover, input:focus, button:hover, select:focus, select:hover, label:hover button, input:checked+label button {
+	outline: 1px solid var(--fg);
+}
+input:focus, select:focus, label:hover button, input:checked+label button {
+	background-color: var(--bgh);
+}
+button:disabled, input:disabled, select:disabled {
+	outline: none !important;
+	background-color: #333 !important;
+	cursor: not-allowed !important;
+	opacity: 0.7 !important;
+}

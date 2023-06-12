@@ -5,25 +5,10 @@
 		<meta name="description" content="A small webapp to play golf with your friends">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<meta charset="UTF-8">
+		<link rel="stylesheet" href="style.css">
 		<style>
-			@font-face {
-				font-family: "varela";
-				font-display: swap;
-				src: url("assets/varela.woff2") format("woff2"), url("assets/varela.ttf") format("truetype");
-			}
-			* {
-				font-family: "varela";
-			}
 			body {
-				color: white;
-				padding: 0;
-				margin: 0;
 				font-size: 120%;
-				overflow: hidden;
-				background-color: #222;
-			}
-			button, a {
-				cursor: pointer;
 			}
 			h1 {
 				width: 100vw;
@@ -38,32 +23,6 @@
 			}
 			h3, h4, h5, h6 {
 				margin: 0;
-			}
-			.hs {
-				font-size: 0.67em;
-				font-weight: 900;
-			}
-			input, button, select {
-				padding: 2vmin;
-				margin: 1vmin;
-				border-radius: 1vmin;
-				outline: none;
-				border: none;
-				color: white;
-				background-color: #333;
-				transition: background-color 0.2s ease;
-			}
-			input:hover, input:focus, button:hover, select:focus, select:hover {
-				outline: 1px solid white;
-			}
-			input:focus, select:focus {
-				background-color: #444;
-			}
-			button:disabled, input:disabled, select:disabled {
-				outline: none !important;
-				background-color: #333 !important;
-				cursor: not-allowed !important;
-				opacity: 0.7 !important;
 			}
 			#menu {
 				text-align: center;

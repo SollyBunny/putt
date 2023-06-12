@@ -8,7 +8,8 @@ const Modifiers = {
 	BOUNCE   : 5,
 	VELOCITY : 6,
 	COLOR    : 7,
-	TELEPORT : 8
+	TELEPORT : 8,
+	PHI      : 9,
 };
 
 const Modifiersname = [
@@ -21,6 +22,7 @@ const Modifiersname = [
 	/* VELOCITY : */ "Velocity",
 	/* COLOR    : */ "Color",
 	/* TELEPORT : */ "Teleport",
+	/* PHI      : */ "Physics Object",
 ];
 
 const Modifiersdefault = [
@@ -33,6 +35,7 @@ const Modifiersdefault = [
 	/* VELOCITY : */ [0, 5, 0],
 	/* COLOR    : */ 0,	
 	/* TELEPORT : */ [0, 5, 0],
+	/* PHI      : */ 5
 ]
 
 const Types = {
