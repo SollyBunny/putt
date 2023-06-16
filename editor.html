@@ -11,23 +11,36 @@
 				display: flex;
 				flex-direction: column;
 			}
-			body > * {
-				width: 100vw;
-			}
 			nav {
+				display: flex;
 				z-index: 100;
 				background: var(--bg);
+				align-items: center;
+				padding-left: 1vmin;
+				padding-right: 1vmin;
 			}
+				nav h1 {
+					padding-left: 1vmin;
+					padding-right: 1vmin;
+					text-align: center;
+					height: min-content;
+				}
+				nav input {
+					flex-grow: 1;
+				}
 			#body {
 				flex-grow: 1;
 				display: flex;
+				overflow: hidden;
 			}
 				#menu {
-					padding: var(--padout);
+					padding: 1vmin;
 					box-sizing: border-box;
 					overflow: hidden;
 					z-index: 100;
 					background: var(--bg);
+					position: relative;
+					height: 100%;
 				}
 					#menudrag {
 						width: 10px;
@@ -41,11 +54,40 @@
 						outline: none !important;
 						z-index: 100;
 					}
-					#menutool {
-						width: 100%;
-						text-align: center;
-						margin: 0;
+					#menuobject, #menusurface {
+						flex-wrap: wrap;
 					}
+						#menuobject > label, #menusurface > label {
+							flex-grow: 1;
+							justify-content: center;
+							align-items: center;
+							background-repeat: no-repeat;
+							background-position: center center;
+							background-size: cover;
+						}
+					#menu > div {
+						margin-top: 6vmin;
+						height: calc(100% - 6vmin);
+						overflow-y: auto;
+						overflow-x: hidden;
+						box-sizing: border-box;
+					}
+					#menu h2 {
+						position: absolute;
+						top: 1vmin;
+						left: 0;
+						width: calc(100% - 1vmin);
+						text-align: center;
+						height: 5vmin;
+						line-height: 5vmin;
+						border-radius: 0 2vmin 2vmin 0;
+						white-space: nowrap;
+						text-overflow: ellipsis;
+						overflow: hidden;
+					}
+						#menu h2 > div {
+							float: left;
+						}
 				#main {
 					flex-grow: 1;
 					position: relative;
@@ -82,9 +124,7 @@
 					background-repeat: repeat;
 				}
 					#draw {
-						position: absolute;
 						overflow: visible;
-						position: relative;
 					}
 						.ptr, .ptr * {
 							pointer-events: none;
@@ -95,36 +135,108 @@
 						position: absolute;
 						bottom: 0;
 						left: 0;
+						right: 0;
 						z-index: 100;
 						user-select: none;
 						pointer-events: none;
+						display: flex;
+						align-items: center;
 					}
-					
+						#ry {
+							flex-grow: 1;
+							pointer-events: all;
+						}
 		</style>
 	</head>
 	<body>
 		<nav>
-			<button title="Save"> 💾 </button>
-			<button title="Load"> 📂 </button>
-			<button title="Reset"> 🔄 </button>
-			<button title="Play"> 🎮 </button>
-			<input id="name" style="float:right" type="text" placeholder="Noob's Place" oninput="place.name = event.target.value;">
+			<button onclick="save()" title="Save (ctrl-s)"> 💾 </button>
+			<button onclick="json()" title="Load (ctrl-o)"> 📂 </button>
+			<button onclick="reset()" title="Reset (ctrl-n)"> 🔄 </button>
+			<button onclick="play()" title="Play (ctrl-p)"> 🎮 </button>
+			<input id="toolssettings" name="tool" type="radio">
+			<label for="toolssettings" onclick="toolSet(4)" title="Settings (ctrl-,)"><button> ⚙️ </button></label>
+			<input id="rname" style="float:right" type="text" placeholder="Noob's Place">
+			<h1> Putt Party Editor </h1>
 		</nav>
 		<div id="body">
 			<div id="menu" style="width: 30vmin">
-				<h2 id="menutool"> Selecting </h2>
+				<div id="menuselect">
+					<h2 style="background-color: #aaa" title="Selecting"> <div> 🖱️ </div> Selecting </h2>
+					<label for="rid"><h3> ID </h3></label>
+					<input min="0" onkeydown="if (!event.ctrlKey && `-+ `.indexOf(event.key) !== -1) event.preventDefault()" oninput="place.sel = event.target.value;" id="rid" type="number"><br>
+					<label for="rtype"><h3> Type </h3></label>
+					<h3> Position </h3>
+					<div id="rpos"></div>
+					<h3> Modifiers </h3>
+					<div id="rpos"></div>
+					<select id="rtype">
+						<optgroup label="Extra-Cool Objects">
+							<option value="0"> Player </option>
+							<option value="1"> Start </option>
+							<option value="2"> Hole </option>
+							<option value="3"> Powerup </option>
+						</optgroup>
+						<optgroup label="Objects">
+							<option value="4"> Text </option>
+							<option value="5"> Box </option>
+							<option value="6"> Sphere </option>
+							<option value="7"> Cylinder </option>
+							<option value="8"> Cone </option>
+							<option value="9"> Tetrahedron </option>
+							<option value="10"> Octahedron </option>
+							<option value="11"> Dodecahedron </option>
+							<option value="12"> Icosehedron </option>
+							<option value="13"> Cross </option>
+							<option value="14"> Tee </option>
+							<option value="15"> Why </option>
+						</optgroup>
+						<optgroup label="Surfaces" id="typesurfaces">
+							<option value="16"> Floor </option>
+							<option value="17"> Bumpy Floor </option>
+							<option value="18"> Wall </option>
+							<option value="19"> Bumpy Wall </option>
+							<option value="20"> Platform </option>
+							<option value="21"> Bumpy Platform </option>
+						</optgroup>
+					</select>
+				</div>
+				<div id="menuobject" style="display: none">
+					<h2 style="background-color: #0d8" title="Placing Object"> <div> 🖊️ </div> Placing Object </h2>
+				</div>
+				<div id="menusurface" style="display: none">
+					<h2 style="background-color: #08d" title="Placing Surface"> <div> 🧱 </div> Placing Surface </h2>
+				</div>
+				<div id="menudelete" style="display: none">
+					<h2 style="background-color: #80d" title="Deleting"> <div> 🗑 </div> Deleting </h2>
+				</div>
+				<div id="menusettings" style="display: none" title="Settings">
+					<h2 style="background-color: #acf"> <div> ⚙️ </div> Settings </h2>
+					<label for="rcolsky"><h3> Sky Color </h3></label>
+					<input id="rcolsky" type="text" placeholder="00aaff"><br>
+					<label for="rcolfloor"><h3> Floor Color </h3></label>
+					<input id="rcolfloor" type="text" placeholder="5c8eed"><br>
+					<label for="rcolwall"><h3> Wall Color </h3></label>
+					<input id="rcolwall" type="text" placeholder="9CDE5E"><br>
+					<label for="rcolbounce"><h3> Bounce Color </h3></label>
+					<input id="rcolbounce" type="text" placeholder="505D6B"><br>
+				</div>
 			</div>
 			<button id="menudrag">
 				.<br>.<br>.
 			</button>
-			<div id="main">
-				<svg id="draw">
+			<div id="main" oncontextmenu="return false;">
+				<svg id="draw" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10">
+					Your browser doesn't support SVG
 					<defs>
 						<filter x="0" y="0" width="1" height="1" id="bgfill">
 							<feFlood flood-color="var(--bg)" />
 							<feComposite in="SourceGraphic" />
 						</filter>
 					</defs>
+					<g id="things">
+
+					</g>
 					<g id="lins" style="display: none;">
 						<circle id="circ" stroke="gray" fill="transparent" stroke-width="0.25" />
 						<line id="linh" stroke="gray" />
@@ -145,13 +257,15 @@
 				</svg>
 				<div id="tools">
 					<input id="toolsselect" name="tool" type="radio">
-					<label for="toolsselect" onclick="toolset(0)"> <button title="Select"> 🖱️ </button></label>
+					<label for="toolsselect" onclick="toolSet(0)" title="Select (escape)"> <button style="background:#aaa"> 🖱️ </button></label>
 					<input id="toolsnewobj" name="tool" type="radio">
-					<label for="toolsnewobj" onclick="toolset(1)"> <button title="New Object"> 🖊️ </button></label>
+					<label for="toolsnewobj" onclick="toolSet(1)" title="New Object (ctrl-1)"> <button style="background:#0d8"> 🖊️ </button></label>
 					<input id="toolsnewsrf" name="tool" type="radio">
-					<label for="toolsnewsrf" onclick="toolset(2)"> <button title="New Surface"> 🧱 </button></label>
+					<label for="toolsnewsrf" onclick="toolSet(2)"  title="New Surface (ctrl-2)"> <button style="background:#08d"> 🧱 </button></label>
 					<input id="toolsdelete" name="tool" type="radio">
-					<label for="toolsdelete" onclick="toolset(3)"> <button title="Delete"> 🗑 </button></label>
+					<label for="toolsdelete" onclick="toolSet(3)" title="Delete (ctrl-3)"> <button style="background:#80a"> 🗑 </button></label>
+					<input id="ry" type="number" step="any" placeholder="Y Position">
+					<label for="ry"><h3> Y </h3></label>
 				</div>
 			</div>
 				
