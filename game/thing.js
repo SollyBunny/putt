@@ -11,6 +11,27 @@ const e_rmapname  = document.getElementById("rmapname"); // Store mapname
 const e_rscore    = document.getElementById("rscore"); // Stores player scorecard
 const e_cpowerups = document.getElementById("powerupcontainer").children;
 
+let matrix = new THREE.Matrix4(), proj, m, j;
+
+const ZEROMATRIX = new THREE.Matrix4(
+	0, 0, 0, 0,
+	0, 0, 0, 0,
+	0, 0, 0, 0,
+	0, 0, 0, 1,
+);
+const ROTATEMATRIX = new THREE.Matrix4(
+	0.9900332889206209, 0.10925158443563555, -0.08887169474766277, 0,
+	-0.09933466539753062, 0.9890382781008347, 0.10925158443563557, 0,
+	0.09983341664682815, -0.09933466539753062, 0.9900332889206209, 0,
+	0, 0, 0, 1,
+);
+const INVROTATEMATRIX = new THREE.Matrix4(
+	0.990033288920621, -0.09933466539753065, 0.09983341664682817, 0,
+	0.10925158443563557, 0.9890382781008348, -0.09933466539753065, 0,
+	-0.08887169474766277, 0.10925158443563558, 0.990033288920621, 0,
+	0, 0, 0, 1,
+);
+
 export class Place {
 	// Can't call it map because of JS reserving so many names
 	materials = {
@@ -21,7 +42,9 @@ export class Place {
 		BOUNCE:  new THREE.MeshLambertMaterial(), // Used for bouncer, booster
 		HOLE:    new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
 		START:   new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
-		POWERUP: new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.7, side: THREE.DoubleSide }), // Used for powerups
+	}
+	meshes = {
+
 	}
 	constructor(scene, world) {
 		this.scene = scene;
@@ -39,26 +62,30 @@ export class Place {
 			this.materials.WALL.color.setHex(data[1][2]); // Used for wall
 			this.materials.OBJ.color.setHex(data[1][3]); // Used for obstacles
 			this.materials.BOUNCE.color.setHex(data[1][3]); // Used for bouncer, booster
-			this.materials.HOLE.color.setHex(data[1][2]); // Used for hole
-		// Set maps 
-			/*new THREE.TextureLoader().load(
-				"assets/floor.png",
-				texture => {
-					texture.wrapS = THREE.RepeatWrapping;
-					texture.wrapT = THREE.RepeatWrapping;
-					texture.offset.set( 0, 0 );
-					texture.repeat.set(10, 10);
-					this.materials.FLOOR1.map = this.materials.FLOOR2.map = texture;
-					this.materials.FLOOR1.needsUpdate = this.materials.FLOOR2.needsUpdate = true;
-				},
-				e => {
-					console.warn("Failed to load assets/floor.png", e);
-				}
-			);*/
-		// Generate Map stuff
-			let m, j;
+		// Generate meshes
+			let powerupcount = 0;
 			for (let i = 2; i < data.length; ++i) {
 				m = data[i];
+				switch (m[0]) {
+					case Types.POWERUP : ++powerupcount;
+				}
+			}
+			this.meshes.POWERUP = new THREE.InstancedMesh(
+				new RoundedBoxGeometry(
+					1.2,
+					1.2,
+					1.2,
+					3,
+					0.2
+				),
+				new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.7, side: THREE.DoubleSide }),
+				powerupcount
+			);
+		// Generate Map stuff
+			for (let i = 2; i < data.length; ++i) {
+				m = data[i];
+				if (debug)
+					console.time(`Build thing ${m[0]} id: ${i - 2}`);
 				switch (m[0]) {
 					case Types.FLOOR      : j = new Floor      (this, m[1]); break;
 					case Types.BUMPYFLOOR : j = new Bumpyfloor (this, m[1]); break;
@@ -113,7 +140,52 @@ export class Place {
 					}
 				}
 				this.things.push(j);
+				if (debug)
+					console.timeEnd(`Build thing ${m[0]} id: ${i - 2}`);
 			}
+	}
+	update(tx) {
+		// Frustrum
+			matrix.multiplyMatrices(scene.camera.projectionMatrix, scene.camera.matrixWorldInverse)
+			scene.camera.frustum.setFromProjectionMatrix(matrix);
+		// Update
+			let m;
+			for (let i = 0; i < this.mods.spin.length; ++i) {
+				m = this.mods.spin[i];
+				m.mesh.rotation.x = this.tick / 1000 * m.modspin[0];
+				m.mesh.rotation.y = this.tick / 1000 * m.modspin[1];
+				m.mesh.rotation.z = this.tick / 1000 * m.modspin[2];
+				if (m.body) {
+					m.body.quaternion.x = m.mesh.quaternion.x;
+					m.body.quaternion.y = m.mesh.quaternion.y;
+					m.body.quaternion.z = m.mesh.quaternion.z;
+					m.body.quaternion.w = m.mesh.quaternion.w;
+				}
+			}
+			for (let i = 0; i < this.mods.text.length; ++i) {
+				m = this.mods.text[i];
+				if (scene.camera.frustum.containsPoint(m.mesh.position)) {
+					proj = m.mesh.position.clone().project(scene.camera);
+					proj.x = ( proj.x + 1) / 2 * can.width;
+					proj.y = (-proj.y + 1) / 2 * can.height;
+					this.mods.text[i].text.style.transform = `translate(calc(${proj.x}px - 50%),calc(${proj.y}px - 50%))`;
+					if (m.mesh.visible === false) {
+						this.mods.text[i].text.style.display = "block";
+						m.mesh.visible = true;
+					}
+				} else if (m.mesh.visible === true) {
+					this.mods.text[i].text.style.display = "none";
+					m.mesh.visible = false;
+				}
+			}
+			for (let i = 0; i < this.powerups.length; ++i) {
+				m = this.powerups[i];
+				if (m.got) continue;
+				m.matrix.multiply(i & 1 ? INVROTATEMATRIX : ROTATEMATRIX);
+				this.meshes.POWERUP.setMatrixAt(i, m.matrix);
+			}
+			this.meshes.POWERUP.instanceMatrix.needsUpdate = true;
+			for (let i = 0; i < this.players.length; ++i) this.players[i].update(tx);
 	}
 	sethole(id) {
 		if (id > this.holes.length - 1) return;
@@ -137,6 +209,7 @@ export class Place {
 		this.players.forEach(i => { i.add(); });
 		e_rmapname.textContent = this.data[0][0];
 		this.scene.background.setHex(this.data[1][0]);
+		this.scene.add(this.meshes.POWERUP);
 		if (Settings.FOG) {
 			this.scene.fogmaterial.color.setHex(this.data[1][0]);
 			this.scene.fogmaterial.color.addScalar(0.1);
@@ -496,7 +569,7 @@ export class Player extends Thing {
 			Effect(Effect.BOUNCE);
 		}
 	}
-	onupdate(tx) {
+	update(tx) {
 		/*if (this.light) {
 			this.light.position.x = this.body.position.x;
 			this.light.position.y = this.body.position.y + 1;
@@ -742,7 +815,6 @@ export class Floor extends Thing {
 			}
 			this.geometry.index.array = new Uint16Array(newpoints); // set new points in mesh
 			this.geometry.index.count = newpoints.length; // set new length
-			this.geometry.computeVertexNormals(); // TODO only calculate normals you must, this adds 0.5s to loading
 		}
 		points = []; // Format geometry points to CANNON.Vec3 for physics
 		for (let i = 0; i < this.geometry.attributes.position.array.length; i += 3) {
@@ -1191,22 +1263,14 @@ export class Wind extends Thing {
 }
 
 export class Powerup extends Thing {
-	geometry = new RoundedBoxGeometry(
-		1.2,
-		1.2,
-		1.2,
-		3,
-		0.2
-	);
 	shape = new CANNON.Box(new CANNON.Vec3(1, 1, 1));
 	constructor(parent, pos) {
 		super(parent, Types.POWERUP);
 		this.id = this.parent.powerups.length;
 		this.parent.powerups.push(this);
-		this.mesh = new THREE.Mesh(this.geometry, this.parent.materials.POWERUP);
-		this.mesh.position.x = pos[0];
-		this.mesh.position.y = pos[1] + 1;
-		this.mesh.position.z = pos[2];
+		this.matrix = new THREE.Matrix4();
+		this.matrix.makeTranslation(pos[0], pos[1] + 1, pos[2]);
+		this.parent.meshes.POWERUP.setMatrixAt(this.id, this.matrix);
 		this.body = new CANNON.Body({
 			mass: 0,
 			position: new CANNON.Vec3(pos[0], pos[1] + 1, pos[2]),
@@ -1217,18 +1281,18 @@ export class Powerup extends Thing {
 		this.got = false;
 	}
 	unget() {
+		this.parent.meshes.POWERUP.setMatrixAt(this.id, this.matrix);
 		this.got = false;
-		this.mesh.visible = true;
 	}
 	onget() {
 		if (this.got) return;
 		this.parent.scene.confetti.spawn(
-			this.mesh.position.x,
-			this.mesh.position.y,
-			this.mesh.position.z
+			this.body.position.x,
+			this.body.position.y,
+			this.body.position.z
 		);
 		this.got = true;
-		this.mesh.visible = false;
+		this.parent.meshes.POWERUP.setMatrixAt(this.id, ZEROMATRIX);
 		window.setTimeout(this.unget.bind(this), 5000);
 	}
 }

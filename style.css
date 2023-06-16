@@ -4,8 +4,7 @@
 	--bg: #222;
 	--bgl: #333;
 	--bgh: #444;
-	--padin: 2vmin;
-	--padout: 1vmin;
+	--bge: #d22;
 	--time: 0.2s;
 }
 ::-webkit-scrollbar, scrollbar {
@@ -46,14 +45,18 @@ button, a, label {
 button {
 	user-select: none;
 }
+h1, h2, h3, h4, h5, h6 {
+	margin: 0;
+	padding: 0;
+}
 .hs {
 	font-size: 0.67em;
 	font-weight: 900;
 }
 input, button, select {
-	padding: var(--padin);
-	border-radius: var(--padin);
-	margin: var(--padout);
+	padding: 2vmin;
+	border-radius: 2vmin;
+	margin: 1vmin;
 	outline: none;
 	border: none;
 	color: var(--fg);
@@ -65,9 +68,19 @@ input[type="radio"] {
 }
 label {
 	display: inline-block;
+	margin: 1vmin;
 }
 label button {
 	pointer-events: none;
+	margin: 0;
+	width: 100%;
+	height: 100%;
+}
+input:invalid {
+	background-color: var(--bge);
+}
+input[type="number"], input[type="text"] {
+	cursor: text;
 }
 input:hover, input:focus, button:hover, select:focus, select:hover, label:hover button, input:checked+label button {
 	outline: 1px solid var(--fg);

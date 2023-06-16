@@ -69,7 +69,8 @@
 	let offsety = e_main.clientHeight / 40;
 
 	e_main.addEventListener("pointerdown", event => {
-		if (event.target.tagName === "LABEL") return;
+		if (event.target.parentElement.id === "tools") return;
+		event.preventDefault();
 		startx = event.layerX / 20 - offsetx;
 		starty = event.layerY / 20 - offsety;
 		drag = true;
@@ -77,10 +78,10 @@
 		e_ptr2.style.transform = `translate(${Math.floor(startx) * 20}px, ${Math.floor(starty) * 20}px)`;
 		e_ptr2.children[1].textContent = `${String(Math.floor(startx)).padStart(5, " ")}, ${String(Math.floor(starty)).padStart(5, " ")}`;
 		e_lins.style.display = "none";
-	}, { passive: true });
+	});
 
 	e_main.addEventListener("pointermove", event => {
-		if (event.target.tagName === "LABEL") return;
+		if (event.target.parentElement.id === "tools") return;
 		if (drag) {
 			if (!dragged) {
 				e_main.setPointerCapture(event.pointerId);
@@ -162,8 +163,13 @@
 	}, { passive: true });
 
 	e_main.addEventListener("pointerup", e_main.onpointercancel = event => {
-		e_main.releasePointerCapture(event.pointerId);
+		if (!drag) return;
 		drag = false;
+		if (dragged) {
+			e_main.releasePointerCapture(event.pointerId);
+		} else {
+			attemptClick(event.button, mousex, mousey);
+		}
 	}, { passive: true });
 
 	e_draw.style.transform = `translate(${offsetx * 20}px, ${offsety * 20}px)`;

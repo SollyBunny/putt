@@ -169,6 +169,7 @@ scene.add(arrow);
 // Frame
 let start = Date.now();
 let tx, to = 0, tick = 0, fps;
+
 function frame(tt) {
 	// Time
 		tx = tt - to;
@@ -179,78 +180,6 @@ function frame(tt) {
 		}
 		to = tt;
 		place.tick = Date.now() - start;
-	// Frustrum
-		const matrix = new THREE.Matrix4().multiplyMatrices(scene.camera.projectionMatrix, scene.camera.matrixWorldInverse)
-		scene.camera.frustum.setFromProjectionMatrix(matrix);
-	// Update
-		world.step(1 / fps, tx, 5);
-		let m, proj;
-		for (let i = 0; i < place.mods.spin.length; ++i) {
-			m = place.mods.spin[i];
-			m.mesh.rotation.x = place.tick / 1000 * m.modspin[0];
-			m.mesh.rotation.y = place.tick / 1000 * m.modspin[1];
-			m.mesh.rotation.z = place.tick / 1000 * m.modspin[2];
-			if (m.body) {
-				m.body.quaternion.x = m.mesh.quaternion.x;
-				m.body.quaternion.y = m.mesh.quaternion.y;
-				m.body.quaternion.z = m.mesh.quaternion.z;
-				m.body.quaternion.w = m.mesh.quaternion.w;
-			}
-		}
-		for (let i = 0; i < place.mods.text.length; ++i) {
-			m = place.mods.text[i];
-			if (scene.camera.frustum.containsPoint(m.mesh.position)) {
-				proj = m.mesh.position.clone().project(scene.camera);
-				proj.x = ( proj.x + 1) / 2 * can.width;
-				proj.y = (-proj.y + 1) / 2 * can.height;
-				place.mods.text[i].text.style.transform = `translate(calc(${proj.x}px - 50%),calc(${proj.y}px - 50%))`;
-				if (m.mesh.visible === false) {
-					place.mods.text[i].text.style.display = "block";
-					m.mesh.visible = true;
-				}
-			} else if (m.mesh.visible === true) {
-				place.mods.text[i].text.style.display = "none";
-				m.mesh.visible = false;
-			}
-		}
-		proj = place.tick / 1000;
-		for (let i = 0; i < place.powerups.length; ++i) {
-			proj *= -1;
-			m = place.powerups[i];
-			if (m.got) continue;
-			m.mesh.rotation.x = m.mesh.rotation.y = m.mesh.rotation.z = proj;
-		}
-		for (let i = 0; i < place.players.length; ++i) place.players[i].onupdate(tx);
-		if (Settings.DUST) {
-			let n;
-			let p = new THREE.Vector3();
-			for (let i = 0; i < scene.dustmesh.pos.length; i += 3) {
-				n = Math.random();
-				if (n < 0.1) {
-					scene.dustmesh.vel[i + 1] += n - 0.05;
-				} else if (n < 0.2) {
-					scene.dustmesh.vel[i] += n - 0.1;
-				} else if (n < 0.3) {
-					scene.dustmesh.vel[i + 2] += n - 0.15;
-				} else if (n < 0.6) {
-					p.x = scene.dustmesh.pos[i    ];
-					p.y = scene.dustmesh.pos[i + 1];
-					p.z = scene.dustmesh.pos[i + 2];
-					if (!scene.camera.frustum.containsPoint(p)) {
-						scene.dustmesh.pos[i    ] = scene.camera.position.x + Math.random() * 100 - 50;
-						scene.dustmesh.pos[i + 1] = scene.camera.position.y + Math.random() * 50 - 25;
-						scene.dustmesh.pos[i + 2] = scene.camera.position.z + Math.random() * 100 - 50;
-						scene.dustmesh.vel[i] = scene.dustmesh.vel[i + 1] = scene.dustmesh.vel[i + 2] = 0;
-						continue;
-					}
-				}
-				scene.dustmesh.pos[i    ] += scene.dustmesh.vel[i    ];
-				scene.dustmesh.pos[i + 1] += scene.dustmesh.vel[i + 1];
-				scene.dustmesh.pos[i + 2] += scene.dustmesh.vel[i + 2];
-			}
-			scene.dustmesh.geometry.attributes.position.needsUpdate = true;
-		}
-		scene.confetti.update();
 	// Arrow
 		if (scene.camera.shoot) {
 			arrow.position.x = scene.camera.follow.mesh.position.x;
@@ -314,6 +243,9 @@ function frame(tt) {
 				place.player.body.velocity.x = place.player.body.velocity.y = place.player.body.velocity.z = 0;
 			}
 		}
+	// Update
+		world.step(1 / fps, tx, 5);
+		place.update(tx);
 	// Camera
 		if (place.player.isshoot || fpsenabled === false) {
 			scene.camera.dis = (scene.camera.dis + scene.camera.dismov) / 2;
@@ -341,6 +273,37 @@ function frame(tt) {
 			scene.camera.rotation.y = (scene.camera.rotation.y + scene.camera.rotation.ynew) / 2;
 		}
 		scene.camera.updateMatrixWorld();
+	// Particles
+		if (Settings.DUST) {
+			let n;
+			let p = new THREE.Vector3();
+			for (let i = 0; i < scene.dustmesh.pos.length; i += 3) {
+				n = Math.random();
+				if (n < 0.1) {
+					scene.dustmesh.vel[i + 1] += n - 0.05;
+				} else if (n < 0.2) {
+					scene.dustmesh.vel[i] += n - 0.1;
+				} else if (n < 0.3) {
+					scene.dustmesh.vel[i + 2] += n - 0.15;
+				} else if (n < 0.6) {
+					p.x = scene.dustmesh.pos[i    ];
+					p.y = scene.dustmesh.pos[i + 1];
+					p.z = scene.dustmesh.pos[i + 2];
+					if (!scene.camera.frustum.containsPoint(p)) {
+						scene.dustmesh.pos[i    ] = scene.camera.position.x + Math.random() * 100 - 50;
+						scene.dustmesh.pos[i + 1] = scene.camera.position.y + Math.random() * 50 - 25;
+						scene.dustmesh.pos[i + 2] = scene.camera.position.z + Math.random() * 100 - 50;
+						scene.dustmesh.vel[i] = scene.dustmesh.vel[i + 1] = scene.dustmesh.vel[i + 2] = 0;
+						continue;
+					}
+				}
+				scene.dustmesh.pos[i    ] += scene.dustmesh.vel[i    ];
+				scene.dustmesh.pos[i + 1] += scene.dustmesh.vel[i + 1];
+				scene.dustmesh.pos[i + 2] += scene.dustmesh.vel[i + 2];
+			}
+			scene.dustmesh.geometry.attributes.position.needsUpdate = true;
+		}
+		scene.confetti.update();
 	// Multi
 		if (place.player.isshoot === false && place.player.ishole === false)
 			multi.update(); // I'm a multiplayer now!
@@ -350,7 +313,7 @@ function frame(tt) {
 			e_rpos.textContent = `${Math.round(place.player.body.position.x * 100) / 100}, ${Math.round(place.player.body.position.y * 100) / 100}, ${Math.round(place.player.body.position.z * 100) / 100}`;
 			e_rvel.textContent = `${Math.round(place.player.body.velocity.x * 100) / 100}, ${Math.round(place.player.body.velocity.y * 100) / 100}, ${Math.round(place.player.body.velocity.z * 100) / 100}`;
 		}
-		render.render(scene, scene.camera)
+		render.render(scene, scene.camera);
 	window.requestAnimationFrame(frame);
 }
 
