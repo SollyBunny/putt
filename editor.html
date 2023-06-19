@@ -13,7 +13,7 @@
 			}
 			nav {
 				display: flex;
-				z-index: 100;
+				z-index: 200;
 				background: var(--bg);
 				align-items: center;
 				padding-left: 1vmin;
@@ -27,6 +27,25 @@
 				}
 				nav input {
 					flex-grow: 1;
+				}
+			.vec3 {
+				width: 100%;
+				display: flex;
+			}
+				.vec3 input {
+					flex-grow: 1;
+				}
+				.vec3 input:nth-child(1) {
+					border-radius: 2vmin 0 0 2vmin;
+					margin-right: 0;
+				}
+				.vec3 input:nth-child(2) {
+					border-radius: 0;
+				}
+				.vec3 input:nth-child(3) {
+					border-radius: 0 2vmin 2vmin 0;
+					margin-left: 0;
+					margin-right: 0;
 				}
 			#body {
 				flex-grow: 1;
@@ -150,8 +169,14 @@
 	</head>
 	<body>
 		<nav>
-			<button onclick="save()" title="Save (ctrl-s)"> 💾 </button>
+			<div class="dropdown">
+				<button title="Save SVG (ctrl-shift-e)"> 💾🖼️ </button>
+				<button title="Copy SVG (ctrl-e)"> 📋🖼️ </button>
+				<button title="Save JSON (ctrl-shift-s)"> 💾🧬 </button>
+				<button title="Copy JSON (ctrl-s)"> 📋🧬 </button>
+			</div>
 			<button onclick="json()" title="Load (ctrl-o)"> 📂 </button>
+			<button onclick="json()" title="Picture (ctrl-o)"> 📂 </button>
 			<button onclick="reset()" title="Reset (ctrl-n)"> 🔄 </button>
 			<button onclick="play()" title="Play (ctrl-p)"> 🎮 </button>
 			<input id="toolssettings" name="tool" type="radio">
@@ -166,10 +191,6 @@
 					<label for="rid"><h3> ID </h3></label>
 					<input min="0" onkeydown="if (!event.ctrlKey && `-+ `.indexOf(event.key) !== -1) event.preventDefault()" oninput="place.sel = event.target.value;" id="rid" type="number"><br>
 					<label for="rtype"><h3> Type </h3></label>
-					<h3> Position </h3>
-					<div id="rpos"></div>
-					<h3> Modifiers </h3>
-					<div id="rpos"></div>
 					<select id="rtype">
 						<optgroup label="Extra-Cool Objects">
 							<option value="0"> Player </option>
@@ -178,28 +199,31 @@
 							<option value="3"> Powerup </option>
 						</optgroup>
 						<optgroup label="Objects">
-							<option value="4"> Text </option>
-							<option value="5"> Box </option>
-							<option value="6"> Sphere </option>
-							<option value="7"> Cylinder </option>
-							<option value="8"> Cone </option>
-							<option value="9"> Tetrahedron </option>
-							<option value="10"> Octahedron </option>
-							<option value="11"> Dodecahedron </option>
-							<option value="12"> Icosehedron </option>
-							<option value="13"> Cross </option>
-							<option value="14"> Tee </option>
-							<option value="15"> Why </option>
+							<option value="4"> Box </option>
+							<option value="5"> Sphere </option>
+							<option value="6"> Cylinder </option>
+							<option value="7"> Cone </option>
+							<option value="8"> Tetrahedron </option>
+							<option value="9"> Octahedron </option>
+							<option value="10"> Dodecahedron </option>
+							<option value="11"> Icosehedron </option>
+							<option value="12"> Cross </option>
+							<option value="13"> Tee </option>
+							<option value="14"> Why </option>
 						</optgroup>
 						<optgroup label="Surfaces" id="typesurfaces">
-							<option value="16"> Floor </option>
-							<option value="17"> Bumpy Floor </option>
-							<option value="18"> Wall </option>
-							<option value="19"> Bumpy Wall </option>
-							<option value="20"> Platform </option>
-							<option value="21"> Bumpy Platform </option>
+							<option value="15"> Floor </option>
+							<option value="16"> Bumpy Floor </option>
+							<option value="17"> Wall </option>
+							<option value="18"> Bumpy Wall </option>
+							<option value="19"> Platform </option>
+							<option value="20"> Bumpy Platform </option>
 						</optgroup>
 					</select>
+					<h3> Position </h3>
+					<div id="rpos"></div>
+					<h3> Modifiers </h3>
+					<div id="rpos"></div>
 				</div>
 				<div id="menuobject" style="display: none">
 					<h2 style="background-color: #0d8" title="Placing Object"> <div> 🖊️ </div> Placing Object </h2>
@@ -264,7 +288,7 @@
 					<label for="toolsnewsrf" onclick="toolSet(2)"  title="New Surface (ctrl-2)"> <button style="background:#08d"> 🧱 </button></label>
 					<input id="toolsdelete" name="tool" type="radio">
 					<label for="toolsdelete" onclick="toolSet(3)" title="Delete (ctrl-3)"> <button style="background:#80a"> 🗑 </button></label>
-					<input id="ry" type="number" step="any" placeholder="Y Position">
+					<input id="ry" type="number" step="any" placeholder="0" value="0">
 					<label for="ry"><h3> Y </h3></label>
 				</div>
 			</div>

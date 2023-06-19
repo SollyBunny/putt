@@ -17,7 +17,6 @@ function toolSet(id) {
 }
 
 function objectSet(id) {
-	
 	if (id > TYPESURFACESTART) {
 		surface = id;
 		toolSet(2); // Just to make sure
@@ -30,7 +29,7 @@ function objectSet(id) {
 
 // Populate the menus
 for (let i = 0; i < TYPESNAMES.length; ++i) {
-	const id = (i > TYPESURFACESTART ? "surface" : "object") + i;
+	const id = (i < TYPESURFACESTART ? "object" : "surface") + i;
 	const inp = document.createElement("input");
 	inp.type = "radio";
 	inp.name = "object";
@@ -38,7 +37,6 @@ for (let i = 0; i < TYPESNAMES.length; ++i) {
 	const lbl = document.createElement("label");
 	lbl.setAttribute("for", id);
 	lbl.title = TYPESDESC[i];
-	
 	lbl.onclick = () => {
 		objectSet(i);
 	}
@@ -46,12 +44,12 @@ for (let i = 0; i < TYPESNAMES.length; ++i) {
 	btn.textContent = TYPESNAMES[i];
 	// el.style.backgroundImage = `url(assets/imgs/${TYPESNAMES[i].toLowerCase()}.svg)`
 	lbl.appendChild(btn);
-	if (i > TYPESURFACESTART) {
-		c_menu[2].appendChild(inp);
-		c_menu[2].appendChild(lbl);
-	} else {
+	if (i < TYPESURFACESTART) {
 		c_menu[1].appendChild(inp);
 		c_menu[1].appendChild(lbl);
+	} else {
+		c_menu[2].appendChild(inp);
+		c_menu[2].appendChild(lbl);
 	}
 }
 

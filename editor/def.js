@@ -1,3 +1,18 @@
+export const RAINBOW = [
+	"#f00",
+	"#f80",
+	"#ff0",
+	"#8f0",
+	"#0f0",
+	"#0f8",
+	"#0ff",
+	"#08f",
+	"#00f",
+	"#80f",
+	"#f0f",
+	"#f08",
+];
+
 export const TYPESURFACESTART = 15;
 
 export const TYPES = {

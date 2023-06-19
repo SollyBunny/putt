@@ -54,6 +54,7 @@ h1, h2, h3, h4, h5, h6 {
 	font-weight: 900;
 }
 input, button, select {
+	min-width: 0;
 	padding: 2vmin;
 	border-radius: 2vmin;
 	margin: 1vmin;
@@ -77,7 +78,7 @@ label button {
 	height: 100%;
 }
 input:invalid {
-	background-color: var(--bge);
+	background-color: var(--bge) !important;
 }
 input[type="number"], input[type="text"] {
 	cursor: text;
@@ -94,3 +95,19 @@ button:disabled, input:disabled, select:disabled {
 	cursor: not-allowed !important;
 	opacity: 0.7 !important;
 }
+.dropdown {
+	position: relative;
+	height: 100%;
+	margin-left: 1vmin;
+	margin-right: 1vmin;
+}
+	.dropdown > * {
+		position: absolute;
+		margin-left: 0;
+		margin-right: 0;
+		display: block;
+		white-space: nowrap;
+	}
+	.dropdown:hover > *:nth-child(1) { 
+		transform: translateY(-100%);
+	}

@@ -1,5 +1,5 @@
 
-import { TYPESURFACESTART, TYPES, TYPESNAMES, TYPESDESC, MODIFIERS, MODIFIERNAMES, MODIFIERDESCS } from "./def.js";
+import { RAINBOW, TYPESURFACESTART, TYPES, TYPESNAMES, TYPESDESC, MODIFIERS, MODIFIERNAMES, MODIFIERDESCS } from "./def.js";
 import { tool } from "./tool.js";
 
 const e_rname = document.getElementById("rname");
@@ -17,8 +17,42 @@ e_rname.addEventListener("input", () => {
 	
 });
 
+function convexHullify(points) {
+	// Find the indices of the points that form the convex hull
+	const hullIndices = [];
+	// Helper function to find the orientation of three points
+	function orientation(p, q, r) {
+		const val = (points[q + 2] - points[p + 2]) * (points[r] - points[q]) - (points[r + 2] - points[q + 2]) * (points[q] - points[p]);
+		if (val === 0) return 0; // Collinear
+		if (val > 0) return 1; // Clockwise orientation
+		return 2; // Counterclockwise orientation
+	}
+	// Find the leftmost point
+	let leftmostIndex = 0;
+	for (let i = 3; i < points.length; i += 3)
+		if (points[i] < points[leftmostIndex])
+			leftmostIndex = i;
+	let p = leftmostIndex;
+	let q;
+	do {
+		hullIndices.push(p);
+		q = (p + 3) % points.length;
+		for (let r = 0; r < points.length; r += 3)
+			if (orientation(p, q, r) === 2)
+				q = r;
+		p = q;
+	} while (p !== leftmostIndex);
+	// Create the ordered convex hull points array
+	const out = [];
+	for (const i of hullIndices)
+		out.push(points[i], points[i + 1], points[i + 2]);
+	return out;
+}
+
 export class Place {
 	things = [];
+	holes = [];
+	starts = [];
 	__sel = undefined;
 	set sel(id) {
 		this.__sel = this.things[id];
@@ -53,9 +87,10 @@ export class Place {
 		let out = ""
 		for (let i = 0; i < this.__sel.pos.length; i += 3) {
 			out += `<div class="vec3">
-				<input type="number" step="any" oninput="place.setPos(${i},event.target.value)" value="${this.__sel.pos[i]}">
-				<input type="number" step="any" oninput="place.setPos(${i},event.target.value)" value="${this.__sel.pos[i + 1]}">
-				<input type="number" step="any" oninput="place.setPos(${i},event.target.value)" value="${this.__sel.pos[i + 2]}">
+				<input title="X" type="number" step="any" oninput="place.setPos(${i},event.target.value,false)" value=${this.__sel.pos[i]}>
+				<input title="Y" type="number" step="any" oninput="place.setPos(${i + 1},event.target.value,false)" value=${this.__sel.pos[i + 1]}>
+				<input title="Z" type="number" step="any" oninput="place.setPos(${i + 2},event.target.value,false)" value=${this.__sel.pos[i + 2]}>
+				<button title="Delete" onclick="place.delPos(${i})">X</button>
 			</div>`
 		}
 		e_rpos.innerHTML = out;
@@ -67,12 +102,33 @@ export class Place {
 	addPos(pos) {
 		this.__sel.addPos(pos);
 	}
-	setPos(index, pos) {
-		this.__sel.setPos(index, pos);
+	setPos(index, pos, update) {
+		this.__sel.setPos(index, pos, update);
+	}
+	holesUpdate() {
+		this.holes = [];
+		for (let m, i = 0; i < this.things.length; ++i) {
+			m = this.things[i];
+			if (m.type !== TYPES.HOLE) continue;
+			if (m.el) m.el.children[0].setAttribute("fill", RAINBOW[this.holes.length % RAINBOW.length])
+			this.holes.push(m);
+			m.el.children[1].textContent = `Hole ${this.holes.length}`;
+		}
+	}
+	startsUpdate() {
+		this.starts = [];
+		for (let m, i = 0; i < this.things.length; ++i) {
+			m = this.things[i];
+			if (m.type !== TYPES.START) continue;
+			if (m.el) m.el.children[0].setAttribute("fill", RAINBOW[this.starts.length % RAINBOW.length])
+			this.starts.push(m);
+			m.el.children[1].textContent = `Start ${this.starts.length}`;
+		}
 	}
 }
 
 export class Thing {
+	__type = undefined;
 	constructor(parent, type, pos) {
 		this.parent = parent;
 		this.pos = pos;
@@ -80,13 +136,23 @@ export class Thing {
 		this.parent.things.push(this);
 		this.elUpdate();
 	}
+	set type(type) {
+		if (type === TYPES.HOLE || this.__type === TYPES.HOLE)
+			this.parent.holesUpdate();
+		else if (type === TYPES.START || this.__type === TYPES.START)
+			this.parent.startsUpdate();
+		this.__type = type;
+	}
+	get type() {
+		return this.__type;
+	}
 	elUpdate() {
 		if (this.el) {
 			this.del();
 			delete this.el;
 		}
 		let e1, e2;
-		switch (this.type) {
+		switch (this.__type) {
 			case TYPES.FLOOR:
 			case TYPES.BUMPYFLOOR:
 			case TYPES.PLATFORM:
@@ -148,6 +214,21 @@ export class Thing {
 				e2.setAttribute("fill", "#fff");
 				this.el.appendChild(e2);
 				break;
+			case TYPES.HOLE:
+			case TYPES.START:
+				this.el = document.createElementNS(SVGNAMESPACE, "g");
+				this.el.style.transform = `translate(${this.pos[0] * 20}px, ${this.pos[2] * 20}px)`;
+				e1 = document.createElementNS(SVGNAMESPACE, "circle");
+				e1.r.baseVal.value = 10;
+				e1.setAttribute("fill", RAINBOW[(this.__type === TYPES.HOLE ? this.parent.holes : this.parent.starts).length % RAINBOW.length]);
+				this.el.appendChild(e1);
+				e2 = document.createElementNS(SVGNAMESPACE, "text");
+				e2.textContent = `${TYPESNAMES[this.type]} ${(this.__type === TYPES.HOLE ? this.parent.holes : this.parent.starts).length + 1}`;
+				e2.setAttribute("dominant-baseline", "middle");
+				e2.setAttribute("text-anchor", "middle");
+				e2.setAttribute("fill", "#fff");
+				this.el.appendChild(e2);
+				break;
 		}
 		this.add();
 	}
@@ -158,19 +239,28 @@ export class Thing {
 		e_things.removeChild(this.el);
 	}
 	addPos(pos) {
-		if (this.type > TYPESURFACESTART) {
-			this.pos.push(...pos);
+		if (this.type < TYPESURFACESTART) {
+			new Thing(this.parent, this.type, pos).add();
+			this.parent.sel = this.parent.things.length - 1;
+		} else {
+			if (
+				this.pos.length > 9 &&
+				(this.type === TYPES.FLOOR || this.type === TYPES.BUMPYFLOOR || this.type === TYPES.PLATFORM || this.type === TYPES.BUMPYPLATFORM)
+			) {
+				if (this.pos.indexOf(...pos) === -1)
+				this.pos.push(...pos);
+				this.pos = convexHullify(this.pos);
+			} else {
+				this.pos.push(...pos);
+			}
 			this.elUpdate();
 			this.parent.posUpdate();
-		} else {
-			new Thing(this.parent, this.type, pos).add();
-			this.parent.sel(this.parent.things.length - 1);
 		}
 	}
-	setPos(index, pos) {
+	setPos(index, pos, update) {
 		this.pos[index] = pos;
 		this.elUpdate();
-		if (this === this.parent.__sel)
+		if (this === this.parent.__sel && update !== false)
 			this.parent.posUpdate();
 	}
 }
