@@ -5,7 +5,7 @@
 		<meta name="description" content="A small webapp to play golf with your friends">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<meta charset="UTF-8">
-		<link rel="stylesheet" href="style.css">
+		<link rel="stylesheet" href="assets/style.css">
 		<style>
 			body {
 				font-size: 120%;
@@ -29,6 +29,7 @@
 				transition: 0.5s transform ease;
 			}
 				.menushortcut {
+					box-shadow: none !important;
 					font-size: 5vmin;
 					color: white;
 					width: 10vmin !important;
@@ -71,16 +72,17 @@
 					padding: 2vmin;
 					overflow-y: scroll;
 				}
-					#menugrid > * {
-						border: none;
-						border-radius: 1vmin;
-					}
 					#menugrid > label {
 						text-align: left;
 					}
 					#menugrid > input {
 						text-align: right;
-						height: 4vmin;
+					}
+					#menugrid > input[type="checkbox"] {
+						width: min-content;
+						height: 100%;
+						aspect-ratio: 1;
+						margin: auto;
 					}
 					#menugrid > h3, #menusettingsreset {
 						grid-area: 1 span / 2 span;
@@ -351,7 +353,7 @@
 			}
 			function page(p) {
 				if (p === -3 && e_menuiframe.src.length === 0) {
-					e_menuiframe.src = "editor.html";
+					e_menuiframe.src = "editor/";
 				} else if (p == -1 && settingspopulated === false) {
 					settingspopulate();
 					settingspopulated = true;
@@ -359,7 +361,7 @@
 				e_menuitem.style.transform = `translateX(${p}00vw)`;
 			}
 			function play() {
-				let url = "game.html?";
+				let url = "game/?";
 				let roomcode = document.getElementsByClassName("roomsel")[0].value;
 				if (roomcode === "tutorial") {
 					url += "-tutorial"

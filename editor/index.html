@@ -5,7 +5,7 @@
 		<meta name="description" content="A small webapp to play golf with your friends">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<meta charset="UTF-8">
-		<link rel="stylesheet" href="style.css">
+		<link rel="stylesheet" href="../assets/style.css">
 		<style>
 			body {
 				display: flex;
@@ -170,18 +170,21 @@
 	<body>
 		<nav>
 			<div class="dropdown">
-				<button title="Save SVG (ctrl-shift-e)"> 💾🖼️ </button>
-				<button title="Copy SVG (ctrl-e)"> 📋🖼️ </button>
-				<button title="Save JSON (ctrl-shift-s)"> 💾🧬 </button>
-				<button title="Copy JSON (ctrl-s)"> 📋🧬 </button>
+				<div><button title="Save"> Save 💾 </button></div>
+				<div><button onclick="saveJSON(false)" title="Copy JSON (ctrl-s)"> Copy JSON 📋🧬 </button></div>
+				<div><button onclick="saveJSON(true)" title="Save JSON (ctrl-shift-s)"> Save JSON 💾🧬 </button></div>
+				<div><button onclick="saveSVG(false)" title="Copy SVG (ctrl-e)"> Copy SVG 📋🖼️ </button></div>
+				<div><button onclick="saveJSON(true)" title="Save SVG (ctrl-shift-e)"> Save JSON 💾🖼️ </button></div>
 			</div>
-			<button onclick="json()" title="Load (ctrl-o)"> 📂 </button>
-			<button onclick="json()" title="Picture (ctrl-o)"> 📂 </button>
-			<button onclick="reset()" title="Reset (ctrl-n)"> 🔄 </button>
-			<button onclick="play()" title="Play (ctrl-p)"> 🎮 </button>
-			<input id="toolssettings" name="tool" type="radio">
-			<label for="toolssettings" onclick="toolSet(4)" title="Settings (ctrl-,)"><button> ⚙️ </button></label>
-			<input id="rname" style="float:right" type="text" placeholder="Noob's Place">
+			<div class="dropdown">
+				<div><button title="Save"> Load 📂 </button></div>
+				<div><button title="From Clipboard (ctrl-o)"> From Clipboard 📋 </button></div>
+				<div><button title="From File (ctrl-shift-o)"> From File 📄 </button></div>
+				<div><button title="From URL"> From URL 🔗 </button></div>
+			</div>
+			<button onclick="reset()" title="Reset (ctrl-n)"> Reset 🔄 </button>
+			<button onclick="play()" title="Playtest (ctrl-p)"> Playtest 🎮 </button>
+			<input id="rname" type="text" placeholder="Noob's Place">
 			<h1> Putt Party Editor </h1>
 		</nav>
 		<div id="body">
@@ -281,19 +284,19 @@
 				</svg>
 				<div id="tools">
 					<input id="toolsselect" name="tool" type="radio">
-					<label for="toolsselect" onclick="toolSet(0)" title="Select (escape)"> <button style="background:#aaa"> 🖱️ </button></label>
+					<label for="toolsselect" onclick="toolSet(0)" title="Select (escape)"><button style="background:#fd8"> 🖱️ </button></label>
 					<input id="toolsnewobj" name="tool" type="radio">
-					<label for="toolsnewobj" onclick="toolSet(1)" title="New Object (ctrl-1)"> <button style="background:#0d8"> 🖊️ </button></label>
+					<label for="toolsnewobj" onclick="toolSet(1)" title="New Object (ctrl-1)"><button style="background:#0d8"> 🖊️ </button></label>
 					<input id="toolsnewsrf" name="tool" type="radio">
-					<label for="toolsnewsrf" onclick="toolSet(2)"  title="New Surface (ctrl-2)"> <button style="background:#08d"> 🧱 </button></label>
+					<label for="toolsnewsrf" onclick="toolSet(2)"  title="New Surface (ctrl-2)"><button style="background:#08d"> 🧱 </button></label>
 					<input id="toolsdelete" name="tool" type="radio">
-					<label for="toolsdelete" onclick="toolSet(3)" title="Delete (ctrl-3)"> <button style="background:#80a"> 🗑 </button></label>
+					<label for="toolsdelete" onclick="toolSet(3)" title="Delete (ctrl-3)"><button style="background:#80a"> 🗑 </button></label>
+					<input id="toolssettings" name="tool" type="radio">
+					<label for="toolssettings" onclick="toolSet(4)" title="Settings (ctrl-4)"><button style="background:#aaa"> ⚙️ </button></label>
 					<input id="ry" type="number" step="any" placeholder="0" value="0">
 					<label for="ry"><h3> Y </h3></label>
 				</div>
 			</div>
-				
-				<!-- <div class="ptr" id="ptrb" style="display: none;"></div> -->
 		</div>
-		<script defer async src="editor/main.js" type="module"></script>
+		<script defer async src="./main.js" type="module"></script>
 	</body>

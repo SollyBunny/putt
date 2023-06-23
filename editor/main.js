@@ -35,4 +35,13 @@ window.attemptClick = (btn, x, y, z) => {
 	}
 }
 
+Object.values(document.getElementsByClassName("dropdown")).forEach(el => {
+	el.addEventListener("hover", event => { 
+		let i = 0;
+		Object.values(event.target.children).forEach(item => {
+			item.style.transform = `translateY(calc(${100 * i}% + ${i}vvmin))`;
+		});
+	}, { passive: true });
+});
+
 window.place = place;

@@ -17,14 +17,13 @@ function toolSet(id) {
 }
 
 function objectSet(id) {
-	if (id > TYPESURFACESTART) {
-		surface = id;
-		toolSet(2); // Just to make sure
-	} else {
+	if (id < TYPESURFACESTART) {
 		object = id;
 		toolSet(1); // Just to make sure
+	} else {
+		surface = id;
+		toolSet(2); // Just to make sure
 	}
-	console.log(id)
 }
 
 // Populate the menus
