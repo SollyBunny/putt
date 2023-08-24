@@ -192,41 +192,43 @@
 				<div id="menuselect">
 					<h2 style="background-color: #aaa" title="Selecting"> <div> 🖱️ </div> Selecting </h2>
 					<label for="rid"><h3> ID </h3></label>
-					<input min="0" onkeydown="if (!event.ctrlKey && `-+ `.indexOf(event.key) !== -1) event.preventDefault()" oninput="place.sel = event.target.value;" id="rid" type="number"><br>
-					<label for="rtype"><h3> Type </h3></label>
-					<select id="rtype">
-						<optgroup label="Extra-Cool Objects">
-							<option value="0"> Player </option>
-							<option value="1"> Start </option>
-							<option value="2"> Hole </option>
-							<option value="3"> Powerup </option>
-						</optgroup>
-						<optgroup label="Objects">
-							<option value="4"> Box </option>
-							<option value="5"> Sphere </option>
-							<option value="6"> Cylinder </option>
-							<option value="7"> Cone </option>
-							<option value="8"> Tetrahedron </option>
-							<option value="9"> Octahedron </option>
-							<option value="10"> Dodecahedron </option>
-							<option value="11"> Icosehedron </option>
-							<option value="12"> Cross </option>
-							<option value="13"> Tee </option>
-							<option value="14"> Why </option>
-						</optgroup>
-						<optgroup label="Surfaces" id="typesurfaces">
-							<option value="15"> Floor </option>
-							<option value="16"> Bumpy Floor </option>
-							<option value="17"> Wall </option>
-							<option value="18"> Bumpy Wall </option>
-							<option value="19"> Platform </option>
-							<option value="20"> Bumpy Platform </option>
-						</optgroup>
-					</select>
-					<h3> Position </h3>
-					<div id="rpos"></div>
-					<h3> Modifiers </h3>
-					<div id="rpos"></div>
+					<input min="0" id="rid" type="number"><br>
+					<div id="menuselectcontent" style="display:none">
+						<label for="rtype"><h3> Type </h3></label>
+						<select id="rtype">
+							<optgroup label="Extra-Cool Objects">
+								<option value="0"> Player </option>
+								<option value="1"> Start </option>
+								<option value="2"> Hole </option>
+								<option value="3"> Powerup </option>
+							</optgroup>
+							<optgroup label="Objects">
+								<option value="4"> Box </option>
+								<option value="5"> Sphere </option>
+								<option value="6"> Cylinder </option>
+								<option value="7"> Cone </option>
+								<option value="8"> Tetrahedron </option>
+								<option value="9"> Octahedron </option>
+								<option value="10"> Dodecahedron </option>
+								<option value="11"> Icosehedron </option>
+								<option value="12"> Cross </option>
+								<option value="13"> Tee </option>
+								<option value="14"> Why </option>
+							</optgroup>
+							<optgroup label="Surfaces" id="typesurfaces">
+								<option value="15"> Floor </option>
+								<option value="16"> Bumpy Floor </option>
+								<option value="17"> Wall </option>
+								<option value="18"> Bumpy Wall </option>
+								<option value="19"> Platform </option>
+								<option value="20"> Bumpy Platform </option>
+							</optgroup>
+						</select>
+						<h3> Position </h3>
+						<div id="rpos"></div>
+						<h3> Modifiers </h3>
+						<div id="rpos"></div>
+					</div>
 				</div>
 				<div id="menuobject" style="display: none">
 					<h2 style="background-color: #0d8" title="Placing Object"> <div> 🖊️ </div> Placing Object </h2>

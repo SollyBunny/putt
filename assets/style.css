@@ -18,6 +18,9 @@
 ::-webkit-scrollbar-thumb:hover, scrollbar-thumb:hover {
 	background-color: var(--bgh);
 }
+:invalid, .error {
+	background-color: var(--bge) !important;
+}
 html {
 	scroll-behavior: smooth;
 }
@@ -77,9 +80,6 @@ input, button, select {
 }
 	input[type="radio"] {
 		display: none;
-	}
-	input:invalid {
-		background-color: var(--bge) !important;
 	}
 	input[type="number"], input[type="text"] {
 		cursor: text;
