@@ -44,7 +44,7 @@ class Multi {
 				this.updatelist = new Float32Array(13);
 				this.playersindex = {};
 				// Open websocket
-				ws = new WebSocket(`wss://${document.location.host}${document.location.pathname.slice(0, document.location.pathname.lastIndexOf("/"))}/server.js?${encodeURIComponent(Settings.NAME)}&${Settings.COLOR}` + (roomcode ? `&${roomcode}` : ""));
+				ws = new WebSocket(`wss://${document.location.host}${document.location.pathname.slice(0, document.location.pathname.lastIndexOf("/", document.location.pathname.length - 2) + 1)}server?${encodeURIComponent(Settings.NAME)}&${Settings.COLOR}` + (roomcode ? `&${roomcode}` : ""));
 				ws.onopen = () => {
 					console.log("Connected");
 					ws.send(Messages.READY.toString());
