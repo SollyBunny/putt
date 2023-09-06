@@ -1,5 +1,6 @@
 import "./drag.js";
 import "./tool.js";
+import "./save.js";
 import { Place } from "./thing.js";
 import { tool, object, surface } from "./tool.js";
 
