@@ -235,19 +235,22 @@ export class Place {
 let GUID = 0;
 export class Thing {
 	constructor(parent, type, mesh, body, text) {
-		this.parent = parent;
+		this.parent = parent; // (of type place)
 		this.type = type;
 		this.mesh = mesh;
 		this.body = body;
 		if (text) this.textset(text);
+		// Set the GUID
 		this.GUID = GUID;
 		++GUID;
 	}
 	textset(text) {
+		// Create and set the text element
 		if (!this.text) this.text = document.createElement("div");
 		this.text.textContent = text;
 	}
 	add() {
+		// Add this Thing to this.parent
 		if (this.mesh)
 			this.parent.scene.add(this.mesh);
 		if (this.body) {
@@ -260,6 +263,7 @@ export class Thing {
 			e_rtext.appendChild(this.text);
 	}
 	del() {
+		// Remove this Thing from this.parent
 		if (this.mesh)
 			this.parent.scene.remove(this.mesh);
 		if (this.body)
