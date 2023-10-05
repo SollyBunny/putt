@@ -313,9 +313,9 @@
 
 			// save load
 				async function save() { // stop handler violation
-					let c = objs.find(i => { return i[0] === START })[1];
+					let c = objs.find(i => { return i[0] === START })[1]; // Find the first hole object
 					let n = [];
-					objs.forEach(i => {
+					objs.forEach(i => { // for each object
 						if (i.length === 1) return;
 						n.push([i[0]].concat(
 							i.slice(1).map(m => {
@@ -327,8 +327,7 @@
 							})
 						));
 					});
-					console.log(n)
-					navigator.clipboard.writeText(JSON.stringify(n));
+					navigator.clipboard.writeText(JSON.stringify(n)); // write to clipboard
 				}
 				async function load() { // stop handler violation
 					let d = prompt("JSON Data");
