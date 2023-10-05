@@ -87,43 +87,43 @@
 				})
 			}
 			function mainpointerdown() {
-				maindragpos = [
+				maindragpos = [ // set initial drag position
 					event.offsetX - mainoffset[0], 
 					event.offsetY - mainoffset[1]
 				];
 				maindrag = true;
 			}
 			function mainpointercancel() {
-				maindragpos = undefined;
+				maindragpos = undefined; // no drag occuring anymore
 				maindrag = false;
 			}
 			function mainpointerup() {
-				maindragpos = undefined;
-				if (maindrag === false) return;
-				undoadd();
-				if (objs.at(-1) === undefined) {
-					objs.push([objtype])	;
-				} else if (objs.at(-1).length === 0) {
-					objs.at(-1).push(objtype)
+				maindragpos = undefined; // no drag occuring anymore
+				if (maindrag === false) return; // if the mouse has been put down but not moved then continue
+				undoadd(); // add the current state to the undo stack
+				if (objs.at(-1) === undefined) { // if an object isn't at the top of the stack
+					objs.push([objtype]); // make one
+				} else if (objs.at(-1).length === 0) { // otherwise
+					objs.at(-1).push(objtype); // set the type of the object
 				}
 				let p;
 				switch (objtype) {
-					case 0:
+					case 0: // if is a floor
 						p = [
 							Math.round((event.offsetX - mainoffset[0]) / 20),
 							Math.round((event.offsetY - mainoffset[1]) / 20)
 						];
-						objs.at(-1).push(p)
+						objs.at(-1).push(p); // add a point to the top most floor
 						break;
 				}
 				render();
 			}
 			function mainpointermove() {
-				if (maindragpos === undefined) return;
+				if (maindragpos === undefined) return; // make sure a drag is active
 				maindrag = false;
-				mainoffset[0] = event.offsetX - maindragpos[0];
+				mainoffset[0] = event.offsetX - maindragpos[0]; // calculate offsets
 				mainoffset[1] = event.offsetY - maindragpos[1];
-				e_main.style.backgroundPosition = `${mainoffset[0]}px ${mainoffset[1]}px`;
+				e_main.style.backgroundPosition = `${mainoffset[0]}px ${mainoffset[1]}px`; // set offsets
 				e_draw.style.transform = `translate(${mainoffset[0]}px,${mainoffset[1]}px)`
 			}
 			window.onload = () => {
