@@ -312,11 +312,13 @@
 			}
 
 			// save load
-				async function save() { // stop handler violation
+				async function save() { // async stops handler violation
 					let c = objs.find(i => { return i[0] === START })[1]; // Find the first hole object
 					let n = [];
 					objs.forEach(i => { // for each object
-						if (i.length === 1) return;
+						if (i.length === 1) return;  // ignore objects with only an ID (they are invisible and do nothing)
+						// join the first item in the array (ID) with the last items of the array (positions) offset by the first hole position
+						// this means the map will always be centered around the first hole
 						n.push([i[0]].concat(
 							i.slice(1).map(m => {
 								return [
@@ -329,15 +331,15 @@
 					});
 					navigator.clipboard.writeText(JSON.stringify(n)); // write to clipboard
 				}
-				async function load() { // stop handler violation
+				async function load() { // async stops handler violation
 					let d = prompt("JSON Data");
 					try {
 						d = JSON.parse(d);
 					} catch {
-						alert("Invalid data");
+						alert("Invalid data"); // catch and warn for bad json
 						return;
 					}
-					undoadd();
+					undoadd(); // allow the load to be undone
 					objs = d;
 					render();
 				}
