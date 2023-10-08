@@ -6,6 +6,8 @@
 	--bgh: #444;
 	--bge: #d22;
 	--time: 0.2s;
+	--box-shadow-in: 0 2px 4px 1px rgba(0,0,0,0.5);
+	--box-shadow-out: 0 1px 2px 0 rgba(255,255,255,0.1);
 }
 ::-webkit-scrollbar, scrollbar {
 	width: 16px;
@@ -17,6 +19,12 @@
 }
 ::-webkit-scrollbar-thumb:hover, scrollbar-thumb:hover {
 	background-color: var(--bgh);
+}
+::-webkit-color-swatch-wrapper {
+    padding: 0; 
+}
+::-webkit-color-swatch {
+    border: none;
 }
 :invalid, .error {
 	background-color: var(--bge) !important;
@@ -76,13 +84,19 @@ input, button, select {
 	color: var(--fg);
 	background-color: var(--bgl);
 	transition: background-color var(--time) ease;
-	box-shadow: 0 2px 4px 1px rgba(0,0,0,0.5), inset 0 1px 2px 0 rgba(255,255,255,0.1);
+	box-shadow: var(--box-shadow-in), inset var(--box-shadow-out);
 }
 	input[type="radio"] {
 		display: none;
 	}
 	input[type="number"], input[type="text"] {
 		cursor: text;
+	}
+	input[type="color"] {
+		padding: 0;
+		height: calc(4vmin + 1em);
+		width: calc(100% - 2vmin);
+		overflow: clip;
 	}
 	input:hover, input:focus, button:hover, select:focus, select:hover, label:hover button, input:checked+label button {
 		outline: 1px solid var(--fg);
@@ -95,7 +109,7 @@ input, button, select {
 		background-color: #333 !important;
 		cursor: not-allowed !important;
 		opacity: 0.7 !important;
-		box-shadow: inset 0 2px 4px 1px rgba(0,0,0,0.5);
+		box-shadow: inset var(--box-shadow-in);
 	}
 .dropdown {
 	position: relative;

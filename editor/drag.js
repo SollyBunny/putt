@@ -1,219 +1,135 @@
 
-{
+import { onClick } from "./main.js";
 
-	const e_menu = document.getElementById("menu");
-	const e_menudrag = document.getElementById("menudrag");
+const e_main = document.getElementById("main");
+const e_draw = document.getElementById("draw");
+const e_ptrs = document.getElementById("ptrs");
+const e_zoom = document.getElementById("zoom");
+const e_ptr1 = document.getElementById("ptr1");
+const e_ptr2 = document.getElementById("ptr2");
+const e_circ = document.getElementById("circ");
+const e_lins = document.getElementById("lins");
+const e_linx = document.getElementById("linx");
+const e_liny = document.getElementById("liny");
+const e_linh = document.getElementById("linh");
+const e_txtx = document.getElementById("txtx");
+const e_txty = document.getElementById("txty");
+const e_txth = document.getElementById("txth");
 
-	let startpos = undefined;
-	let startwidth = undefined;
-	let visible = true;
+const can = document.getElementById("background");
+const ctx = can.getContext("2d");
 
-	e_menudrag.addEventListener("pointerdown", event => {
-		e_menudrag.setPointerCapture(event.pointerId);
-		startwidth = e_menu.clientWidth;
-		startpos = event.clientX;
-	}, { passive: true });
+export const mouseReal = {};
+export const mouse = {};
+let click = false;
 
-	e_menudrag.addEventListener("pointermove", event => {
-		if (!startpos) return;
-		if (event.clientX < 25) {
-			visible = false;
-			e_menu.style.display = "none";
+const camera = panzoom(e_draw, {
+	zoomDoubleClickSpeed: 1,
+	smoothScroll: true,
+	smoothPan: true,
+	owner: e_main
+});
+
+camera.x = 0;
+camera.y = 0;
+camera.scale = 1;
+
+camera.render = () => {
+	// let camerascale = camera.scale;
+	let size = 20;
+	// while (camerascale < 20) camerascale *= 2, size /= 2;
+	console.log(size)
+	ctx.clearRect(0, 0, can.width, can.height);
+	ctx.lineWidth = 1;
+	// Minor Grid Lines
+	ctx.strokeStyle = "#555";
+	ctx.beginPath();
+	for (let n = camera.x % size, i = (camera.x < 0 ? Math.floor : Math.ceil)(-camera.x / size); n < can.width; n += size, ++i) {
+		if (i % 5 === 0) continue;
+		ctx.moveTo(n, 0);
+		ctx.lineTo(n, can.height);
+	}
+	for (let n = camera.y % size, i = (camera.y < 0 ? Math.floor : Math.ceil)(-camera.y / size); n < can.height; n += size, ++i) {
+		if (i % 5 === 0) continue;
+		ctx.moveTo(0, n);
+		ctx.lineTo(can.width, n);
+	}
+	ctx.stroke();
+	// Major Grid Lines
+	size *= 5;
+	ctx.strokeStyle = "#aaa";
+	ctx.beginPath();
+	for (let n = camera.x % size, i = (camera.x < 0 ? Math.floor : Math.ceil)(-camera.x / size); n < can.width; n += size, ++i) {
+		ctx.moveTo(n, 0);
+		ctx.lineTo(n, can.height);
+	}
+	for (let n = camera.y % size, i = (camera.y < 0 ? Math.floor : Math.ceil)(-camera.y / size); n < can.height; n += size, ++i) {
+		ctx.moveTo(0, n);
+		ctx.lineTo(can.width, n);
+	}
+	ctx.stroke();
+	// Middle Grid Line
+	ctx.strokeStyle = "#fff";
+	ctx.lineWidth = 3;
+	ctx.beginPath();
+	ctx.moveTo(camera.x, 0);
+	ctx.lineTo(camera.x, can.height);
+	ctx.moveTo(0, camera.y);
+	ctx.lineTo(can.width, camera.y);
+	ctx.stroke();
+};
+camera.resize = () => {
+	const bounding = e_main.parentElement.getBoundingClientRect();
+	can.width = bounding.width;
+	can.height = bounding.height;
+	camera.render();
+};
+camera.on("transform", function(e) {
+	const transform = e.getTransform();
+	{
+		let nearest = Math.round(transform.x / 0.5) * 0.5;
+		if (Math.abs(transform.scale - nearest) < 0.7) {
+			camera.zoomAbs(transform.x, transform.y, nearest);
 			return;
 		}
-		if (visible === false) {
-			visible = true;
-			e_menu.style.display = "block";
-		}
-		e_menu.style.width = Math.floor(event.clientX - startpos + startwidth) + "px";
-	}, { passive: true });
+	}
+	camera.x = transform.x;
+	camera.y = transform.y;
+	camera.scale = transform.scale;
+	e_ptrs.style.transform = `translate(${transform.x}px, ${transform.y}px)`;
+	e_zoom.textContent = transform.scale.toFixed(2);
+	click = false;
+	camera.render();
+});
 
-	e_menudrag.addEventListener("pointerup", e_menudrag.onpointercancel = () => {
-		e_menudrag.releasePointerCapture(event.pointerId);
-		startpos = undefined;
-	}, { passive: true });
+e_main.addEventListener("pointerdown", event => {
+	if (event.target !== background) return;
+	click = true;
+});
+e_main.addEventListener("pointerup", event => {
+	if (click === true) {
+		click = false;
+		onClick(event);
+	}
+})
+e_main.addEventListener("pointermove", event => {
+	console.log(event)
+	click = false;
+	mouseReal.x = event.layerX;
+	mouseReal.y = event.layerY;
+	const transform = camera.getTransform();
+	mouse.x = (event.layerX / transform.scale - transform.x);
+	mouse.y = (event.layerY / transform.scale - transform.y);
+	mouse.x = Math.floor(mouse.x / 20);
+	mouse.y = Math.floor(mouse.y / 20);
+	console.log(mouse)
+	e_ptr1.style.transform = `translate(${mouse.x * 20}px, ${mouse.y * 20}px)`;
+	e_ptr1.children[1].textContent = `${String(Math.floor(mouse.x)).padStart(3, " ")}, ${String(Math.floor(mouse.y)).padStart(3, " ")}`;
+});
 
-	e_menudrag.addEventListener("dblclick", event => {
-		if (visible) {
-			visible = false;
-			e_menu.style.display = "none";
-		} else {
-			visible = true;
-			e_menu.style.display = "block";
-		}
-	}, { passive: true });
+
+window.camera = camera;
+
+export function init() {
+	camera.moveTo(can.width / 2, can.height / 2);
 }
-
-{
-
-	const e_draw = document.getElementById("draw");
-	const e_main = document.getElementById("main");
-	const e_ptr1 = document.getElementById("ptr1");
-	const e_ptr2 = document.getElementById("ptr2");
-	const e_circ = document.getElementById("circ");
-	const e_lins = document.getElementById("lins");
-	const e_linx = document.getElementById("linx");
-	const e_liny = document.getElementById("liny");
-	const e_linh = document.getElementById("linh");
-	const e_txtx = document.getElementById("txtx");
-	const e_txty = document.getElementById("txty");
-	const e_txth = document.getElementById("txth");
-
-	const e_ry = document.getElementById("ry");
-	const e_things = document.getElementById("things");
-
-	let drag = false;
-	let dragged = false;
-	let startx = NaN;
-	let starty = NaN;
-	let mousex = 0;
-	let mousey = 0;
-	let offsetx = e_main.clientWidth / 40;
-	let offsety = e_main.clientHeight / 40;
-	let zoom = 1;
-
-	function linsUpdate() {
-		if (isNaN(startx)) return;
-		e_lins.style.display = "block";
-		// Line X
-		e_linx.x1.baseVal.value = mousex * 20 * zoom;
-		e_linx.y1.baseVal.value = mousey * 20 * zoom;
-		e_linx.x2.baseVal.value = Math.floor(startx) * 20 * zoom;
-		e_linx.y2.baseVal.value = mousey * 20 * zoom;
-		// Line Y
-		e_liny.x1.baseVal.value = Math.floor(startx) * 20 * zoom;
-		e_liny.y1.baseVal.value = mousey * 20 * zoom;
-		e_liny.x2.baseVal.value = Math.floor(startx) * 20 * zoom;
-		e_liny.y2.baseVal.value = Math.floor(starty) * 20 * zoom;
-		// Line Hyp
-		e_linh.x1.baseVal.value = mousex * 20 * zoom;
-		e_linh.y1.baseVal.value = mousey * 20 * zoom;
-		e_linh.x2.baseVal.value = Math.floor(startx) * 20 * zoom;
-		e_linh.y2.baseVal.value = Math.floor(starty) * 20 * zoom;
-		// Text X
-		const x = Math.abs(Math.floor(startx - mousex));
-		if (x < 8) {
-			e_txtx.textContent = "";
-		} else {
-			e_txtx.textContent = x;
-			e_txtx.setAttribute("x", Math.floor(startx + mousex) * 10 * zoom);
-			e_txtx.setAttribute("y", mousey * 20 * zoom);
-		}
-		// Text Y
-		const y = Math.abs(Math.floor(starty - mousey));
-		if (y < 4) {
-			e_txty.textContent = "";
-		} else {
-			e_txty.textContent = Math.abs(Math.floor(starty) - mousey);
-			e_txty.setAttribute("x", Math.floor(startx * 20) * zoom);
-			e_txty.setAttribute("y", Math.floor(starty + mousey) * 10 * zoom);
-		}
-		// Text H
-		let h;
-		if (x === 0) {
-			h = y;
-			e_txth.textContent = "";
-		} else if (y == 0) {
-			h = x;
-			e_txth.textContent = "";
-		} else {
-			h = Math.sqrt(
-				Math.floor(startx - mousex) ** 2 +
-				Math.floor(starty - mousey) ** 2
-			);
-			if (h < 5) {
-				e_txth.textContent = "";
-			} else {
-				e_txth.textContent = h.toFixed(1);
-				e_txth.setAttribute("x", Math.floor(startx + mousex) * 10 * zoom);
-				e_txth.setAttribute("y", Math.floor(starty + mousey) * 10 * zoom);
-			}
-		}
-		// Circle
-		e_circ.cx.baseVal.value = mousex * 20 * zoom;
-		e_circ.cy.baseVal.value = mousey * 20 * zoom;
-		e_circ.r.baseVal.value = h * 20 * zoom;
-	}
-
-	function ptr1Update() {
-		e_ptr1.style.transform = `translate(${mousex * 20 * zoom}px, ${mousey * 20 * zoom}px)`;
-		e_ptr1.children[1].textContent = `${String(Math.floor(mousex)).padStart(5, " ")}, ${String(Math.floor(mousey)).padStart(5, " ")}`;
-	}
-
-	function ptr2Update() {
-		e_ptr2.style.transform = `translate(${Math.floor(startx) * 20 * zoom}px, ${Math.floor(starty) * 20 * zoom}px)`;
-		e_ptr2.children[1].textContent = `${String(Math.floor(startx)).padStart(5, " ")}, ${String(Math.floor(starty)).padStart(5, " ")}`;
-	}
-
-	e_main.addEventListener("wheel", event => {
-		if (event.target.parentElement.id === "tools") return;
-		const scale = event.deltaY > 0 ? 4/5 : 5/4;
-		const change = (zoom * scale) - zoom;
-		zoom *= scale;
-		startx *= scale;
-		starty *= scale;
-		e_things.style.transform = `scale(${zoom})`;
-		if (drag) {
-			if (!dragged) {
-				e_main.setPointerCapture(event.pointerId);
-				dragged = true;
-			}
-			offsetx = event.layerX / 20 / zoom - startx;
-			offsety = event.layerY / 20 / zoom - starty;
-			e_draw.style.transform = `translate(${offsetx * 20 * zoom}px, ${offsety * 20 * zoom}px)`;
-			e_main.style.backgroundPosition = `calc(${offsetx * 20 * zoom}px) calc(${offsety * 20 * zoom}px)`;
-		} else {
-			mousex = Math.floor(event.layerX / 20 / zoom - offsetx);
-			mousey = Math.floor(event.layerY / 20 / zoom - offsety);
-		}
-		ptr1Update();
-		ptr2Update();
-		linsUpdate();
-	}, { passive: true });
-
-	e_main.addEventListener("pointerdown", event => {
-		if (event.target.parentElement.id === "tools") return;
-		event.preventDefault();
-		startx = event.layerX / 20 / zoom - offsetx;
-		starty = event.layerY / 20 / zoom - offsety;
-		drag = true;
-		dragged = false;
-		ptr2Update();
-		e_lins.style.display = "none";
-	});
-
-	e_main.addEventListener("pointermove", event => {
-		if (event.target.parentElement.id === "tools") return;
-		if (drag) {
-			if (!dragged) {
-				e_main.setPointerCapture(event.pointerId);
-				dragged = true;
-			}
-			offsetx = event.layerX / 20 / zoom - startx;
-			offsety = event.layerY / 20 / zoom - starty;
-			ptr2Update();
-			e_draw.style.transform = `translate(${offsetx * 20 * zoom}px, ${offsety * 20 * zoom}px)`;
-			e_main.style.backgroundPosition = `calc(${offsetx * 20 * zoom}px) calc(${offsety * 20 * zoom}px)`;
-		} else {
-			mousex = Math.floor(event.layerX / 20 / zoom - offsetx);
-			mousey = Math.floor(event.layerY / 20 / zoom - offsety);
-			ptr1Update();
-			linsUpdate();
-		}
-	}, { passive: true });
-
-	e_main.addEventListener("pointerup", e_main.onpointercancel = event => {
-		if (!drag) return;
-		drag = false;
-		if (dragged) {
-			e_main.releasePointerCapture(event.pointerId);
-		} else {
-			attemptClick(event.button, mousex, e_ry.value, mousey);
-		}
-	}, { passive: true });
-
-	e_draw.style.transform = `translate(${offsetx * 20}px, ${offsety * 20}px)`;
-	e_main.style.backgroundPosition = `calc(${offsetx * 20}px) calc(${offsety * 20}px)`;
-
-}
-
