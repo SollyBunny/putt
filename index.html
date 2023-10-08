@@ -34,8 +34,8 @@
 					color: white;
 					width: 10vmin !important;
 					height: 10vmin;
-					padding: 1vmin !important;;
-					margin: 1vmin !important;
+					padding: 1vmin !important;
+					margin: 2vmin !important;
 					border: none;
 					background: none;
 					position: absolute;
@@ -57,6 +57,7 @@
 					transition: 0.5s transform ease;
 				}
 					#menuitem > * {
+						overflow: clip;
 						width: calc(100vw - 10vmin);
 						height: calc(100% - 10vmin);
 						padding-left: 5vmin;
@@ -66,7 +67,8 @@
 					}
 				#menugrid {
 					display: grid;
-					grid-template-columns: 1fr 1fr;
+					grid-template-columns: min-content 1fr;
+					grid-template-rows: repeat(auto-fit, min-content);
 					grid-gap: 1vmin;
 					height: calc(100% - 20vh);
 					padding: 2vmin;
@@ -74,13 +76,15 @@
 				}
 					#menugrid > label {
 						text-align: left;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
 					}
 					#menugrid > input {
 						text-align: right;
 					}
 					#menugrid > input[type="checkbox"] {
-						width: min-content;
-						height: 100%;
+						height: calc(4vmin + 1em);
 						aspect-ratio: 1;
 						margin: auto;
 					}
@@ -156,9 +160,12 @@
 					top: 0;
 					left: 0;
 				}
-				#editor {
-					top: -10vh !important;
+				#menueditor {
+					overflow: visible;
 				}
+					#editor {
+						top: -10vh !important;
+					}
 		</style>
 	</head>
 	<body>
@@ -209,21 +216,20 @@
 					<h2> Settings </h2>
 					<div id="menugrid">
 						<h3 class="hs"> General </h3>
-						<label for="Name"> Name </label> <input id="Name" attr="0" oninput="settingsset()" type="text" placeholder="Noob1234">
-						<label for="Color"> Color </label> <input id="Color" attr="1" oninput="settingsset()" type="text" placeholder="FF0000">
+						<label for="Name"> Username </label> <input id="Name" attr="0" oninput="settingsset()" type="text" placeholder="Noob1234">
+						<label for="Color"> Player Color </label> <input id="Color" attr="1" oninput="settingsset()" type="color" value="#FF0000">
 						<h3 class="hs"> Gameplay </h3>
-						<label for="Sensitivity"> Sensitivity </label> <input id="Sensitivity" attr="2" oninput="settingsset()" type="number">
+						<label for="Mouse Sensitivity"> Sensitivity </label> <input id="Sensitivity" attr="2" oninput="settingsset()" type="number">
 						<label for="Arrow Distance"> Arrow Distance </label> <input id="Arrow Distance" attr="3" oninput="settingsset()" type="number">
 						<h3 class="hs"> Rendering </h3>
 						<label for="FoV" > FoV </label> <input id="FoV" attr="4" oninput="settingsset()" type="number">
-						<label for="Render Dis"> Render Dis </label> <input id="Render Dis" attr="5" oninput="settingsset()" type="number">
-						<label for="BG Color"> BG Color </label> <input id="BG Color" attr="6" oninput="settingsset()" type="text" placeholder="00AAFF">
+						<label for="Render Dis"> Render Distance </label> <input id="Render Dis" attr="5" oninput="settingsset()" type="number">
 						<h3 class="hs"> Peformance </h3>
-						<label for="Max FPS"> Max FPS </label> <input id="Max FPS" attr="7" oninput="settingsset()" type="number">
-						<label for="Fog"> Fog </label> <input id="Fog" attr="8" oninput="settingsset()" type="checkbox">
-						<label for="Dust"> Dust </label> <input id="Dust" attr="9" oninput="settingsset()" type="checkbox">
-						<label for="Lighting"> Lighting </label> <input id="Lighting" attr="10" oninput="settingsset()" type="checkbox">
-						<label for="Hi Poly Ball"> Hi Poly Ball </label> <input id="Hi Poly Ball" attr="11" oninput="settingsset()" type="checkbox">
+						<label for="Max FPS"> Max FPS </label> <input id="Max FPS" attr="6" oninput="settingsset()" type="number">
+						<label for="Fog"> Fog </label> <input id="Fog" attr="7" oninput="settingsset()" type="checkbox">
+						<label for="Dust"> Dust </label> <input id="Dust" attr="8" oninput="settingsset()" type="checkbox">
+						<label for="Lighting"> Lighting </label> <input id="Lighting" attr="9" oninput="settingsset()" type="checkbox">
+						<label for="Hi Poly Ball"> Hi Poly Ball </label> <input id="Hi Poly Ball" attr="10" oninput="settingsset()" type="checkbox">
 						<h3 class="hs" style="color:red"> Danger Zone </h3>
 						<button id="menusettingsreset" style="background:red;color:white" onclick="settingsreset()"> Reset to Default </button>
 					</div>
@@ -293,12 +299,11 @@
 			function settingsdefault() {
 				settings = [
 					"Noob" + Math.floor(Math.random() * 9999).toString().padStart(4, "0"),
-					Math.floor(Math.random() * (1 << 24)).toString(16).toUpperCase().padStart(6, "0"),
+					"#" + Math.floor(Math.random() * (1 << 24)).toString(16).toUpperCase().padStart(6, "0"),
 					100,
 					100,
 					100,
 					100,
-					"00AAFF",
 					30,
 					1,
 					1,
