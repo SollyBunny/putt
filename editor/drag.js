@@ -16,11 +16,13 @@ const e_txtx = document.getElementById("txtx");
 const e_txty = document.getElementById("txty");
 const e_txth = document.getElementById("txth");
 
+const e_mouselock = document.getElementById("mouselock");
+
 const can = document.getElementById("background");
 const ctx = can.getContext("2d");
 
-export const mouseReal = {};
-export const mouse = {};
+export const mouseReal = {x: 0, y: 0};
+export const mouse = {x: 0, y: 0, z: 0};
 let click = false;
 
 const camera = panzoom(e_draw, {
@@ -31,12 +33,14 @@ const camera = panzoom(e_draw, {
 });
 
 camera.x = 0;
-camera.y = 0;
+camera.z = 0;
 camera.scale = 1;
 
 camera.render = () => {
 	// let camerascale = camera.scale;
-	let size = 20;
+	let size = camera.scale;
+	while (size < 30) size *= 10;
+	while (size > 70) size /= 10;
 	// while (camerascale < 20) camerascale *= 2, size /= 2;
 	console.log(size)
 	ctx.clearRect(0, 0, can.width, can.height);
@@ -49,7 +53,7 @@ camera.render = () => {
 		ctx.moveTo(n, 0);
 		ctx.lineTo(n, can.height);
 	}
-	for (let n = camera.y % size, i = (camera.y < 0 ? Math.floor : Math.ceil)(-camera.y / size); n < can.height; n += size, ++i) {
+	for (let n = camera.z % size, i = (camera.z < 0 ? Math.floor : Math.ceil)(-camera.z / size); n < can.height; n += size, ++i) {
 		if (i % 5 === 0) continue;
 		ctx.moveTo(0, n);
 		ctx.lineTo(can.width, n);
@@ -63,7 +67,7 @@ camera.render = () => {
 		ctx.moveTo(n, 0);
 		ctx.lineTo(n, can.height);
 	}
-	for (let n = camera.y % size, i = (camera.y < 0 ? Math.floor : Math.ceil)(-camera.y / size); n < can.height; n += size, ++i) {
+	for (let n = camera.z % size, i = (camera.z < 0 ? Math.floor : Math.ceil)(-camera.z / size); n < can.height; n += size, ++i) {
 		ctx.moveTo(0, n);
 		ctx.lineTo(can.width, n);
 	}
@@ -74,8 +78,8 @@ camera.render = () => {
 	ctx.beginPath();
 	ctx.moveTo(camera.x, 0);
 	ctx.lineTo(camera.x, can.height);
-	ctx.moveTo(0, camera.y);
-	ctx.lineTo(can.width, camera.y);
+	ctx.moveTo(0, camera.z);
+	ctx.lineTo(can.width, camera.z);
 	ctx.stroke();
 };
 camera.resize = () => {
@@ -84,21 +88,29 @@ camera.resize = () => {
 	can.height = bounding.height;
 	camera.render();
 };
+camera._updateMouseLastUpdate = Date.now();
+camera.updateMouse = () => {
+	const now = Date.now();
+	if (now - camera._updateMouseLastUpdate < 10) return;
+	camera._updateMouseLastUpdate = now;
+	const transform = camera.getTransform();
+	mouse.x = (mouseReal.x - transform.x) / transform.scale;
+	mouse.z = (mouseReal.y - transform.y) / transform.scale;
+	const mouselock = parseFloat(e_mouselock.value) || 10;
+	mouse.x = Math.floor(mouse.x / mouselock) * mouselock;
+	mouse.z = Math.floor(mouse.z / mouselock) * mouselock;
+	e_ptr1.style.transform = `translate(${mouse.x * transform.scale + transform.x}px, ${mouse.z * transform.scale + transform.y}px)`;
+	e_ptr1.children[1].textContent = `${String(mouse.x).padStart(3, " ")}, ${String(mouse.z).padStart(3, " ")}`;
+};
 camera.on("transform", function(e) {
 	const transform = e.getTransform();
-	{
-		let nearest = Math.round(transform.x / 0.5) * 0.5;
-		if (Math.abs(transform.scale - nearest) < 0.7) {
-			camera.zoomAbs(transform.x, transform.y, nearest);
-			return;
-		}
-	}
 	camera.x = transform.x;
-	camera.y = transform.y;
+	camera.z = transform.y;
 	camera.scale = transform.scale;
 	e_zoom.textContent = transform.scale.toFixed(2);
 	click = false;
 	camera.render();
+	camera.updateMouse();
 });
 
 e_main.addEventListener("pointerdown", event => {
@@ -110,24 +122,13 @@ e_main.addEventListener("pointerup", event => {
 		click = false;
 		onClick(event);
 	}
-})
+});
 e_main.addEventListener("pointermove", event => {
-	console.log(event)
 	click = false;
 	mouseReal.x = event.layerX;
 	mouseReal.y = event.layerY;
-	const transform = camera.getTransform();
-	mouse.x = (event.layerX / transform.scale - transform.x);
-	mouse.y = (event.layerY / transform.scale - transform.y);
-	mouse.x = Math.floor(mouse.x / 20);
-	mouse.y = Math.floor(mouse.y / 20);
-	console.log(mouse)
-	mouse.x = 5;
-	mouse.y = 5;
-	e_ptr1.style.transform = `translate(${mouse.x * 20}px, ${mouse.y * 20}px)`;
-	e_ptr1.children[1].textContent = `${String(Math.floor(mouse.x)).padStart(3, " ")}, ${String(Math.floor(mouse.y)).padStart(3, " ")}`;
+	camera.updateMouse();
 });
-
 
 window.camera = camera;
 

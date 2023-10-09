@@ -2,22 +2,10 @@
 import * as things from "./things.js";
 import * as wheel from "./wheel.js";
 
-let tool = undefined;
-
-let mouseX = 0;
-let mouseY = 0;
-window.onmousemove = (event) => {
-	mouseX = event.clientX;
-	mouseY = event.clientY;
-}
-
 const e_main = document.getElementById("main");
-e_main.onkeyup = (event) => {
-	let radial;
+document.onkeyup = event => {
+	if (event.target.tagName === "INPUT") return;
 	switch (event.key.toLowerCase()) {
-		case "a":
-			// radial = objs;
-			break;
 		case "1":
 		case "2":
 		case "3":
@@ -32,10 +20,10 @@ e_main.onkeyup = (event) => {
 		case "escape":
 			wheel.close();
 			break;
+		default:
+			return;
 	}
-	if (radial) {
-		
-	}
+	event.preventDefault();
 }
 
 function addObj(obj) {

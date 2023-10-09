@@ -1,5 +1,6 @@
 
 import * as things from "./things.js";
+import { mouse } from "./drag.js";
 
 const e_wheel = document.getElementById("wheel");
 const e_wheelcontent = document.getElementById("wheelcontent");
@@ -76,8 +77,9 @@ const data = [
 
 export function open() {
 	wheelOpen = true;
-	e_wheel.style.left = event.layerX + "px";
-	e_wheel.style.top = event.layerY + "px";
+	const transform = camera.getTransform();
+	e_wheel.style.left = `${mouse.x * transform.scale + transform.x}px`;
+	e_wheel.style.top = `${mouse.y * transform.scale + transform.y}px`;
 	e_wheel.style.display = "block";
 	if (wheelClickPromise !== undefined) {
 		wheelClickPromise(undefined);
