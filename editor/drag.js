@@ -96,7 +96,6 @@ camera.on("transform", function(e) {
 	camera.x = transform.x;
 	camera.y = transform.y;
 	camera.scale = transform.scale;
-	e_ptrs.style.transform = `translate(${transform.x}px, ${transform.y}px)`;
 	e_zoom.textContent = transform.scale.toFixed(2);
 	click = false;
 	camera.render();
@@ -123,6 +122,8 @@ e_main.addEventListener("pointermove", event => {
 	mouse.x = Math.floor(mouse.x / 20);
 	mouse.y = Math.floor(mouse.y / 20);
 	console.log(mouse)
+	mouse.x = 5;
+	mouse.y = 5;
 	e_ptr1.style.transform = `translate(${mouse.x * 20}px, ${mouse.y * 20}px)`;
 	e_ptr1.children[1].textContent = `${String(Math.floor(mouse.x)).padStart(3, " ")}, ${String(Math.floor(mouse.y)).padStart(3, " ")}`;
 });
