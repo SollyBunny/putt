@@ -9,14 +9,14 @@
 	let visible = true;
 
 	e_menudrag.addEventListener("pointerdown", event => {
-		e_menudrag.setPointerCapture(event.pointerId);
-		startwidth = e_menu.clientWidth;
-		startpos = event.clientX;
+		e_menudrag.setPointerCapture(event.pointerId); // grab pointer to allow dragging above other elements
+		startwidth = e_menu.clientWidth; // set starting width
+		startpos = event.clientX; // set starting pos
 	}, { passive: true });
 
 	e_menudrag.addEventListener("pointermove", event => {
 		if (!startpos) return;
-		if (event.clientX < 25) {
+		if (event.clientX < 25) { // snap to closed
 			visible = false;
 			e_menu.style.display = "none";
 			return;
@@ -25,15 +25,15 @@
 			visible = true;
 			e_menu.style.display = "block";
 		}
-		e_menu.style.width = Math.floor(event.clientX - startpos + startwidth) + "px";
+		e_menu.style.width = Math.floor(event.clientX - startpos + startwidth) + "px"; // set new width
 	}, { passive: true });
 
 	e_menudrag.addEventListener("pointerup", e_menudrag.onpointercancel = () => {
-		e_menudrag.releasePointerCapture(event.pointerId);
+		e_menudrag.releasePointerCapture(event.pointerId); // stop grabbing pointer to allow normal behaviour
 		startpos = undefined;
 	}, { passive: true });
 
-	e_menudrag.addEventListener("dblclick", event => {
+	e_menudrag.addEventListener("dblclick", event => { // toggle visibility on dbl click
 		if (visible) {
 			visible = false;
 			e_menu.style.display = "none";
