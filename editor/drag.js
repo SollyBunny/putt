@@ -1,7 +1,20 @@
 
 import { onClick } from "./main.js";
 
-const e_main = document.getElementById("main");
+function toScreenX(x) { // client x -> screen x
+	return x * camera.scale + camera.x;
+}
+function toScreenZ(z) { // client z -> screen z
+	return z * camera.scale + camera.z;
+}
+function toScreenTransform(x, z) { // format client x, z to a transform
+	return `translate(${toScreenX(x)}px, ${toScreenZ(z)}px)`;
+}
+function toPadString(n) { // format a number as a padded fixed number
+	return String(Math.round(n * 100) / 100).padStart(2, " ");
+}
+
+const e_main = document.getElementById("main"); // get a lot of elements
 const e_draw = document.getElementById("draw");
 const e_ptrs = document.getElementById("ptrs");
 const e_zoom = document.getElementById("zoom");
@@ -30,7 +43,7 @@ const camera = panzoom(e_draw, {
 	zoomDoubleClickSpeed: 1,
 	smoothScroll: true,
 	smoothPan: true,
-	owner: e_main
+	owner: e_main // transform e_main
 });
 
 camera.x = 0;
@@ -40,24 +53,26 @@ camera.w = can.width;
 camera.h = can.height;
 
 camera.render = () => {
-	// let camerascale = camera.scale;
+	// Set grid line size
 	let size = camera.scale;
 	while (size < 30) size *= 10;
 	while (size > 70) size /= 10;
-	// while (camerascale < 20) camerascale *= 2, size /= 2;
-	console.log(size)
+	// Setup ctx
 	ctx.clearRect(0, 0, camera.w, camera.h);
 	ctx.lineWidth = 1;
 	// Minor Grid Lines
 	ctx.strokeStyle = "#555";
 	ctx.beginPath();
+	// `(camera.<axis> < 0 ? Math.floor : Math.ceil)` is because it must round away from 0
 	for (let n = camera.x % size, i = (camera.x < 0 ? Math.floor : Math.ceil)(-camera.x / size); n < camera.w; n += size, ++i) {
-		if (i % 5 === 0) continue;
+		// Minor X Lines
+		if (i % 5 === 0) continue; // skip Minor X Lines
 		ctx.moveTo(n, 0);
 		ctx.lineTo(n, camera.h);
 	}
 	for (let n = camera.z % size, i = (camera.z < 0 ? Math.floor : Math.ceil)(-camera.z / size); n < camera.h; n += size, ++i) {
-		if (i % 5 === 0) continue;
+		// Minor Y Lines
+		if (i % 5 === 0) continue; // skip Minor Y Lines
 		ctx.moveTo(0, n);
 		ctx.lineTo(camera.w, n);
 	}
@@ -67,21 +82,23 @@ camera.render = () => {
 	ctx.strokeStyle = "#aaa";
 	ctx.beginPath();
 	for (let n = camera.x % size, i = (camera.x < 0 ? Math.floor : Math.ceil)(-camera.x / size); n < camera.w; n += size, ++i) {
+		// Major X Lines
 		ctx.moveTo(n, 0);
 		ctx.lineTo(n, camera.h);
 	}
 	for (let n = camera.z % size, i = (camera.z < 0 ? Math.floor : Math.ceil)(-camera.z / size); n < camera.h; n += size, ++i) {
+		// Major Y Lines
 		ctx.moveTo(0, n);
 		ctx.lineTo(camera.w, n);
 	}
 	ctx.stroke();
-	// Middle Grid Line
+	// Middle Grid Lines
 	ctx.strokeStyle = "#fff";
 	ctx.lineWidth = 3;
 	ctx.beginPath();
-	ctx.moveTo(camera.x, 0);
+	ctx.moveTo(camera.x, 0); // X
 	ctx.lineTo(camera.x, camera.h);
-	ctx.moveTo(0, camera.z);
+	ctx.moveTo(0, camera.z); // Y
 	ctx.lineTo(camera.w, camera.z);
 	ctx.stroke();
 };
@@ -91,23 +108,11 @@ camera.resize = () => {
 	can.height = camera.h = bounding.height;
 	camera.render();
 };
-camera._updateMouseLastUpdate = Date.now();
 
-function toScreenX(x) {
-	return x * camera.scale + camera.x;
-}
-function toScreenZ(z) {
-	return z * camera.scale + camera.z;
-}
-function toScreenTransform(x, z) {
-	return `translate(${toScreenX(x)}px, ${toScreenZ(z)}px)`;
-}
-function toPadString(n) {
-	return String(Math.round(n * 100) / 100).padStart(2, " ");
-}
+camera._updateMouseLastUpdate = Date.now();
 camera.updateMouse = () => {
 	const now = Date.now();
-	if (now - camera._updateMouseLastUpdate < 10) return;
+	if (now - camera._updateMouseLastUpdate < 10) return; // only continue if it has been more than 10ms than the last update
 	camera._updateMouseLastUpdate = now;
 	mouse.x = (mouseReal.x - camera.x) / camera.scale;
 	mouse.z = (mouseReal.y - camera.z) / camera.scale;
@@ -164,19 +169,19 @@ camera.updateMouse = () => {
 	e_linz.setAttribute("x2", toScreenX(mouse.x));
 	e_linz.setAttribute("y2", toScreenZ(mouse.z));
 };
-camera.on("transform", function(e) {
-	const transform = e.getTransform();
+camera.on("transform", event => { // on change in transform (pan, zoom or resize)
+	const transform = event.getTransform();
 	camera.x = transform.x;
 	camera.z = transform.y;
 	camera.scale = transform.scale;
-	e_zoom.textContent = transform.scale.toFixed(2);
-	click = false;
+	e_zoom.textContent = toPadString(transform.scale); // set transform text
+	click = false; // the screen has moved, a click isn't possible
 	camera.render();
 	camera.updateMouse();
 });
 e_main.addEventListener("pointerdown", event => {
-	if (event.target !== background) return;
-	click = true;
+	if (event.target !== background) return; // cancel if not clicking background (eg if wheel is open)
+	click = true; // a click is possible
 	mouseReal.x = event.layerX;
 	mouseReal.y = event.layerY;
 	mouseOld.x = (mouseReal.x - camera.x) / camera.scale;
@@ -186,14 +191,13 @@ e_main.addEventListener("pointerdown", event => {
 	mouseOld.z = Math.floor(mouseOld.z / mouselock) * mouselock;
 });
 e_main.addEventListener("pointerup", event => {
-	if (click === true) {
-		click = false;
-		onClick(event);
-	}
+	if (click === false) return; // check if a mouse up and mouse down occured without any movement imbetween (aka click)
+	click = false;
+	onClick(event); // a click has occured
 });
 e_main.addEventListener("pointermove", event => {
-	if (event.target !== background) return;
-	click = false;
+	click = false; // drag has occured, so a click isn't possible
+	if (event.target !== background) return; // cancel if not moving across background (eg if wheel is open)
 	mouseReal.x = event.layerX;
 	mouseReal.y = event.layerY;
 	camera.updateMouse();
@@ -202,5 +206,5 @@ e_main.addEventListener("pointermove", event => {
 window.camera = camera;
 
 export function init() {
-	camera.moveTo(camera.w / 2, camera.h / 2);
+	camera.moveTo(camera.w / 2, camera.h / 2); // move to center of screen at start
 }
