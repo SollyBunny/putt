@@ -20,6 +20,20 @@ document.onkeyup = event => {
 		case "escape":
 			wheel.close();
 			break;
+		case "home":
+			if (Math.abs(camera.w / 2 - camera.x) < 0.01 && Math.abs(camera.h / 2 - camera.z) / 2 < 0.01) {
+				camera.smoothZoomAbs(
+					camera.w / 2,
+					camera.h / 2,
+					1
+				);
+			} else {
+				camera.smoothMoveTo(
+					camera.w / 2,
+					camera.h / 2,
+				);
+			}
+			break;
 		default:
 			return;
 	}
