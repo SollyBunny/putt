@@ -115,7 +115,7 @@ export function toggle() {
 }
 
 export function select(n) {
-	if (clickPromise === undefined) { // check if open
+	if (clickPromise === undefined) // check if open
 	clickPromise(data[selected][n]);
 }
 	
