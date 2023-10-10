@@ -39,18 +39,13 @@ export const mouse = {x: 0, y: 0, z: 0};
 export const mouseOld = {x: 0, y: 0, z: 0};
 let click = false;
 
-const camera = panzoom(e_draw, {
-	zoomDoubleClickSpeed: 1,
-	smoothScroll: true,
-	smoothPan: true,
-	owner: e_main // transform e_main
-});
-
-camera.x = 0;
-camera.z = 0;
-camera.scale = 1;
-camera.w = can.width;
-camera.h = can.height;
+export const camera = {
+	x: 0,
+	z: 0,
+	scale: 1,
+	w: can.width,
+	h: can.height,
+};
 
 camera.render = () => {
 	// Set grid line size
@@ -108,7 +103,6 @@ camera.resize = () => {
 	can.height = camera.h = bounding.height;
 	camera.render();
 };
-
 camera._updateMouseLastUpdate = Date.now();
 camera.updateMouse = () => {
 	const now = Date.now();
@@ -117,8 +111,8 @@ camera.updateMouse = () => {
 	mouse.x = (mouseReal.x - camera.x) / camera.scale;
 	mouse.z = (mouseReal.y - camera.z) / camera.scale;
 	const mouselock = parseFloat(e_mouselock.value) || 10;
-	mouse.x = Math.floor(mouse.x / mouselock) * mouselock;
-	mouse.z = Math.floor(mouse.z / mouselock) * mouselock;
+	mouse.x = Math.round(mouse.x / mouselock) * mouselock;
+	mouse.z = Math.round(mouse.z / mouselock) * mouselock;
 	// Primary Pointer
 	e_ptr1.style.transform = toScreenTransform(mouse.x, mouse.z);
 	e_ptr1.children[1].textContent = `${toPadString(mouse.x)}, ${toPadString(mouse.y)}, ${toPadString(mouse.z)}`;
@@ -169,16 +163,6 @@ camera.updateMouse = () => {
 	e_linz.setAttribute("x2", toScreenX(mouse.x));
 	e_linz.setAttribute("y2", toScreenZ(mouse.z));
 };
-camera.on("transform", event => { // on change in transform (pan, zoom or resize)
-	const transform = event.getTransform();
-	camera.x = transform.x;
-	camera.z = transform.y;
-	camera.scale = transform.scale;
-	e_zoom.textContent = toPadString(transform.scale); // set transform text
-	click = false; // the screen has moved, a click isn't possible
-	camera.render();
-	camera.updateMouse();
-});
 e_main.addEventListener("pointerdown", event => {
 	if (event.target !== background) return; // cancel if not clicking background (eg if wheel is open)
 	click = true; // a click is possible
@@ -203,8 +187,25 @@ e_main.addEventListener("pointermove", event => {
 	camera.updateMouse();
 });
 
-window.camera = camera;
-
-export function init() {
-	camera.moveTo(camera.w / 2, camera.h / 2); // move to center of screen at start
+export async function init() {
+	camera.panzoom = panzoom(e_draw, {
+		zoomDoubleClickSpeed: 1,
+		smoothScroll: true,
+		smoothPan: true,
+		owner: e_main // transform e_main
+	});
+	camera.resize();
+	camera.panzoom.on("transform", event => { // on change in transform (pan, zoom or resize)
+		const transform = event.getTransform();
+		camera.x = transform.x;
+		camera.z = transform.y;
+		camera.scale = transform.scale;
+		e_zoom.textContent = toPadString(transform.scale); // set transform text
+		click = false; // the screen has moved, a click isn't possible
+		camera.render();
+		camera.updateMouse();
+	});
+	camera.panzoom.moveTo(can.width / 2, can.height / 2); // move to the center
 }
+
+window.camera = camera;

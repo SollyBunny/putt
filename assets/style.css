@@ -12,10 +12,12 @@
 ::-webkit-scrollbar, scrollbar {
 	width: 16px;
 	background-color: var(--bgd);
+	border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb, scrollbar-thumb {
 	background-color: var(--bgl);
 	border-radius: 8px;
+	box-shadow: var(--box-shadow-in), inset var(--box-shadow-out);
 }
 ::-webkit-scrollbar-thumb:hover, scrollbar-thumb:hover {
 	background-color: var(--bgh);

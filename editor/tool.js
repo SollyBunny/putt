@@ -22,13 +22,13 @@ document.onkeyup = event => {
 			break;
 		case "home":
 			if (Math.abs(camera.w / 2 - camera.x) < 0.01 && Math.abs(camera.h / 2 - camera.z) / 2 < 0.01) {
-				camera.smoothZoomAbs(
+				camera.panzoom.smoothZoomAbs(
 					camera.w / 2,
 					camera.h / 2,
 					1
 				);
 			} else {
-				camera.smoothMoveTo(
+				camera.panzoom.smoothMoveTo(
 					camera.w / 2,
 					camera.h / 2,
 				);

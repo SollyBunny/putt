@@ -7,6 +7,39 @@
 		<meta charset="UTF-8">
 		<link rel="stylesheet" href="../assets/style.css">
 		<style>
+			/* splitjs stuff */
+			#body {
+				display: flex;
+			}
+				#left, #right {
+					display: flex;
+					flex-direction: column;
+					overflow: clip;
+				}
+					#left > *, #right > * {
+						overflow: clip;
+						overflow-y: auto;
+					}
+				#main {
+					flex-grow: 1;
+					overflow: clip;
+					position: relative;
+				}
+			.gutter {
+				background-color: var(--bgl);
+				box-shadow: inset var(--box-shadow-in);
+			}
+			.gutter-horizontal {
+				width: 10px;
+				height: 100%;
+				cursor: ew-resize;
+			}
+			.gutter-vertical {
+				height: 10px;
+				width: 100%;
+				cursor: ns-resize;
+			}
+			/* main */
 			body {
 				display: flex;
 				flex-direction: column;
@@ -122,9 +155,8 @@
 					.wheel > button:nth-child(8) { --rotate: 270deg }
 					.wheel > button:nth-child(9) { --rotate: 315deg }
 		</style>
-		<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 		<script type="text/javascript" src="../lib/panzoom.js"></script>
-		<script type="text/javascript" src="https://golden-layout.com/files/latest/js/goldenlayout.min.js"></script>
+		<script src="https://unpkg.com/split.js/dist/split.min.js"></script>
 		<link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css" />
 		<link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css" />
 	</head>
@@ -133,23 +165,41 @@
 		<div id="head">
 			Putt Editor
 		</div>
-		<div id="body"></div>
-		<!-- All this stuff is put into golden layout later -->
-		<div style="display:none">
-			<div id="settings">
-				<h2> Settings </h2>
-				<h3> Editor </h3>
-				<label for="mouselock"> Mouse Lock </label> <input id="mouselock" type="number" value="10" placeholder="10" min="0.25" step="0.25">
-				<h3> Colors </h3>
-				<label for="colsky"> Sky Color </label> <input id="colsky" type="color" value="#00aaff">
-				<label for="colfloor"> Floor Color </label> <input id="colfloor" type="color" value="#5c8eed">
-				<label for="colwall"> Wall Color </label> <input id="colwall" type="color" value="#9cde5e">
-				<label for="colobj"> Object Color </label> <input id="colobj" type="color" value="#505d6b">
-				<label for="coldecor"> Decor Color </label> <input id="coldecor" type="color" value="#ffffff">
+		<div id="body">
+			<div id="left">
+				<div id="selector">
+					CLick me
+				</div>
+				<div id="things">
+					Nothing here yet
+				</div>
 			</div>
 			<div id="main">
 				<canvas id="background"></canvas>
 				<div id="zoom">1.0</div>
+				<div id="place">
+					<svg id="draw">
+					</svg>
+					<svg id="ptrs">
+						<g id="lins">
+							<circle id="circ" stroke="gray" fill="transparent" stroke-width="0.25" />
+							<line id="linh" stroke="gray" />
+							<line id="linx" stroke="white" />
+							<line id="linz" stroke="white" />
+							<text id="txth" filter="url(#bgfill)" fill="gray" dominant-baseline="middle" text-anchor="middle"></text>
+							<text id="txtx" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
+							<text id="txtz" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
+						</g>
+						<g id="ptr2" class="ptr" fill="gray" style="transform:scale(0)">
+							<circle cx="1" cy="1" r="5" />
+							<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
+						</g>
+						<g id="ptr1" class="ptr" fill="white">
+							<circle cx="1" cy="1" r="5" />
+							<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
+						</g>
+					</svg>
+				</div>
 				<div id="wheel" style="display:none">
 					<div id="wheelcontent">
 						<div class="wheel" style="--color:hsla(0, 100%, 50%, 0.5)">
@@ -189,28 +239,17 @@
 						</div>
 					</div>
 				</div>
-				<div id="place">
-					<svg id="draw">
-					</svg>
-					<svg id="ptrs">
-						<g id="lins">
-							<circle id="circ" stroke="gray" fill="transparent" stroke-width="0.25" />
-							<line id="linh" stroke="gray" />
-							<line id="linx" stroke="white" />
-							<line id="linz" stroke="white" />
-							<text id="txth" filter="url(#bgfill)" fill="gray" dominant-baseline="middle" text-anchor="middle"></text>
-							<text id="txtx" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
-							<text id="txtz" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
-						</g>
-						<g id="ptr2" class="ptr" fill="gray" style="transform:scale(0)">
-							<circle cx="1" cy="1" r="5" />
-							<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
-						</g>
-						<g id="ptr1" class="ptr" fill="white">
-							<circle cx="1" cy="1" r="5" />
-							<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
-						</g>
-					</svg>
+			</div>
+			<div id="right">
+				<div id="settingsplace">
+					<label for="colsky"> Sky Color </label> <input id="colsky" type="color" value="#00aaff">
+					<label for="colfloor"> Floor Color </label> <input id="colfloor" type="color" value="#5c8eed">
+					<label for="colwall"> Wall Color </label> <input id="colwall" type="color" value="#9cde5e">
+					<label for="colobj"> Object Color </label> <input id="colobj" type="color" value="#505d6b">
+					<label for="coldecor"> Decor Color </label> <input id="coldecor" type="color" value="#ffffff">
+				</div>
+				<div id="settingseditor">
+					<label for="mouselock"> Mouse Lock </label> <input id="mouselock" type="number" value="10" placeholder="10" min="0.25" step="0.25">
 				</div>
 			</div>
 		</div>

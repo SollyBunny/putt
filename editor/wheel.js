@@ -1,6 +1,6 @@
 
 import * as things from "./things.js";
-import { mouse } from "./drag.js"; // for mouse position
+import { mouse } from "./camera.js"; // for mouse position
 
 const e_wheel = document.getElementById("wheel");
 const e_wheelcontent = document.getElementById("wheelcontent");
@@ -40,7 +40,7 @@ const data = [
 	]
 ];
 
-{ // Construct wheel
+export async function init() {
 	let wheelID = 0;
 	function wheelScroll(event) { // event callback for scrolling to different wheel
 		scroll(parseInt(event.target.ID));
@@ -76,9 +76,8 @@ const data = [
 
 export function open() {
 	isOpen = true;
-	const transform = camera.getTransform(); // set position of wheel
-	e_wheel.style.left = `${mouse.x * transform.scale + transform.x}px`;
-	e_wheel.style.top = `${mouse.y * transform.scale + transform.y}px`;
+	e_wheel.style.left = `${mouse.x / camera.scale + camera.x}px`;
+	e_wheel.style.top = `${mouse.z / camera.scale + camera.z}px`;
 	e_wheel.style.display = "block"; // show wheel
 	if (clickPromise !== undefined) { // make sure there is no pending callback
 		clickPromise(undefined);
