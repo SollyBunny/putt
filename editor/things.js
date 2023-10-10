@@ -9,6 +9,8 @@ export { Tetra, Cube, Octa, Dodeca, Icose, Sphere };
 export { Floor, BFloor, Wall, BWall, Platform, BPlatform };
 export { Player, Start, Hole, Powerup };
 
+import { mouse } from "./camera.js";
+
 export class Place {
 	constructor(draw) {
 		this.things = new Set();
@@ -23,6 +25,24 @@ export class Place {
 		this.things.delete(thing);
 		// remove from svg element
 		if (thing.el) this.draw.removeChild(thing.el);
+	}
+	focus(thing) {
+		let avgx = 0;
+		let avgy = 0;
+		let avgz = 0;
+		for (let i = 0; i < thing.pos.length; i += 3) {
+			avgx += thing.pos[i];
+			avgy += thing.pos[i + 1];
+			avgz += thing.pos[i + 2];
+		}
+		avgx /= thing.pos.length / 3;
+		avgy /= thing.pos.length / 3;
+		avgz /= thing.pos.length / 3;
+		camera.panzoom.smoothMoveTo(avgx, avgz)
+		mouse.y = avgy;
+	}
+	edit(thing) {
+		focus(thing);
 	}
 }
 

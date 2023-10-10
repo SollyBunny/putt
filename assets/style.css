@@ -155,3 +155,27 @@ input, button, select {
 	.dropdown:hover > *:nth-child(5) {
 		transform: translateY(400%);
 	}
+.combinedinput {
+	position: relative;
+}
+.combinedinput > label {
+	position: absolute;
+	top: 0;
+	left: 2vmin;
+	transform: translateY(-50%);
+	font-size: 20%;
+}
+.combinedinput > input {
+	width: calc(100% - 6vmin);
+}
+.combinedinput:before {
+	content: "";
+	display: block;
+	position: absolute;
+	width: 15vmin;
+	height: 2vmin;
+	border-radius: 2vmin 0 1vmin 0;
+	background-color: var(--bgl);
+	top: calc(1vmin - 2px);
+	left: 1vmin;
+}

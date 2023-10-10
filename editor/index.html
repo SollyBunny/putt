@@ -11,19 +11,24 @@
 			#body {
 				display: flex;
 			}
-				#left, #right {
+				#sidebar {
 					display: flex;
 					flex-direction: column;
 					overflow: clip;
+					width: 20%;
 				}
-					#left > *, #right > * {
+					#settingseditor {
+						overflow: clip;
+						white-space: nowrap;
+					}
+					#settingsplace, #things {
 						overflow: clip;
 						overflow-y: auto;
 					}
 				#main {
-					flex-grow: 1;
 					overflow: clip;
 					position: relative;
+					flex-grow: 1;
 				}
 			.gutter {
 				background-color: var(--bgl);
@@ -166,21 +171,28 @@
 			Putt Editor
 		</div>
 		<div id="body">
-			<div id="left">
-				<div id="selector">
-					CLick me
+			<div id="sidebar">
+				<div id="thing">
+					<div class="combinedinput"><input id="id" type="number" min="0" step="1"><label for="id"> Object ID </label></div>
 				</div>
-				<div id="things">
-					Nothing here yet
+				<div id="settingsplace">
+					<div class="combinedinput"><input id="colsky" type="color" value="#00aaff"><label for="colsky"> Sky Color </label></div>
+					<div class="combinedinput"><input id="colfloor" type="color" value="#5c8eed"><label for="colfloor"> Floor Color </label></div>
+					<div class="combinedinput"><input id="colwall" type="color" value="#9cde5e"><label for="colwall"> Wall Color </label></div>
+					<div class="combinedinput"><input id="colobj" type="color" value="#505d6b"><label for="colobj"> Object Color </label></div>
+					<div class="combinedinput"><input id="coldecor" type="color" value="#ffffff"><label for="coldecor"> Decor Color </label></div>
+				</div>
+				<div id="settingseditor">
+					<div class="combinedinput"><input id="mouselock" type="number" value="10" placeholder="10" min="0.25" step="0.25"><label for="mouselock"> Mouse Lock </label></div>
 				</div>
 			</div>
 			<div id="main">
 				<canvas id="background"></canvas>
 				<div id="zoom">1.0</div>
 				<div id="place">
-					<svg id="draw">
+					<svg id="draw" width="1" height="1">
 					</svg>
-					<svg id="ptrs">
+					<svg id="ptrs" width="1" height="1">
 						<g id="lins">
 							<circle id="circ" stroke="gray" fill="transparent" stroke-width="0.25" />
 							<line id="linh" stroke="gray" />
@@ -238,18 +250,6 @@
 							<button>Powerup</button>
 						</div>
 					</div>
-				</div>
-			</div>
-			<div id="right">
-				<div id="settingsplace">
-					<label for="colsky"> Sky Color </label> <input id="colsky" type="color" value="#00aaff">
-					<label for="colfloor"> Floor Color </label> <input id="colfloor" type="color" value="#5c8eed">
-					<label for="colwall"> Wall Color </label> <input id="colwall" type="color" value="#9cde5e">
-					<label for="colobj"> Object Color </label> <input id="colobj" type="color" value="#505d6b">
-					<label for="coldecor"> Decor Color </label> <input id="coldecor" type="color" value="#ffffff">
-				</div>
-				<div id="settingseditor">
-					<label for="mouselock"> Mouse Lock </label> <input id="mouselock" type="number" value="10" placeholder="10" min="0.25" step="0.25">
 				</div>
 			</div>
 		</div>

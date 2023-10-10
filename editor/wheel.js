@@ -1,13 +1,15 @@
 
 import * as things from "./things.js";
-import { mouse } from "./camera.js"; // for mouse position
+import * as camera from "./camera.js"; // for mouse position
+import { onThing } from "./main.js";
 
 const e_wheel = document.getElementById("wheel");
 const e_wheelcontent = document.getElementById("wheelcontent");
 
-let clickPromise = undefined; // the call back
 export let isOpen = false;
-let selected = 2;
+export let selected = 2;
+
+let clickPromise = undefined; // the call back
 
 const data = [
 	[
@@ -76,8 +78,8 @@ export async function init() {
 
 export function open() {
 	isOpen = true;
-	e_wheel.style.left = `${mouse.x / camera.scale + camera.x}px`;
-	e_wheel.style.top = `${mouse.z / camera.scale + camera.z}px`;
+	e_wheel.style.left = `${camera.mouse.x * camera.scale + camera.x}px`;
+	e_wheel.style.top = `${camera.mouse.z * camera.scale + camera.z}px`;
 	e_wheel.style.display = "block"; // show wheel
 	if (clickPromise !== undefined) { // make sure there is no pending callback
 		clickPromise(undefined);
@@ -87,7 +89,7 @@ export function open() {
 		clickPromise = undefined;
 		close(); // close the wheel
 		if (thing === undefined) return;
-		console.log(thing); // stub
+		onThing(thing); // call the callback
 	});
 }
 
@@ -117,5 +119,5 @@ export function select(n) {
 	if (clickPromise === undefined) // check if open
 	clickPromise(data[selected][n]);
 }
-	
+
 scroll(selected); // scroll initially to surfaces
