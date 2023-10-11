@@ -16,7 +16,7 @@ export function onClick(event) {
 }
 
 export function onThing(thingClass) {
-	const thing = new thingClass(camera.mouse.x, camera.mouse.y, camera.mouse.z)
+	const thing = new thingClass([camera.mouse.x, camera.mouse.y, camera.mouse.z]);
 	place.add(thing);
 	place.edit(thing);
 }

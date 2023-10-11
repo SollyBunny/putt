@@ -31,9 +31,9 @@ export class Place {
 		let avgy = 0;
 		let avgz = 0;
 		for (let i = 0; i < thing.pos.length; i += 3) {
-			avgx += thing.pos[i];
-			avgy += thing.pos[i + 1];
-			avgz += thing.pos[i + 2];
+			avgx += thing.pos.get(i);
+			avgy += thing.pos.get(i + 1);
+			avgz += thing.pos.get(i + 2);
 		}
 		avgx /= thing.pos.length / 3;
 		avgy /= thing.pos.length / 3;
