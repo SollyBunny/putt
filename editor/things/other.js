@@ -1,4 +1,4 @@
-import { Thing } from "./thing.js";
+import { Thing, createElementSVG } from "./thing.js";
 
 class Other extends Thing {
 }
