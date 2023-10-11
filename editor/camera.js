@@ -66,7 +66,6 @@ export function render() {
 	e_scalezoom.textContent = toPadString(scale) + "x";
 	e_scaledis.textContent = toPadString(sizezoom) + "u";
 	e_scaleedge.setAttribute("transform", `translate(${-sizezoom * scale} 0)`);
-	
 	// Setup ctx
 	ctx.clearRect(0, 0, w, h);
 	ctx.lineWidth = 1;
