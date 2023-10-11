@@ -4,7 +4,6 @@ import { onClick } from "./main.js";
 const e_main = document.getElementById("main"); // get a lot of elements
 const e_draw = document.getElementById("draw");
 const e_ptrs = document.getElementById("ptrs");
-const e_zoom = document.getElementById("zoom");
 const e_ptr1 = document.getElementById("ptr1");
 const e_ptr2 = document.getElementById("ptr2");
 const e_circ = document.getElementById("circ");
@@ -15,6 +14,12 @@ const e_linh = document.getElementById("linh");
 const e_txtx = document.getElementById("txtx");
 const e_txtz = document.getElementById("txtz");
 const e_txth = document.getElementById("txth");
+
+const e_scale = document.getElementById("scale");
+const e_scalezoom = document.getElementById("scalezoom");
+const e_scaledis = document.getElementById("scaledis");
+const e_scaleedge = document.getElementById("scaleedge");
+const e_scaleline = document.getElementById("scaleline");
 
 const e_mouselock = document.getElementById("mouselock");
 
@@ -54,6 +59,14 @@ export function render() {
 	let size = scale;
 	while (size < 30) size *= 10;
 	while (size > 70) size /= 10;
+	// Set zoom UI
+	let sizezoom = 1;
+	while (sizezoom * scale > 600) sizezoom /= 2;
+	while (sizezoom * scale < 300) sizezoom *= 2;
+	e_scalezoom.textContent = toPadString(scale) + "x";
+	e_scaledis.textContent = toPadString(sizezoom) + "u";
+	e_scaleedge.setAttribute("transform", `translate(${-sizezoom * scale} 0)`);
+	
 	// Setup ctx
 	ctx.clearRect(0, 0, w, h);
 	ctx.lineWidth = 1;
@@ -179,7 +192,6 @@ export async function init() {
 		x = transform.x;
 		z = transform.y;
 		scale = transform.scale;
-		e_zoom.textContent = toPadString(transform.scale); // set transform text
 		click = false; // the screen has moved, a click isn't possible
 		render();
 		updateMouse();

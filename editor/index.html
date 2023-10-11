@@ -58,13 +58,14 @@
 			#settings {
 				padding: 2vmin;
 			}
-			#zoom {
+			#scale {
 				position: absolute;
 				right: 1vmin;
-				bottom: 1vmin;
+				bottom: calc(1vmin + 10px);
+				overflow: visible;
 			}
-				#zoom::before {
-					content: "x";
+				#scaleedge {
+					transition: 0.2s ease transform;
 				}
 			#canvas {
 				width: 100%;
@@ -188,7 +189,6 @@
 			</div>
 			<div id="main">
 				<canvas id="background"></canvas>
-				<div id="zoom">1.0</div>
 				<div id="place">
 					<svg id="draw" width="1" height="1">
 						<style>
@@ -217,6 +217,15 @@
 						</g>
 					</svg>
 				</div>
+				<svg id="scale" width="1" height="1" dominant-baseline="text-bottom">
+					<g id="scaleedge">
+						<line id="scaleline" x1="0" y1="0" x2="100vw" y2="0" stroke="var(--fg)" />
+						<line x1="0" y1="-10" x2="0" y2="10" stroke="var(--fg)" />
+						<text id="scaledis" x="10" y="-10" fill="var(--fg)">1</text>
+					</g>
+					<line x1="0" y1="-10" x2="0" y2="10" stroke="var(--fg)" />
+					<text id="scalezoom" x="-10" y="-10" fill="var(--fg)" text-anchor="end">1.0</text>
+				</svg>
 				<div id="wheel" style="display:none">
 					<div id="wheelcontent">
 						<div class="wheel" style="--color:hsla(0, 100%, 50%, 0.5)">

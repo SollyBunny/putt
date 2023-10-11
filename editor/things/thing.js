@@ -5,7 +5,7 @@ export function createElementSVG(type) {
 
 class Pos {
 	constructor(pos, update) {
-		this.data = pos;
+		this.data = pos || [0, 0, 0];
 		this.update = update;
 	}
 	get length() {
@@ -42,6 +42,6 @@ export class Thing {
 		return el;
 	}
 	elUpdate(el) {
-		el.transform = `translate(${this.pos[0]}, ${this.pos[2]})`;
+		el.style.transform = `translate(${this.pos[0]}, ${this.pos[2]})`;
 	}
 }

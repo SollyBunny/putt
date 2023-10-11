@@ -13,17 +13,15 @@ class Platonic extends Thing {
 			el.setAttribute("x", -0.5);
 			el.setAttribute("y", -0.5);
 		} else {
-			el = createElementSVG("path")
+			el = createElementSVG("path");
 			let path = "";
-			path += "M0.5 0";
-			// console.log(this.sides, this, this.getAttribute("sides"));
 			for (let i = 0; i < this.sides; ++i) {
-				path += ` L${Math.sin(i * 2 * Math.PI / this.sides)} ${Math.cos(i * 2 * Math.PI / this.sides)}`;
+				path += `${i === 0 ? "M" : "L"}${Math.sin(i * 2 * Math.PI / this.sides)} ${Math.cos(i * 2 * Math.PI / this.sides)} `;
 			}
+			path += "Z"
 			el.setAttribute("d", path);
 		}
 		el.setAttribute("fill", "red");
-		el.setAttribute("stroke", "black");
 		el.setAttribute("title", this.desc);
 		return el;
 	}
