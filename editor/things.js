@@ -10,21 +10,39 @@ export { Floor, BFloor, Wall, BWall, Platform, BPlatform };
 export { Player, Start, Hole, Powerup };
 
 import { mouse } from "./camera.js";
+import { Reactive } from "./reactive.js";
 
 export class Place {
-	constructor(draw) {
+	constructor(els) {
 		this.things = new Set();
-		this.draw = draw;
+		this.els = els;
+		this.colsky   = new Reactive(this.els.colsky, this.cssUpdate.bind(this));
+		this.colwall  = new Reactive(this.els.colwall, this.cssUpdate.bind(this));
+		this.colfloor = new Reactive(this.els.colfloor, this.cssUpdate.bind(this));
+		this.colobj   = new Reactive(this.els.colobj, this.cssUpdate.bind(this));
+		this.coldecor = new Reactive(this.els.coldecor, this.cssUpdate.bind(this));
+		this.cssUpdate();
+	}
+	cssUpdate() {
+		this.els.drawstyle.innerHTML = `
+			:root {
+				--sky: ${this.colsky.get()};
+				--wall: ${this.colwall.get()};
+				--floor: ${this.colfloor.get()};
+				--obj: ${this.colobj.get()};
+				--decor: ${this.coldecor.get()};
+			}
+		`;
 	}
 	add(thing) {
 		this.things.add(thing);
 		// add to svg element
-		if (thing.el) this.draw.appendChild(thing.el);
+		if (thing.el) this.els.draw.appendChild(thing.el);
 	}
 	del(thing) {
 		this.things.delete(thing);
 		// remove from svg element
-		if (thing.el) this.draw.removeChild(thing.el);
+		if (thing.el) this.els.draw.removeChild(thing.el);
 	}
 	focus(thing) {
 		let avgx = 0;
@@ -46,8 +64,14 @@ export class Place {
 	}
 }
 
-export const place = new Place(document.getElementById("draw"));
-place.add(new Floor());
-place.add(new Tetra());
+export const place = new Place({
+	draw: document.getElementById("draw"),
+	drawstyle: document.getElementById("drawstyle"),
+	colsky: document.getElementById("colsky"),
+	colfloor: document.getElementById("colfloor"),
+	colwall: document.getElementById("colwall"),
+	colobj: document.getElementById("colobj"),
+	coldecor: document.getElementById("coldecor"),
+});
 
 window.place = place;

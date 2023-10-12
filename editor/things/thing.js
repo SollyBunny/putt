@@ -23,9 +23,9 @@ class Pos {
 
 export class Thing {
 	constructor(pos) {
-		console.log("asdasd")
 		this.pos = new Pos(pos, this.elUpdateCallback.bind(this));
 		this.el = this.elCreate();
+		this.el.title = this.desc;
 		this.elUpdate(this.el);
 	}
 	elUpdateCallback() {
@@ -33,15 +33,14 @@ export class Thing {
 	}
 	elCreate() {
 		const el = createElementSVG("text");
-		el.setAttribute("x", this.pos.get(0));
-		el.setAttribute("y", this.pos.get(2));
 		el.setAttribute("text-anchor", "middle");
 		el.setAttribute("dominant-baseline", "central");
+		el.setAttribute("fill", "var(--decor)");
 		el.textContent = this.constructor.name;
 		this.elUpdate(el);
 		return el;
 	}
 	elUpdate(el) {
-		el.style.transform = `translate(${this.pos[0]}, ${this.pos[2]})`;
+		el.setAttribute("transform", `translate(${this.pos.get(0)} ${this.pos.get(2)})`);
 	}
 }

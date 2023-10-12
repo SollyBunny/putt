@@ -11,7 +11,7 @@ export let selected = 2;
 
 let clickPromise = undefined; // the call back
 
-const data = [
+export const data = [
 	[
 		things.Cross,
 		things.Tee,

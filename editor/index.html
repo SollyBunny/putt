@@ -184,18 +184,14 @@
 					<div class="combinedinput"><input id="coldecor" type="color" value="#ffffff"><label for="coldecor"> Decor Color </label></div>
 				</div>
 				<div id="settingseditor">
-					<div class="combinedinput"><input id="mouselock" type="number" value="10" placeholder="10" min="0.25" step="0.25"><label for="mouselock"> Mouse Lock </label></div>
+					<div class="combinedinput"><input id="mouselock" type="number" value="0.5" placeholder="0.5" min="0.25" step="0.25"><label for="mouselock"> Mouse Lock </label></div>
 				</div>
 			</div>
 			<div id="main">
 				<canvas id="background"></canvas>
 				<div id="place">
 					<svg id="draw" width="1" height="1">
-						<style>
-							svg > text {
-								fill: white;
-							}
-						</style>
+						<style id="drawstyle"> </style>
 					</svg>
 					<svg id="ptrs" width="1" height="1">
 						<g id="lins">

@@ -1,14 +1,28 @@
-import { Thing } from "./thing.js";
+import { Thing, createElementSVG } from "./thing.js";
 
 class Surface extends Thing {
 	constructor(pos) {
 		pos = pos || [0, 0, 0];
 		super([
-			pos[0] - 5, pos[1], pos[2] - 5,
-			pos[0] + 5, pos[1], pos[2] - 5,
-			pos[0] + 5, pos[1], pos[2] + 5,
-			pos[0] - 5, pos[1], pos[2] + 5
+			pos[0] - 2, pos[1], pos[2] - 2,
+			pos[0] + 2, pos[1], pos[2] - 2,
+			pos[0] + 2, pos[1], pos[2] + 2,
+			pos[0] - 2, pos[1], pos[2] + 2,
 		]);
+	}
+	elCreate() {
+		const el = createElementSVG("polygon");
+		el.setAttribute("fill", "var(--floor)");
+		return el;
+	}
+	elUpdate(el) {
+		let points = "";
+		for (let i = 0; i < this.pos.length; i += 3) {
+			points += `${this.pos.get(i)} ${this.pos.get(i + 2)},`;
+		}
+		points = points.slice(0, -1);
+		el.setAttribute("points", points);
+		return el;
 	}
 }
 
@@ -22,13 +36,20 @@ export class BFloor extends Floor {
 
 export class Wall extends Surface {
 	desc = "A wall"
+	elCreate() {
+		const el = createElementSVG("polyline");
+		el.setAttribute("stroke", "var(--wall)");
+		el.setAttribute("stroke-width", "0.2");
+		el.setAttribute("fill", "transparent");
+		return el;
+	}
 }
 
 export class BWall extends Wall {
 	desc = "A bumpy wall"
 }
 
-export class Platform extends Thing {
+export class Platform extends Surface {
 	desc = "A platform"
 }
 

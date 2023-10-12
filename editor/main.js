@@ -1,7 +1,7 @@
 import * as layout from "./layout.js";
 import * as camera from "./camera.js";
 import * as wheel from "./wheel.js";
-import "./things.js"
+import * as things from "./things.js";
 
 wheel.init();
 camera.init();
@@ -57,4 +57,16 @@ document.onkeyup = event => {
 			return;
 	}
 	event.preventDefault();
+}
+
+const TEST = 1;
+if (TEST) {
+	let i = 0;
+	wheel.data.flat().forEach(thingClass => {
+		const x = i % 5;
+		const y = Math.floor(i / 5);
+		const thing = new thingClass([x * 5, 0, y * 5]);
+		place.add(thing);
+		++i;
+	});
 }

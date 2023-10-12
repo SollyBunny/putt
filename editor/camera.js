@@ -1,6 +1,9 @@
 
 import { onClick } from "./main.js";
 
+const MOUSELOCKDEFAULT = 0.5;
+const ZOOMINITIAL = 200;
+
 const e_main = document.getElementById("main"); // get a lot of elements
 const e_draw = document.getElementById("draw");
 const e_ptrs = document.getElementById("ptrs");
@@ -63,7 +66,7 @@ export function render() {
 	let sizezoom = 1;
 	while (sizezoom * scale > 600) sizezoom /= 2;
 	while (sizezoom * scale < 300) sizezoom *= 2;
-	e_scalezoom.textContent = toPadString(scale) + "x";
+	e_scalezoom.textContent = toPadString(scale / ZOOMINITIAL) + "x";
 	e_scaledis.textContent = toPadString(sizezoom) + "u";
 	e_scaleedge.setAttribute("transform", `translate(${-sizezoom * scale} 0)`);
 	// Setup ctx
@@ -124,7 +127,7 @@ export function updateMouse() {
 	updateMouseLast = now;
 	mouse.x = (mouseReal.x - x) / scale;
 	mouse.z = (mouseReal.y - z) / scale;
-	const mouselock = parseFloat(e_mouselock.value) || 10;
+	const mouselock = parseFloat(e_mouselock.value) || MOUSELOCKDEFAULT;
 	mouse.x = Math.round(mouse.x / mouselock) * mouselock;
 	mouse.z = Math.round(mouse.z / mouselock) * mouselock;
 	// Primary Pointer
@@ -196,6 +199,8 @@ export async function init() {
 		updateMouse();
 	});
 	myPanzoom.moveTo(can.width / 2, can.height / 2); // move to the center
+	myPanzoom.zoomAbs(can.width / 2, can.height / 2, ZOOMINITIAL);
+	e_draw.setAttribute("font-size", `${100 / ZOOMINITIAL}px`)
 	e_main.addEventListener("pointerdown", event => {
 		if (event.target !== can) return; // cancel if not clicking background (eg if wheel is open)
 		click = true; // a click is possible
@@ -203,7 +208,7 @@ export async function init() {
 		mouseReal.y = event.layerY;
 		mouseOld.x = (mouseReal.x - x) / scale;
 		mouseOld.z = (mouseReal.y - z) / scale;
-		const mouselock = parseFloat(e_mouselock.value) || 10;
+		const mouselock = parseFloat(e_mouselock.value) || MOUSELOCKDEFAULT;
 		mouseOld.x = Math.floor(mouseOld.x / mouselock) * mouselock;
 		mouseOld.z = Math.floor(mouseOld.z / mouselock) * mouselock;
 	});
