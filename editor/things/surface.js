@@ -15,6 +15,13 @@ class Surface extends Thing {
 		el.setAttribute("fill", "var(--floor)");
 		return el;
 	}
+	elUpdateCallback() {
+		if (this.pos.length <= 6) {
+			this.pos.data = [];
+			return;
+		}
+		this.elUpdate(this.el);
+	}
 	elUpdate(el) {
 		let points = "";
 		for (let i = 0; i < this.pos.length; i += 3) {
@@ -36,6 +43,13 @@ export class BFloor extends Floor {
 
 export class Wall extends Surface {
 	desc = "A wall"
+	elUpdateCallback() {
+		if (this.pos.length <= 3) {
+			this.pos.data = [];
+			return;
+		}
+		this.elUpdate(this.el);
+	}
 	elCreate() {
 		const el = createElementSVG("polyline");
 		el.setAttribute("stroke", "var(--wall)");

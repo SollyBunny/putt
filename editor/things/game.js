@@ -1,4 +1,4 @@
-import { Thing } from "./thing.js";
+import { Thing, createElementSVG } from "./thing.js";
 
 class Game extends Thing {
 }
@@ -13,10 +13,10 @@ export class Target extends Game {
 		this.number = 0;
 	}
 	elCreate() {
-		el = createElementSVG("circle");
+		const el = createElementSVG("circle");
 		el.setAttribute("r", 0.25);
 		el.setAttribute("fill", "var(--rainbow1)");
-		return this.el;
+		return el;
 	}
 	elUpdate(el) {
 		// TODO use super()
@@ -36,11 +36,12 @@ export class Hole extends Target {
 export class Powerup extends Game {
 	desc = "A powerup, contains magical powers"
 	elCreate() {
-		el = createElementSVG("path");
-		const path = "M -2.5 0 L 0 -2.5 L 2.5 0 L 0 2.5 L -2.5 0 M 0.5 1.25 A 0.5 0.5 90 0 0 -0.5 1.25 A 0.5 0.5 90 0 0 0.5 1.25 M 0.5 0 A 0.25 0.25 90 0 1 -0.5 0 L -0.5 -1.25 A 0.25 0.25 90 0 1 0.5 -1.25 L 0.5 0";
+		const el = createElementSVG("path");
+		const path = "M -0.625 0 L 0 -0.625 L 0.625 0 L 0 0.625 L -0.625 0 M 0.125 0.3125 A 0.125 0.125 90 0 0 -0.125 0.3125 A 0.125 0.125 90 0 0 0.125 0.3125 M 0.125 0 A 0.0625 0.0625 90 0 1 -0.125 0 L -0.125 -0.3125 A 0.0625 0.0625 90 0 1 0.125 -0.3125 L 0.125 0";
 		el.setAttribute("d", path);
+		el.setAttribute("fill-rule", "evenodd");
 		el.setAttribute("fill", "purple");
-		return this.el;
+		return el;
 	}
 	
 }

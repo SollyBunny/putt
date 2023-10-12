@@ -17,8 +17,9 @@ export function onClick(event) {
 
 export function onThing(thingClass) {
 	const thing = new thingClass([camera.mouse.x, camera.mouse.y, camera.mouse.z]);
+	console.log(thing)
 	place.add(thing);
-	place.edit(thing);
+	// place.edit(thing);
 }
 
 const e_main = document.getElementById("main");
@@ -51,6 +52,15 @@ document.onkeyup = event => {
 					camera.w / 2,
 					camera.h / 2,
 				);
+			}
+			break;
+		case "backspace":
+		case "delete":
+			let thing = place.at(camera.mouse.x, camera.mouse.y, camera.mouse.z);
+			if (thing) {
+				thing.thing.pos.delXYZ(thing.pos);
+				if (thing.thing.pos.length === 0)
+					place.del(thing.thing);
 			}
 			break;
 		default:

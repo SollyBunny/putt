@@ -22,6 +22,7 @@ export class Place {
 		this.colobj   = new Reactive(this.els.colobj, this.cssUpdate.bind(this));
 		this.coldecor = new Reactive(this.els.coldecor, this.cssUpdate.bind(this));
 		this.cssUpdate();
+		this.chunks = {};
 	}
 	cssUpdate() {
 		this.els.drawstyle.innerHTML = `
@@ -38,11 +39,13 @@ export class Place {
 		this.things.add(thing);
 		// add to svg element
 		if (thing.el) this.els.draw.appendChild(thing.el);
+		return thing;
 	}
 	del(thing) {
 		this.things.delete(thing);
 		// remove from svg element
 		if (thing.el) this.els.draw.removeChild(thing.el);
+		return thing;
 	}
 	focus(thing) {
 		let avgx = 0;
@@ -58,9 +61,35 @@ export class Place {
 		avgz /= thing.pos.length / 3;
 		camera.panzoom.smoothMoveTo(avgx, avgz)
 		mouse.y = avgy;
+		return thing;
 	}
 	edit(thing) {
 		focus(thing);
+		return thing;
+	}
+	at(x, y, z) {
+		let mindis = Infinity;
+		let minthing = undefined;
+		let minpos = 0;
+		for (let thing of this.things) {
+			for (let i = 0; i < thing.pos.length; i += 3) {
+				const dis = (
+					(x - thing.pos.get(i)) ** 2 + 
+					(y - thing.pos.get(i + 1)) ** 2 + 
+					(z - thing.pos.get(i + 2)) ** 2
+				);
+				if (dis > 1) continue;
+				if (dis > mindis) continue;
+				mindis = dis;
+				minthing = thing;
+				minpos = i;
+			}
+		}
+		if (minthing === undefined) return false;
+		return {
+			thing: minthing,
+			pos: minpos / 3
+		};
 	}
 }
 

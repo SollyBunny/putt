@@ -76,11 +76,9 @@
 				left: 0;
 				top: 0;
 				overflow: visible;
+				user-select: none;
+				pointer-events: none;
 			}
-				#ptrs {
-					pointer-events: none;
-					user-select: none;
-				}
 				.ptr > circle {
 					fill: white;
 				}
@@ -190,23 +188,29 @@
 			<div id="main">
 				<canvas id="background"></canvas>
 				<div id="place">
-					<svg id="draw" width="1" height="1">
-						<style id="drawstyle"> </style>
-						<style>
-							:root {
-								--rainbow1: #f80;
-								--rainbow2: #ff0;
-								--rainbow3: #8f0;
-								--rainbow4: #0f0;
-								--rainbow5: #0f8;
-								--rainbow6: #0ff;
-								--rainbow7: #08f;
-								--rainbow8: #00f;
-								--rainbow9: #80f;
-								--rainbow10: #f0f;
-								--rainbow11: #f08;
-							}
-						</style>
+					<svg id="draw" width="1" height="1" xmlns="http://www.w3.org/2000/svg">
+						<defs>
+							<style id="drawstyle"> </style>
+							<style>
+								:root {
+									--rainbow1: #f80;
+									--rainbow2: #ff0;
+									--rainbow3: #8f0;
+									--rainbow4: #0f0;
+									--rainbow5: #0f8;
+									--rainbow6: #0ff;
+									--rainbow7: #08f;
+									--rainbow8: #00f;
+									--rainbow9: #80f;
+									--rainbow10: #f0f;
+									--rainbow11: #f08;
+								}
+								#draw > * {
+									stroke: var(--decor);
+									stroke-width: 0.01;
+								}
+							</style>
+						</defs>
 					</svg>
 					<svg id="ptrs" width="1" height="1">
 						<g id="lins">

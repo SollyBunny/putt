@@ -56,6 +56,7 @@ export function toPadString(n) { // format a number as a padded fixed number
 }
 
 let click = false;
+export let drag = undefined;
 
 export function render() {
 	// Set grid line size
@@ -172,7 +173,7 @@ export function updateMouse() {
 	if (zDis < 50 / scale) {
 		e_txtz.textContent = "";
 	} else {
-		e_txtz.style.transform = toScreenTransform(mouseOld.x, (mouse.z + mouseOld.z) / 2);
+		e_txtz.style.transform = toScreenTransform(mouse.x, (mouse.z + mouseOld.z) / 2);
 		e_txtz.textContent = toPadString(zDis);
 	}
 	e_linz.setAttribute("x1", toScreenX(mouse.x));
@@ -186,7 +187,31 @@ export async function init() {
 		zoomDoubleClickSpeed: 1,
 		smoothScroll: true,
 		smoothPan: true,
-		owner: e_main // transform e_main
+		owner: e_main, // transform e_main
+		beforeMouseDown: event => {
+			if (event.button === 1) {
+				console.log("BOOM")
+				return false;
+			}
+			return drag ? true : false;
+		},
+		beforeWheel: event => {
+			if (event.shiftKey){
+				let thing = drag || place.at(mouse.x, mouse.y, mouse.z);
+				if (thing) {
+					if (event.deltaY < 0)
+						thing.thing.elMoveUp(thing.thing.el);
+					else
+						thing.thing.elMoveDown(thing.thing.el);
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+			event.preventDefault();
+			return true;
+		}
 	});
 	resize();
 	myPanzoom.on("transform", event => { // on change in transform (pan, zoom or resize)
@@ -197,12 +222,13 @@ export async function init() {
 		click = false; // the screen has moved, a click isn't possible
 		render();
 		updateMouse();
+		return false;
 	});
 	myPanzoom.moveTo(can.width / 2, can.height / 2); // move to the center
 	myPanzoom.zoomAbs(can.width / 2, can.height / 2, ZOOMINITIAL);
 	e_draw.setAttribute("font-size", `${100 / ZOOMINITIAL}px`)
 	e_main.addEventListener("pointerdown", event => {
-		if (event.target !== can) return; // cancel if not clicking background (eg if wheel is open)
+		if (event.target !== can) return;
 		click = true; // a click is possible
 		mouseReal.x = event.layerX;
 		mouseReal.y = event.layerY;
@@ -211,17 +237,31 @@ export async function init() {
 		const mouselock = parseFloat(e_mouselock.value) || MOUSELOCKDEFAULT;
 		mouseOld.x = Math.floor(mouseOld.x / mouselock) * mouselock;
 		mouseOld.z = Math.floor(mouseOld.z / mouselock) * mouselock;
+		// Find drag candidate
+		if (event.button === 1) return; // check if middle click
+		drag = place.at(mouse.x, mouse.y, mouse.z);
+		if (drag && event.ctrlKey) {
+			if (drag.thing.pos.length > 3) {
+				drag.thing.pos.insertXYZ(drag.pos, mouse.x, mouse.y, mouse.z);
+			} else {
+				drag.thing = place.add(drag.thing.clone());
+			}
+		}
 	});
 	e_main.addEventListener("pointerup", event => {
+		if (drag) drag = undefined;
 		if (click === false) return; // check if a mouse up and mouse down occured without any movement imbetween (aka click)
 		click = false;
 		onClick(event); // a click has occured
 	});
 	e_main.addEventListener("pointermove", event => {
 		click = false; // drag has occured, so a click isn't possible
-		if (event.target !== can) return; // cancel if not moving across background (eg if wheel is open)
+		if (event.target !== can) return;
 		mouseReal.x = event.layerX;
 		mouseReal.y = event.layerY;
+		if (drag) {
+			drag.thing.pos.setXYZ(drag.pos, mouse.x, mouse.y, mouse.z);
+		}
 		updateMouse();
 	});
 }
