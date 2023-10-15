@@ -242,8 +242,8 @@
 						<div id="menumainleft">
 							<h3 class="hs"> Create Room </h3>
 							<div>
-								<button onclick="roomsel()" class="roomsel" value="tutorial"> <h4 class="hs"> Tutorial </h4> Learn the basics of Putt Party with this short tutorial </button>
-								<button onclick="roomsel()" value="offline"> <h4 class="hs"> Offline </h4> Play the game offline, you can also playtest maps from the editor </button>
+								<button onclick="roomsel()" id="roomtutorial" class="roomsel" value="tutorial"> <h4 class="hs"> Tutorial </h4> Learn the basics of Putt Party with this short tutorial </button>
+								<button onclick="roomsel()" id="roomoffline" value="offline"> <h4 class="hs"> Offline </h4> Play the game offline, you can also playtest maps from the editor </button>
 								<button onclick="roomsel()" value="online"> <h4 class="hs"> Online </h4> Create a new online room </button>
 							</div>
 							<h3 class="hs"> Room List <button id="menumainroomrefresh" onclick="event.preventDefault();roomrefresh()" title="Refresh Rooms"> ♻️ </button> </h3>
@@ -252,7 +252,7 @@
 						<div id="menumainright">
 							<br> <br>
 							<label for="rmapname" class="hs"> Map Name </label><br>
-							<select id="rmapname" disabled>
+							<select id="rmapname" oninput="mapsel()">
 								<option value="tutorial"> Tutorial </option>
 								<option value="spinnington"> Spinnington </option>
 								<option value="bumpington"> Bumpington </option>
@@ -274,17 +274,20 @@
 			</div>
 		</div>
 		<script defer async>
-			const e_menubutton = document.getElementById("menubutton");
-			const e_menuiframe = document.getElementById("editor");
-			const e_menuitem   = document.getElementById("menuitem");
-			const e_menugrid   = document.getElementById("menugrid");
-			const e_menu       = document.getElementById("menu");
-			const e_game       = document.getElementById("game");
-			const e_rmapname   = document.getElementById("rmapname");
-			const e_rrooms     = document.getElementById("rrooms");
+			const e_menubutton   = document.getElementById("menubutton");
+			const e_menuiframe   = document.getElementById("editor");
+			const e_menuitem     = document.getElementById("menuitem");
+			const e_menugrid     = document.getElementById("menugrid");
+			const e_menu         = document.getElementById("menu");
+			const e_game         = document.getElementById("game");
+			const e_rmapname     = document.getElementById("rmapname");
+			const e_rrooms       = document.getElementById("rrooms");
+			const e_roomtutorial = document.getElementById("roomtutorial");
+			const e_roomoffline  = document.getElementById("roomoffline");
 			let settings = localStorage["s"];
 			let settingspopulated = false;
-			let roomcode = "";
+			let roomcode = "-tutorial";
+			let mapname = "tutorial";
 			// settings
 			function settingsset() {
 				if (event.target.type === "checkbox") {
@@ -343,17 +346,22 @@
 			}
 			// Events
 			function roomsel() {
-				e_menubutton.disabled = false;
 				document.getElementsByClassName("roomsel")[0].classList.remove("roomsel");
 				event.target.classList.add("roomsel");
-				if (event.target.value === "tutorial") {
+				roomcode = event.target.value;
+				if (roomcode === "tutorial")
 					e_rmapname.value = "tutorial";
-					e_rmapname.disabled = true;
-				} else if (event.target.value === "offline" || event.target.value === "online") {
-					e_rmapname.disabled = false;
-				} else {
-					e_rmapname.value = event.target.mapname;
-					e_rmapname.disabled = true;
+			}
+			function mapsel() {
+				mapname = e_rmapname.value;
+				if (roomcode === "offline") {
+					if (mapname === "tutorial")
+						e_roomtutorial.click();
+				} else if (mapname === "tutorial") {
+					if (roomcode !== "tutorial")
+						e_rmapname.value = "tutorial";
+				} else if (roomcode === "tutorial") {
+					e_roomoffline.click();
 				}
 			}
 			function page(p) {
@@ -367,13 +375,12 @@
 			}
 			function play() {
 				let url = "game/?";
-				let roomcode = document.getElementsByClassName("roomsel")[0].value;
 				if (roomcode === "tutorial") {
 					url += "-tutorial"
 				} else if (roomcode === "offline") {
-					url += `-${e_rmapname.value}`;
+					url += `-${mapname}`;
 				} else if (roomcode === "online") {
-					url += `+${e_rmapname.value}`;
+					url += `+${mapname}`;
 				} else {
 					url += roomcode;
 				}
