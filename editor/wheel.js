@@ -1,7 +1,8 @@
 
 import * as things from "./things.js";
 import * as camera from "./camera.js"; // for mouse position
-import { onThing } from "./main.js";
+import * as binds from "./binds.js";
+import * as undo from "./undo.js";
 
 const e_wheel = document.getElementById("wheel");
 const e_wheelcontent = document.getElementById("wheelcontent");
@@ -89,7 +90,12 @@ export function open() {
 		clickPromise = undefined;
 		close(); // close the wheel
 		if (thing === undefined) return;
-		onThing(thing); // call the callback
+		const thingNew = new thing([camera.mouse.x, camera.mouse.y, camera.mouse.z]);
+		place.add(thingNew);
+		undo.add(
+			place.del.bind(place, thingNew),
+			place.add.bind(place, thingNew)
+		);
 	});
 }
 

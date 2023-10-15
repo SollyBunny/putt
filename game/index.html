@@ -77,33 +77,16 @@
 					font-size: 500%;
 					animation: bowlinganimbeat 1s ease-in-out infinite;
 				}
-			#can {
+			#can, #text {
 				width: 100vw !important;
 				height: 100vh !important;
 				position: absolute;
 				left: 0;
 				top: 0;
 			}
-			#rtext {
-				position: absolute;
-				left: 0;
-				top: 0;
-				width: 100vw;
-				height: 100vh;
-				color: white;
-				pointer-events: none;
-				font-size: 150%;
-			}
-			#rtext > * {
-				margin-top: -6vmax;
-				text-anchor: middle;
-				width: min-content;
-				overflow: visible;
-				white-space: nowrap;
-				text-shadow: 2px 2px 4px black;
-				pointer-events: none;
-				user-select: none;
-			}
+				#text {
+					pointer-events: none;
+				}
 			#roomcodecontainer {
 				position: absolute;
 				top: 0;
@@ -204,7 +187,7 @@
 	<body>
 		<div id="container">
 			<canvas id="can" oncontextmenu="event.preventDefault();"> Your browser doesn't support Canvas API </canvas>
-			<div id="rtext"> </div>
+			<canvas id="text"></canvas>
 		</div>
 		<div id="roomcodecontainer" style="display:none">
 			Room Code <br> <button onclick="navigator.clipboard.writeText(event.target.innerHTML);alert('Copied!')" id="roomcode"> ? </button>

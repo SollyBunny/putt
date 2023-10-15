@@ -26,10 +26,10 @@ export class Reactive {
 	}
 	set(data) {
 		this.data = data;
-		if (el.tagName === "INPUT") {
-			el.value = data;
+		if (this.el.tagName === "INPUT") {
+			this.el.value = data;
 		} else {
-			el.textContent = data;
+			this.el.textContent = data;
 		}
 		if (this.callback) this.callback();
 		return data;

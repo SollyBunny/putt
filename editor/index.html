@@ -7,21 +7,19 @@
 		<meta charset="UTF-8">
 		<link rel="stylesheet" href="../assets/style.css">
 		<style>
-			/* splitjs stuff */
 			#body {
 				display: flex;
+				flex-grow: 1;
+				position: relative;
 			}
 				#sidebar {
 					display: flex;
 					flex-direction: column;
 					overflow: clip;
 					width: 20%;
+					box-shadow: var(--box-shadow-in);
 				}
-					#settingseditor {
-						overflow: clip;
-						white-space: nowrap;
-					}
-					#settingsplace, #things {
+					#settingseditor, #settingsplace {
 						overflow: clip;
 						overflow-y: auto;
 					}
@@ -30,30 +28,55 @@
 					position: relative;
 					flex-grow: 1;
 				}
+			#help {
+				position: absolute;
+				width: calc(100% - 8vmin);
+				height: calc(100% - 8vmin);
+				top: 0;
+				left: 0;
+				background: var(--bgl);
+				padding: 4vmin;
+				overflow-y: scroll;
+			}
+				#help > button {
+					position: fixed;
+					right: 6vmin;
+				}
 			.gutter {
 				background-color: var(--bgl);
 				box-shadow: inset var(--box-shadow-in);
 			}
-			.gutter-horizontal {
-				width: 10px;
-				height: 100%;
-				cursor: ew-resize;
+				.gutter-horizontal {
+					width: 10px;
+					height: 100%;
+					cursor: ew-resize;
+				}
+				.gutter-vertical {
+					height: 10px;
+					width: 100%;
+					cursor: ns-resize;
+				}
+			nav {
+				display: flex;
+				z-index: 200;
+				background: var(--bg);
+				align-items: center;
+				padding-left: 1vmin;
+				padding-right: 1vmin;
+				box-shadow: var(--box-shadow-in);
 			}
-			.gutter-vertical {
-				height: 10px;
-				width: 100%;
-				cursor: ns-resize;
-			}
-			/* main */
+				nav h1 {
+					padding-left: 1vmin;
+					padding-right: 1vmin;
+					text-align: center;
+					height: min-content;
+					flex-grow: 1;
+				}
 			body {
 				display: flex;
 				flex-direction: column;
 				max-height: 100vh;
 				width: 100vw;
-			}
-			#body {
-				overflow: clip;
-				flex-grow: 1;
 			}
 			#settings {
 				padding: 2vmin;
@@ -67,11 +90,7 @@
 				#scaleedge {
 					transition: 0.2s ease transform;
 				}
-			#canvas {
-				width: 100%;
-				height: 100%;
-			}
-			#place > * {
+			#ptrs, #draw {
 				position: absolute;
 				left: 0;
 				top: 0;
@@ -79,15 +98,27 @@
 				user-select: none;
 				pointer-events: none;
 			}
-				.ptr > circle {
-					fill: white;
-				}
+			#context {
+				position: absolute;
+				width: 30vmin;
+				height: 60vmin;
+				overflow: hidden;
+				overflow-y: scroll;
+				padding: 3vmin;
+				margin-top: 2px;
+				margin-left: 2px;
+				border-radius: 2vmin;
+				box-shadow: var(--box-shadow-in), inset var(--box-shadow-out);
+				background-color: var(--bgl);
+			}
 			#wheel {
 				position: absolute;
 				width: 400px;
 				height: 500px;
 				overflow-x: clip;
 				transform: translate(-50%, calc(-50% - 50px));
+				user-select: none;
+				pointer-events: none;
 			}
 				#wheelcontent {
 					display: flex;
@@ -114,6 +145,7 @@
 					text-align: center;
 					width: 100%;
 					display: flex;
+					pointer-events: all;
 				}
 					.wheel > div > * {
 						margin: 0;
@@ -166,72 +198,87 @@
 	</head>
 	<body>
 		<script type="module" src="main.js"></script>
-		<div id="head">
-			Putt Editor
-		</div>
+		<script>
+			const e_help = document.getElementById('help');
+			function help() {
+				e_help.style.display = e_help.style.display === 'none' ? 'block' : 'none';
+			}
+			function play() {
+				if (window.self === window.top) {
+					tooltop("You must be in the embedded editor to use this");
+					return;
+				}
+				const data = place.toObj();
+				window.top.postMessage(["EDITOR", data], "*");
+			}
+		</script>
+		<nav>
+			<div class="dropdown">
+				<div><button title="Save"> Save 💾 </button></div>
+				<div><button onclick="save(false, false)" title="Copy JSON (ctrl-s)"> Copy JSON 📋🧬 </button></div>
+				<div><button onclick="save(false, true)" title="Save JSON (ctrl-shift-s)"> Save JSON 💾🧬 </button></div>
+				<div><button onclick="save(true, false)" title="Copy SVG (ctrl-e)"> Copy SVG 📋🖼️ </button></div>
+				<div><button onclick="save(true, true)" title="Save SVG (ctrl-shift-e)"> Save JSON 💾🖼️ </button></div>
+			</div>
+			<div class="dropdown">
+				<div><button title="Load"> Load 📂 </button></div>
+				<div><button onclick="load(false)" title="From Clipboard (ctrl-o)"> From Clipboard 📋 </button></div>
+				<div><button onclick="load(true)" title="From File (ctrl-shift-o)"> From File 📄 </button></div>
+			</div>
+			<button onclick="reset()" title="Clear (ctrl-n)"> Reset 🔄 </button>
+			<button onclick="play()" title="Playtest (ctrl-p)"> Playtest 🎮 </button>
+			<button onclick="help()" style="cursor :help" title="Help (ctrl-h)"> Help ❓ </button>
+			<h1> Putt Party Editor </h1>
+		</nav>
 		<div id="body">
 			<div id="sidebar">
-				<div id="thing">
-					<div class="combinedinput"><input id="id" type="number" min="0" step="1"><label for="id"> Object ID </label></div>
-				</div>
 				<div id="settingsplace">
-					<div class="combinedinput"><input id="colsky" type="color" value="#00aaff"><label for="colsky"> Sky Color </label></div>
-					<div class="combinedinput"><input id="colfloor" type="color" value="#5c8eed"><label for="colfloor"> Floor Color </label></div>
-					<div class="combinedinput"><input id="colwall" type="color" value="#9cde5e"><label for="colwall"> Wall Color </label></div>
-					<div class="combinedinput"><input id="colobj" type="color" value="#505d6b"><label for="colobj"> Object Color </label></div>
-					<div class="combinedinput"><input id="coldecor" type="color" value="#ffffff"><label for="coldecor"> Decor Color </label></div>
+					<div class="combinedinput" title="What the map is called"><input id="placename" type="text" value="Noob's Place" placeholder="Noob's Place"><label for="placename"> Place Name </label></div>
+					<div class="combinedinput" title="Who made this map"><input id="authorname" type="text" value="Noob1234" placeholder="Noob1234"><label for="authorname"> Author Name </label></div>
+					<div class="combinedinput" title="Used as the color of the skybox"><input id="colsky" type="color" value="#00aaff"><label for="colsky"> Sky Color </label></div>
+					<div class="combinedinput" title="Used as the color of the floor"><input id="colfloor" type="color" value="#5c8eed"><label for="colfloor"> Floor Color </label></div>
+					<div class="combinedinput" title="Used as the color of walls"><input id="colwall" type="color" value="#9cde5e"><label for="colwall"> Wall Color </label></div>
+					<div class="combinedinput" title="Used as the color of most objects"><input id="colobj" type="color" value="#505d6b"><label for="colobj"> Object Color </label></div>
+					<div class="combinedinput" title="Used as a miscellaneous for text and other explanatory objects"><input id="coldecor" type="color" value="#ffffff"><label for="coldecor"> Decor Color </label></div>
 				</div>
 				<div id="settingseditor">
-					<div class="combinedinput"><input id="mouselock" type="number" value="0.5" placeholder="0.5" min="0.25" step="0.25"><label for="mouselock"> Mouse Lock </label></div>
+					<div class="combinedinput" title="The size the mouse will lock to"><input id="mouselock" type="number" value="0.5" placeholder="0.5" min="0.25" step="0.25"><label for="mouselock"> Mouse Lock </label></div>
 				</div>
 			</div>
 			<div id="main">
 				<canvas id="background"></canvas>
-				<div id="place">
-					<svg id="draw" width="1" height="1" xmlns="http://www.w3.org/2000/svg">
-						<defs>
-							<style id="drawstyle"> </style>
-							<style>
-								:root {
-									--rainbow1: #f80;
-									--rainbow2: #ff0;
-									--rainbow3: #8f0;
-									--rainbow4: #0f0;
-									--rainbow5: #0f8;
-									--rainbow6: #0ff;
-									--rainbow7: #08f;
-									--rainbow8: #00f;
-									--rainbow9: #80f;
-									--rainbow10: #f0f;
-									--rainbow11: #f08;
-								}
-								#draw > * {
-									stroke: var(--decor);
-									stroke-width: 0.01;
-								}
-							</style>
-						</defs>
-					</svg>
-					<svg id="ptrs" width="1" height="1">
-						<g id="lins">
-							<circle id="circ" stroke="gray" fill="transparent" stroke-width="0.25" />
-							<line id="linh" stroke="gray" />
-							<line id="linx" stroke="white" />
-							<line id="linz" stroke="white" />
-							<text id="txth" filter="url(#bgfill)" fill="gray" dominant-baseline="middle" text-anchor="middle"></text>
-							<text id="txtx" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
-							<text id="txtz" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
-						</g>
-						<g id="ptr2" class="ptr" fill="gray" style="transform:scale(0)">
-							<circle cx="1" cy="1" r="5" />
-							<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
-						</g>
-						<g id="ptr1" class="ptr" fill="white">
-							<circle cx="1" cy="1" r="5" />
-							<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
-						</g>
-					</svg>
-				</div>
+				<svg id="draw" width="1" height="1" xmlns="http://www.w3.org/2000/svg">
+					<defs>
+						<style id="drawstyle"> </style>
+						<style>
+							:root {--rainbow0: #f00;--rainbow1: #f80;--rainbow2: #ff0;--rainbow3: #8f0;--rainbow4: #0f0;--rainbow5: #0f8;--rainbow6: #0ff;--rainbow7: #08f;--rainbow8: #00f;--rainbow9: #80f;--rainbow10: #f0f;--rainbow11: #f08;}
+							#draw > * {
+								stroke: var(--decor);
+								text-rendering: geometricPrecision;
+								stroke-linejoin: round;
+							}
+						</style>
+					</defs>
+				</svg>
+				<svg id="ptrs" width="1" height="1">
+					<g id="lins">
+						<circle id="circ" stroke="gray" fill="transparent" stroke-width="0.25" />
+						<line id="linh" stroke="gray" />
+						<line id="linx" stroke="white" />
+						<line id="linz" stroke="white" />
+						<text id="txth" filter="url(#bgfill)" fill="gray" dominant-baseline="middle" text-anchor="middle"></text>
+						<text id="txtx" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
+						<text id="txtz" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
+					</g>
+					<g id="ptr2" class="ptr" fill="gray" style="transform:scale(0)">
+						<circle cx="1" cy="1" r="5" />
+						<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
+					</g>
+					<g id="ptr1" class="ptr" fill="white">
+						<circle cx="1" cy="1" r="5" />
+						<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
+					</g>
+				</svg>
 				<svg id="scale" width="1" height="1" dominant-baseline="text-bottom">
 					<g id="scaleedge">
 						<line id="scaleline" x1="0" y1="0" x2="100vw" y2="0" stroke="var(--fg)" />
@@ -280,6 +327,36 @@
 						</div>
 					</div>
 				</div>
+				<div id="context"></div>
+			</div>
+			<div id="help">
+				<button onclick="help()"> Close Help </button>
+				<h2 style="display:inline"> Help </h2> (Read before doing)<br>
+					<br><h3> Info </h3>
+						The coorindates are in form x, y, z where x, z are horizontal axis and y is vertical (similar to Minecraft)<br>
+						x+ is right, y+ is up, z+ is forward<br>
+						A <code>thing</code> is an object that can be placed in the world<br>
+						A <code>surface</code> is an object with multiple points<br>
+						The game will start at spawn 0, each spawn requires atleast one hole (there can also be multiple same numbered spawns)<br>
+					<br><h3> Undoing </h3>
+						Most actions can be undone with <code>z</code> and redone with <code>y</code><br>
+					<br><h3> Camera </h3>
+						Pan and zoom with the mouse<br>
+						Press home to center camera on origin<br>
+						Use <code>Middle Mouse Button</code> to pan regardless of hover<br>
+						Hold <code>Shift</code> whilst scrolling to change y value<br>
+					<br><h3> Thing Placement </h3>
+						Click on an empty area (or press <code>Enter</code>) to open the wheel<br>
+						Clicking on an object (or using keys 1 to 9) will place that object<br>
+						Canel a placement by clicking on an empty area (or pressing <code>Escape</code>)<br>
+					<br><h3> Thing Movement </h3>
+						Drag on the center of an object to move it, you can also drag each point of a corner</br>
+						Hold <code>Control</code> and drag an object to duplicate or expand it<br>
+					<br><h3> Thing Settings </h3>
+						You can right click the center of an object or each point of a surface to edit properties<br>
+					<br><h3> Settings </h3>
+						The settings are in the sidebar<br>
+						Hover over each item to see a description<br>
 			</div>
 		</div>
 		<svg width="0" height="0">

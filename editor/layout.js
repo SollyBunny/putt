@@ -36,8 +36,7 @@ export async function init() {
 		maxSize: [Infinity, Infinity, Infinity],
 		gutter: gutterCreate,
 	});
-	console.log(splitMain)
-	Split(["#thing", "#settingsplace", "#settingseditor"], { // left
+	Split(["#settingsplace", "#settingseditor"], { // left
 		direction: "vertical",
 	});
 }

@@ -1,5 +1,8 @@
 
-import { onClick } from "./main.js";
+import * as undo from "./undo.js";
+import * as binds from "./binds.js";
+import * as context from "./context.js";
+import * as wheel from "./wheel.js";
 
 const MOUSELOCKDEFAULT = 0.5;
 const ZOOMINITIAL = 200;
@@ -122,13 +125,23 @@ export function resize() {
 	render();
 };
 let updateMouseLast = Date.now();
+let updateMouseLastY = undefined;
 export function updateMouse() {
+	// Handle updated y value
+	if (updateMouseLastY !== mouse.y) {
+		updateMouseLastY = mouse.y;
+		// Update all opacities
+		place.things.forEach(thing => {
+			thing.elUpdateLayer(thing.el);
+		})
+	}
+	// Check for too fast updates
 	const now = Date.now();
 	if (now - updateMouseLast < 10) return; // only continue if it has been more than 10ms than the last update
 	updateMouseLast = now;
 	mouse.x = (mouseReal.x - x) / scale;
 	mouse.z = (mouseReal.y - z) / scale;
-	const mouselock = parseFloat(e_mouselock.value) || MOUSELOCKDEFAULT;
+	const mouselock = getMouselock();
 	mouse.x = Math.round(mouse.x / mouselock) * mouselock;
 	mouse.z = Math.round(mouse.z / mouselock) * mouselock;
 	// Primary Pointer
@@ -182,6 +195,27 @@ export function updateMouse() {
 	e_linz.setAttribute("y2", toScreenZ(mouse.z));
 };
 
+export function home() {
+	myPanzoom.pause();
+	if (Math.abs(w / 2 - x) < 0.05 && Math.abs(h / 2 - z) / 2 < 0.05) {
+		myPanzoom.smoothZoomAbs(
+			w / 2,
+			h / 2,
+			ZOOMINITIAL
+		);
+	} else {
+		myPanzoom.smoothMoveTo(
+			w / 2,
+			h / 2,
+		);
+	}
+	setTimeout(myPanzoom.resume);
+}
+
+export function getMouselock() {
+	return parseFloat(e_mouselock.value) || MOUSELOCKDEFAULT;
+}
+
 export async function init() {
 	myPanzoom = panzoom(e_draw, {
 		zoomDoubleClickSpeed: 1,
@@ -190,27 +224,29 @@ export async function init() {
 		owner: e_main, // transform e_main
 		beforeMouseDown: event => {
 			if (event.button === 1) {
-				console.log("BOOM")
 				return false;
 			}
 			return drag ? true : false;
 		},
 		beforeWheel: event => {
+			let thing;
 			if (event.shiftKey){
-				let thing = drag || place.at(mouse.x, mouse.y, mouse.z);
+				thing = drag || place.at(mouse.x, mouse.y, mouse.z);
+				mouse.y += getMouselock() * Math.sign(event.deltaY);
 				if (thing) {
-					if (event.deltaY < 0)
-						thing.thing.elMoveUp(thing.thing.el);
-					else
-						thing.thing.elMoveDown(thing.thing.el);
-				} else {
-					return false;
+					thing.thing.pos.set(thing.pos / 3 + 1, mouse.y);
 				}
-			} else {
-				return false;
+				updateMouse();
+				return true;
+			} else if (event.ctrlKey) {
+				thing = drag || place.at(mouse.x, mouse.y, mouse.z);
+				if (event.deltaY < 0)
+					thing.thing.elMoveDown(thing.thing.el);
+				else
+					thing.thing.elMoveUp(thing.thing.el);
+				return true;
 			}
-			event.preventDefault();
-			return true;
+			return false;
 		}
 	});
 	resize();
@@ -226,33 +262,64 @@ export async function init() {
 	});
 	myPanzoom.moveTo(can.width / 2, can.height / 2); // move to the center
 	myPanzoom.zoomAbs(can.width / 2, can.height / 2, ZOOMINITIAL);
-	e_draw.setAttribute("font-size", `${100 / ZOOMINITIAL}px`)
+	e_draw.setAttribute("font-size", `${100 / ZOOMINITIAL}px`);
+	e_main.addEventListener("contextmenu", event => {
+		binds.fire("context");
+		event.preventDefault();
+	});
 	e_main.addEventListener("pointerdown", event => {
+		if (event.button === 2) return;
 		if (event.target !== can) return;
 		click = true; // a click is possible
 		mouseReal.x = event.layerX;
 		mouseReal.y = event.layerY;
 		mouseOld.x = (mouseReal.x - x) / scale;
+		mouseOld.y = mouse.y;
 		mouseOld.z = (mouseReal.y - z) / scale;
-		const mouselock = parseFloat(e_mouselock.value) || MOUSELOCKDEFAULT;
+		const mouselock = getMouselock();
 		mouseOld.x = Math.floor(mouseOld.x / mouselock) * mouselock;
 		mouseOld.z = Math.floor(mouseOld.z / mouselock) * mouselock;
 		// Find drag candidate
 		if (event.button === 1) return; // check if middle click
 		drag = place.at(mouse.x, mouse.y, mouse.z);
-		if (drag && event.ctrlKey) {
-			if (drag.thing.pos.length > 3) {
-				drag.thing.pos.insertXYZ(drag.pos, mouse.x, mouse.y, mouse.z);
-			} else {
-				drag.thing = place.add(drag.thing.clone());
+		if (drag) {
+			drag.start = drag.thing.pos.getXYZ(drag.pos);
+ 			if (event.ctrlKey) {
+				if (drag.thing.pos.length > 3) {
+					drag.thing.pos.insXYZ(drag.pos, mouse.x, mouse.y, mouse.z);
+					undo.add(
+						drag.thing.pos.delXYZ.bind(drag.thing.pos, drag.pos),
+						drag.thing.pos.insXYZ.bind(drag.thing.pos, mouse.x, mouse.y, mouse.z)
+					)
+				} else {
+					const newthing = drag.thing.clone();
+					drag.thing = place.add(newthing);
+					undo.add(
+						place.del.bind(place, drag.thing),
+						place.add.bind(place, newthing)
+					)
+				}
 			}
 		}
 	});
 	e_main.addEventListener("pointerup", event => {
-		if (drag) drag = undefined;
+		if (event.target === can) {
+			if ((context.isOpen || wheel.isOpen) && event.button !== 2)
+				click = false;
+			context.close();
+			wheel.close();
+		}
+		if (drag) {
+			console.log(...drag.start, mouse)
+			undo.add(
+				drag.thing.pos.setXYZ.bind(drag.thing.pos, drag.pos, ...drag.start),
+				drag.thing.pos.setXYZ.bind(drag.thing.pos, drag.pos, mouse.x, mouse.y, mouse.z),
+			);
+			drag = undefined;
+		}
 		if (click === false) return; // check if a mouse up and mouse down occured without any movement imbetween (aka click)
 		click = false;
-		onClick(event); // a click has occured
+		binds.fire("click");
 	});
 	e_main.addEventListener("pointermove", event => {
 		click = false; // drag has occured, so a click isn't possible

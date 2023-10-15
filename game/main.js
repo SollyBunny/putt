@@ -11,6 +11,9 @@ import { Place } from "./thing.js";
 import { ConfettiManager } from "../lib/three.ext.js"
 
 const can = document.getElementById("can"); // What we are drawing on
+const cantext = document.getElementById("text");
+const ctxtext = cantext.getContext("2d");
+
 const e_rpos = document.getElementById("rpos");
 const e_rvel = document.getElementById("rvel");
 const e_debug = document.getElementById("debug");
@@ -133,6 +136,8 @@ window.onresize = () => {
 	scene.camera.aspect = can.clientWidth / can.clientHeight;
 	scene.camera.updateProjectionMatrix();
 	render.setSize(can.clientWidth, can.clientHeight);
+	cantext.width = can.clientWidth;
+	cantext.height = can.clientHeight;
 }
 window.onresize();
 
@@ -304,6 +309,31 @@ function frame(tt) {
 			scene.dustmesh.geometry.attributes.position.needsUpdate = true;
 		}
 		scene.confetti.update();
+	// Text
+		ctxtext.clearRect(0, 0, cantext.width, cantext.height);
+		//set text style
+		ctxtext.font = "24px Varela";
+		ctxtext.fillStyle = "white";
+		ctxtext.textAlign = "center";
+		ctxtext.textBaseline = "middle";
+		for (let i = 0; i < place.mods.text.length; ++i) {
+			const m = place.mods.text[i];
+			if (m.mesh.visible = scene.camera.frustum.containsPoint(m.mesh.position)) {
+				const proj = m.mesh.position.clone().project(scene.camera);
+				proj.x = ( proj.x + 1) / 2 * can.width;
+				proj.y = (-proj.y + 1) / 2 * can.height;
+				ctxtext.fillText(m.text, Math.floor(proj.x), Math.floor(proj.y));
+			}
+		}
+		ctxtext.font = "26px Varela";
+		for (const player of place.players) {
+			if (player.mesh.visible = scene.camera.frustum.containsPoint(player.mesh.position)) {
+				const proj = player.mesh.position.clone().project(scene.camera);
+				proj.x = ( proj.x + 1) / 2 * can.width;
+				proj.y = (-proj.y + 1) / 2 * can.height - 50 * Math.cos(camera.rotation.x);
+				ctxtext.fillText(player.name, Math.floor(proj.x), Math.floor(proj.y));
+			}
+		}
 	// Multi
 		if (place.player.isshoot === false && place.player.ishole === false)
 			multi.update(); // I'm a multiplayer now!
@@ -407,12 +437,7 @@ export const multi = new Multi(place, document.location.search.slice(1), (multi,
 });
 
 window.onmessage = event => {
-	/*
 	console.log(event.data)
 	if (event.data[0] !== "MAIN") return;
-	multi.newmap(event.data[1]);
-	place.setdata(event.data[1]);
-	place.players.forEach(i => i.reset);
-	place.add();
-	*/
+	place.multi.playtest(event.data[1]);
 };

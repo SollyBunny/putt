@@ -28,6 +28,9 @@ class Multi {
 		this.roomcode = roomcode || "-tutorial";
 		this.onstart = onstart;
 		this.connected = false;
+		if (this.roomcode === "playtest") {
+			return;
+		}
 		if (this.roomcode.startsWith("-")) { // offline
 			this.setmap(this.roomcode.slice(1));
 			this.online = false;
@@ -45,6 +48,7 @@ class Multi {
 				this.playersindex = {};
 				// Open websocket
 				ws = new WebSocket(`wss://${document.location.host}${document.location.pathname.slice(0, document.location.pathname.lastIndexOf("/", document.location.pathname.length - 2) + 1)}server?${encodeURIComponent(Settings.NAME)}&${Settings.COLOR}` + (roomcode ? `&${roomcode}` : ""));
+				this.ws = ws;
 				ws.onopen = () => {
 					console.log("Connected");
 					ws.send(Messages.READY.toString());
@@ -72,15 +76,29 @@ class Multi {
 			this.start(0);
 		}
 	}
+	playtest(data) {
+		// If connected disconnect!
+		if (this.ws)
+			ws.close();
+		this.mapdata = data;
+		this.mapname = "Playtest";
+		this.start(0);
+	}
 	start(hole) {
-		if (!this.onstart) return;
-			if (!this.roomcode.startsWith("-")) {
+		if (this.onstart) {
+			this.onstart(this, hole);
+			delete this.onstart;
+		} else {
+			this.place.del();
+			this.place.setdata(this.mapdata);
+			this.place.add();
+			this.place.sethole(hole);
+		}
+		if (!this.roomcode.startsWith("-") && this.roomcode !== "playtest") {
+			window.history.replaceState({}, "", `${document.location.pathname}?${this.roomcode}`);
 			e_roomcode.parentElement.style.display = "block";
 			e_roomcode.textContent = this.roomcode;
 		}
-		window.history.replaceState({}, "", `${document.location.pathname}?${this.roomcode}`);
-		this.onstart(this, hole);
-		delete this.onstart;
 	}
 	setmap(name) {
 		if (name === undefined) {

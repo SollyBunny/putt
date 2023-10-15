@@ -27,31 +27,37 @@ class Platonic extends Thing {
 }
 
 export class Tetra extends Platonic {
+	get id() { return 7; }
+	get desc() { return "A tetrahedron (3D triangle)"; }
 	get sides() { return 3; }
-	desc = "A tetrahedron (3D triangle)";
 }
 
 export class Cube extends Platonic {
+	get id() { return 8; }
+	get desc() { return "A cube (3D square)"; }
 	get sides() { return 4; }
-	desc = "A cube (3D square)";
 }
 
 export class Octa extends Platonic {
+	get id() { return 9; }
+	get desc() { return "An octahedron (3D diamond)"; }
 	get sides() { return 8; }
-	desc = "An octahedron (3D diamond)";
 }
 
 export class Dodeca extends Platonic {
+	get id() { return 10; }
+	get desc() { return "A dodecahedron (3D hexagon)"; }
 	get sides() { return 12; }
-	desc = "A dodecahedron (3D hexagon)";
 }
 
 export class Icose extends Platonic {
+	get id() { return 11; }
+	get desc() { return "An icosahedron (dice with 20 sides)"; }
 	get sides() { return 20; }
-	desc = "An icosahedron (dice with 20 sides)"
 }
 
 export class Sphere extends Platonic {
+	get id() { return 12; }
+	get desc() { return "A sphere or ball"; }
 	get sides() { return -1; }
-	desc = "A sphere or ball"
 }

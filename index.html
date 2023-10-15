@@ -434,27 +434,24 @@
 			window.onmessage = () => {
 				if (!event.data.length) return;
 				if (event.data[0] === "GAME") {
-					console.log("hi")
 					if (e_menu.style.transform.length === 0) {
 						if (e_game.src) e_menu.style.transform = "translateY(-100vh)";
 					} else {
 						e_menu.style.transform = "";
 					}
 				} else if (event.data[0] === "EDITOR") {
-					let d = event.data[1];
+					const data = event.data[1];
 					if (e_game.src) {
 						window.setTimeout(() => {
-							e_game.contentWindow.postMessage(["MAIN", d]);
+							e_game.contentWindow.postMessage(["MAIN", data]);
 						}, 50);
 					} else {
-						let v = "./game.html";
-						if (e_menuinput.value) v += `?${menuinput.value}`;
-						e_game.src = v;
+						e_game.src = "./game/index.html?playtest";
 						window.setTimeout(() => {
-							e_game.contentWindow.postMessage(["MAIN", d]);
+							e_game.contentWindow.postMessage(["MAIN", data]);
 						}, 2000);
 					}
-					e_menu.style.transform = "translateY(-100vh)";
+					e_menu.style.transform = "translateY(-150vh)";
 				}
 			};
 			roomrefresh();

@@ -6,7 +6,6 @@ import spawnbowlingtext from "./bowling.js"
 import { ConvexGeometry, mergeVertices, RoundedBoxGeometry } from "../lib/three.ext.js";
 import { Types, Modifiers, Physics, Powerups, Rainbow } from "./def.js";
 
-const e_rtext     = document.getElementById("rtext"); // To use as a canvas for player names
 const e_rmapname  = document.getElementById("rmapname"); // Store mapname
 const e_rscore    = document.getElementById("rscore"); // Stores player scorecard
 const e_cpowerups = document.getElementById("powerupcontainer").children;
@@ -53,6 +52,8 @@ export class Place {
 		this.del();
 	}
 	setdata(data) {
+		this.del();
+		this.things = [];
 		this.data = data;
 		// Set colors
 			this.materials.FLOOR1.color.setHex(data[1][1]); // Used for floor
@@ -109,7 +110,7 @@ export class Place {
 						switch (m[2][k][0]) {
 							case Modifiers.TEXT:
 								if (!j.mesh) break;
-								j.textset(m[2][k][1]);
+								j.text = m[2][k][1];
 								this.mods.text.push(j);
 								break;
 							case Modifiers.SCALE:
@@ -162,22 +163,6 @@ export class Place {
 					m.body.quaternion.w = m.mesh.quaternion.w;
 				}
 			}
-			for (let i = 0; i < this.mods.text.length; ++i) {
-				m = this.mods.text[i];
-				if (scene.camera.frustum.containsPoint(m.mesh.position)) {
-					proj = m.mesh.position.clone().project(scene.camera);
-					proj.x = ( proj.x + 1) / 2 * can.width;
-					proj.y = (-proj.y + 1) / 2 * can.height;
-					this.mods.text[i].text.style.transform = `translate(calc(${proj.x}px - 50%),calc(${proj.y}px - 50%))`;
-					if (m.mesh.visible === false) {
-						this.mods.text[i].text.style.display = "block";
-						m.mesh.visible = true;
-					}
-				} else if (m.mesh.visible === true) {
-					this.mods.text[i].text.style.display = "none";
-					m.mesh.visible = false;
-				}
-			}
 			for (let i = 0; i < this.powerups.length; ++i) {
 				m = this.powerups[i];
 				if (m.got) continue;
@@ -199,7 +184,6 @@ export class Place {
 			this.player = player;
 			this.scene.camera.follow = player;
 		}
-		console.log(this, this.players)
 		this.players.push(player);
 		return player;
 	}
@@ -239,15 +223,10 @@ export class Thing {
 		this.type = type;
 		this.mesh = mesh;
 		this.body = body;
-		if (text) this.textset(text);
+		this.text = text;
 		// Set the GUID
 		this.GUID = GUID;
 		++GUID;
-	}
-	textset(text) {
-		// Create and set the text element
-		if (!this.text) this.text = document.createElement("div");
-		this.text.textContent = text;
 	}
 	add() {
 		// Add this Thing to this.parent
@@ -259,8 +238,6 @@ export class Thing {
 			if (this.oncollide)
 				this.body.addEventListener("collide", this.oncollide);
 		}
-		if (this.text)
-			e_rtext.appendChild(this.text);
 	}
 	del() {
 		// Remove this Thing from this.parent
@@ -268,8 +245,6 @@ export class Thing {
 			this.parent.scene.remove(this.mesh);
 		if (this.body)
 			this.parent.world.removeBody(this.body);
-		if (this.text)
-			this.text.remove();
 	}
 	bounce(e) {
 		let d = Math.atan2(
@@ -330,8 +305,6 @@ export class Player extends Thing {
 		this.isshoot = true;
 		this.ishole  = false;
 		this.lastsafe = new CANNON.Vec3();
-		this.textset(name);
-		this.parent.mods.text.push(this);
 		this.powerups = [];
 		this.inflatetimeouts = []; // This is a queue
 		this.e_name = document.createElement("div");
