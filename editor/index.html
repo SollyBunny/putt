@@ -125,7 +125,7 @@
 					width: max-content;
 					padding-top: 100px;
 					transform: translateX(0);
-					transition: ease 0.2s transform;
+					
 				}
 				.wheel {
 					position: relative;
@@ -198,14 +198,14 @@
 	</head>
 	<body>
 		<script type="module" src="main.js"></script>
-		<script>
+		<script defer>
 			const e_help = document.getElementById('help');
 			function help() {
 				e_help.style.display = e_help.style.display === 'none' ? 'block' : 'none';
 			}
 			function play() {
 				if (window.self === window.top) {
-					tooltop("You must be in the embedded editor to use this");
+					tooltip("You must be in the embedded editor to use this");
 					return;
 				}
 				const data = place.toObj();
@@ -291,7 +291,7 @@
 				<div id="wheel" style="display:none">
 					<div id="wheelcontent">
 						<div class="wheel" style="--color:hsla(0, 100%, 50%, 0.5)">
-							<div> <button class="wheelleft" disabled> ◀ </button> <div class="wheeltitle"> Other </div> <button class="wheelright" title="Platonics"> ▶ </button> </div>
+							<div> <button class="wheelleft" title="Surfaces"> ◀ </button> <div class="wheeltitle"> Other </div> <button class="wheelright" title="Platonics"> ▶ </button> </div>
 							<button>Cross</button>
 							<button>Tee</button>
 							<button>Why</button>
@@ -312,18 +312,18 @@
 							<!-- Most important in center -->
 							<div> <button class="wheelleft" title="Platonics"> ◀ </button> <div class="wheeltitle"> Surfaces </div> <button class="wheelright" title="Game"> ▶ </button> </div>
 							<button>Floor</button>
-							<button>BFloor</button>
 							<button>Wall</button>
-							<button>BWall</button>
 							<button>Platform</button>
+							<button>BFloor</button>
+							<button>BWall</button>
 							<button>BPlatform</button>
 						</div>
 						<div class="wheel" style="--color:hsla(200, 100%, 50%, 0.5)">
-							<div> <button class="wheelleft" title="Surfaces"> ◀ </button> <div class="wheeltitle"> Game </div> <button class="wheelright" disabled> ▶ </button> </div>
-							<button>Player</button>
+							<div> <button class="wheelleft" title="Surfaces"> ◀ </button> <div class="wheeltitle"> Game </div> <button class="wheelright" title="Other"> ▶ </button> </div>
 							<button>Start</button>
 							<button>Hole</button>
 							<button>Powerup</button>
+							<button>Player NPC</button>
 						</div>
 					</div>
 				</div>
@@ -338,6 +338,7 @@
 						A <code>thing</code> is an object that can be placed in the world<br>
 						A <code>surface</code> is an object with multiple points<br>
 						The game will start at spawn 0, each spawn requires atleast one hole (there can also be multiple same numbered spawns)<br>
+						All objects are centered from the bottom most center point<br>
 					<br><h3> Undoing </h3>
 						Most actions can be undone with <code>z</code> and redone with <code>y</code><br>
 					<br><h3> Camera </h3>

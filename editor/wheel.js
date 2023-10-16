@@ -3,6 +3,7 @@ import * as things from "./things.js";
 import * as camera from "./camera.js"; // for mouse position
 import * as binds from "./binds.js";
 import * as undo from "./undo.js";
+import { Game } from "./things/game.js";
 
 const e_wheel = document.getElementById("wheel");
 const e_wheelcontent = document.getElementById("wheelcontent");
@@ -30,16 +31,16 @@ export const data = [
 	], [
 		// Most important in center
 		things.Floor,
-		things.BFloor,
 		things.Wall,
-		things.BWall,
 		things.Platform,
+		things.BWall,
+		things.BFloor,
 		things.BPlatform,
 	], [
-		things.Player,
 		things.Start,
 		things.Hole,
 		things.Powerup,
+		things.Player,
 	]
 ];
 
@@ -47,6 +48,9 @@ export async function init() {
 	let wheelID = 0;
 	function wheelScroll(event) { // event callback for scrolling to different wheel
 		scroll(parseInt(event.target.ID));
+	}
+	function wheelScrollLoop(event) {
+		scrollWrong(parseInt(event.target.ID));
 	}
 	function wheelClick(event) { // event callback for clicking a wheel slice
 		if (clickPromise === undefined) return; // only if the wheel is open
@@ -58,10 +62,17 @@ export async function init() {
 		if (wheelID > 0) { // if not the first wheel
 			title.children[0].ID = wheelID - 1;
 			title.children[0].addEventListener("click", wheelScroll); // add a listener on the title's left arrow
+		} else {
+			title.children[0].ID = 3;
+			title.children[0].addEventListener("click", wheelScrollLoop); // add a listener on the title's left arrow to loop
 		}
 		if (wheelID < 3) { // if not the last wheel
 			title.children[2].ID = wheelID + 1;
 			title.children[2].addEventListener("click", wheelScroll); // add a listener on the title's right arrow
+		} else {
+			title.children[0].ID = 0;
+			title.children[0].addEventListener("click", wheelScrollLoop); // add a listener on the title's left arrow to loop
+		
 		}
 		children.shift(); // remove the title element from the children
 		let i = 0;
@@ -101,7 +112,23 @@ export function open() {
 
 export function scroll(n) {
 	selected = n;
+	e_wheelcontent.style.transition = "transition: ease 0.2s transform"
 	e_wheelcontent.style.transform = `translateX(-${400 * n}px)`; // scroll the content
+}
+
+// function scrollWrongThen() {
+// 	// Scroll the right direction
+
+// }
+export function scrollWrong(n) {
+	// First scroll the wrong direction
+	// e_wheelcontent.style.transition = "transition: ease-in 0.1s transform";
+	// const targetWrong = selected + Math.sign(n - selected);
+	// e_wheelcontent.style.transform = "translateX(-$(400 * targetWrong))";
+	// selected = n;
+	// window.setTimeout(scrollWrongThen, 101);
+	// TODO
+	scroll(n);
 }
 
 export function close() {

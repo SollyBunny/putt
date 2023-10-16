@@ -6,6 +6,8 @@ import * as wheel from "./wheel.js";
 
 const MOUSELOCKDEFAULT = 0.5;
 const ZOOMINITIAL = 200;
+const ZOOMMAX = 25 * ZOOMINITIAL;
+const ZOOMMIN = 0.01 * ZOOMINITIAL;
 
 const e_main = document.getElementById("main"); // get a lot of elements
 const e_draw = document.getElementById("draw");
@@ -251,11 +253,22 @@ export async function init() {
 	});
 	resize();
 	myPanzoom.on("transform", event => { // on change in transform (pan, zoom or resize)
+		click = false; // the screen has moved, a click isn't possible
 		const transform = event.getTransform();
 		x = transform.x;
 		z = transform.y;
 		scale = transform.scale;
-		click = false; // the screen has moved, a click isn't possible
+		let zoomBroke = false;
+		if (scale > ZOOMMAX) {
+			zoomBroke = true;
+			scale = ZOOMINITIAL;
+			tooltip("Maximum zoom reached ☹️");
+		} else if (scale < ZOOMMIN) {
+			zoomBroke = true;
+			scale = ZOOMINITIAL;
+			tooltip("Minimum zoom reached ☹️");
+		}
+		if (zoomBroke) myPanzoom.zoomAbs(x, z, scale);
 		render();
 		updateMouse();
 		return false;
