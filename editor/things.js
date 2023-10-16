@@ -172,10 +172,6 @@ export class Place {
 		mouse.y = avgy;
 		return thing;
 	}
-	edit(thing) {
-		focus(thing);
-		return thing;
-	}
 	at(x, y, z) {
 		for (let thing of this.things) {
 			const pos = thing.pos.data;
