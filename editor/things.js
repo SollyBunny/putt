@@ -71,29 +71,29 @@ export class Place {
 		}
 		this.clear();
 		{
-			const meta = data[0];
+			const meta = data[0]; // set meta data
 			this.name.set(meta[0]);
 			this.author.set(meta[1]);
-			this.colsky.set(meta[2]);
+			this.colsky.set(meta[2]); // colors
 			this.colwall.set(meta[3]);
 			this.colfloor.set(meta[4]);
 			this.colobj.set(meta[5]);
 			this.coldecor.set(meta[6]);
 		}
-		for (let thing of data.slice(1)) {
+		for (let thing of data.slice(1)) { // for each thing
 			const thingConstructor = IDS[thing[0]];
 			if (!thingConstructor) {
 				console.warn(`Unknown thing type: ${thing[0]}`);
 				continue
 			}
-			const thingObj = new thingConstructor(thing[1]);
+			const thingObj = new thingConstructor(thing[1]); // create obj
 			if (thing[2]) // Set modifiers
 				for (let modifier of thing[2])
 					thingObj.modifiers.add(modifierFromObj(modifier));
 			if (thing[3]) // Set properties
 				for (let i = 0; i < thing[3].length; ++i)
 					thingObj.properties.set(i, thing[3][i]);
-			place.add(thingObj);
+			place.add(thingObj); // add to place
 		}
 		return place;
 	}
@@ -102,34 +102,31 @@ export class Place {
 			[
 				this.name.get(),
 				this.author.get(),
-				this.colsky.get(),
+				this.colsky.get(), // colors
 				this.colwall.get(),
 				this.colfloor.get(),
 				this.colobj.get(),
 				this.coldecor.get(),
 			]
 		];
-		this.things.forEach(thing => {
+		this.things.forEach(thing => { // for each thing
 			const thingout = [
-				thing.id,
-				thing.pos.raw(),
+				thing.id, // id
+				thing.pos.raw(), // copy the pos data
 			];
-			if (thing.modifiers.length > 0) {
-				const modifierout = [];
-				thing.modifiers.forEach(modifier => {
-					modifierout.push(modifier.toObj());
-				});
-				thingout[2] = modifierout;
-			}
-			if (thing.properties.length > 0) {
-				if (!thingout[2]) thingout[2] = [];
+			const modifierout = [];
+			thing.modifiers.forEach(modifier => { // set modifiers
+				modifierout.push(modifier.toObj());
+			});
+			thingout[2] = modifierout;
+			if (thing.properties.length > 0) { // set properties
 				const propertyout = [];
 				thing.properties.data.forEach(property => {
 					propertyout.push(property);
 				});
 				thingout[3] = propertyout;
 			}
-			out.push(thingout);
+			out.push(thingout); // add to output
 		});
 		return out;
 	}
