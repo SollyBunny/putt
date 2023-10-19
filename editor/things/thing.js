@@ -186,6 +186,11 @@ export class Properties {
 	get length() {
 		return this.data.length;
 	}
+	clone() {
+		const properties = new Properties(this.callback);
+		properties.data = this.data.slice();
+		return properties;
+	}
 }
 
 export class Thing {
@@ -200,10 +205,13 @@ export class Thing {
 			this.elUpdate(this.el);
 			this.elUpdateLayer(this.el);
 		}
-		
 	}
 	clone() {
-		return new this.constructor(this.pos.raw());
+		const thing = new this.constructor(this.pos.raw());
+		thing.properties = this.properties.clone();
+		thing.modifiers = new Set(this.modifiers);
+		this.elUpdate(this.el); // TODO huge refactor, move properties and modifiers as arguments to each thing
+		return thing;
 	}
 	elUpdateLayer(el) {
 		// average Y value

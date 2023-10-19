@@ -70,8 +70,8 @@ export async function init() {
 			title.children[2].ID = wheelID + 1;
 			title.children[2].addEventListener("click", wheelScroll); // add a listener on the title's right arrow
 		} else {
-			title.children[0].ID = 0;
-			title.children[0].addEventListener("click", wheelScrollLoop); // add a listener on the title's left arrow to loop
+			title.children[2].ID = 0;
+			title.children[2].addEventListener("click", wheelScrollLoop); // add a listener on the title's left arrow to loop
 		
 		}
 		children.shift(); // remove the title element from the children
@@ -97,11 +97,12 @@ export function open() {
 		clickPromise(undefined);
 		clickPromise = undefined; // just to make sure
 	}
+	const pos = [camera.mouse.x, camera.mouse.y, camera.mouse.z];
 	new Promise(resolve => { clickPromise = resolve; }).then(thing => { // create a promise to wait for a click
 		clickPromise = undefined;
 		close(); // close the wheel
 		if (thing === undefined) return;
-		const thingNew = new thing([camera.mouse.x, camera.mouse.y, camera.mouse.z]);
+		const thingNew = new thing(pos);
 		place.add(thingNew);
 		undo.add(
 			place.del.bind(place, thingNew),
@@ -112,23 +113,14 @@ export function open() {
 
 export function scroll(n) {
 	selected = n;
-	e_wheelcontent.style.transition = "transition: ease 0.2s transform"
+	e_wheelcontent.style.transition = "ease 0.2s transform";
 	e_wheelcontent.style.transform = `translateX(-${400 * n}px)`; // scroll the content
 }
 
-// function scrollWrongThen() {
-// 	// Scroll the right direction
-
-// }
 export function scrollWrong(n) {
-	// First scroll the wrong direction
-	// e_wheelcontent.style.transition = "transition: ease-in 0.1s transform";
-	// const targetWrong = selected + Math.sign(n - selected);
-	// e_wheelcontent.style.transform = "translateX(-$(400 * targetWrong))";
-	// selected = n;
-	// window.setTimeout(scrollWrongThen, 101);
-	// TODO
-	scroll(n);
+	selected = n;
+	e_wheelcontent.style.transition = "ease 0.6s transform";
+	e_wheelcontent.style.transform = `translateX(-${400 * n}px)`;
 }
 
 export function close() {

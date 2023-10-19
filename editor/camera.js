@@ -261,11 +261,11 @@ export async function init() {
 		let zoomBroke = false;
 		if (scale > ZOOMMAX) {
 			zoomBroke = true;
-			scale = ZOOMINITIAL;
+			scale = ZOOMMAX;
 			tooltip("Maximum zoom reached ☹️");
 		} else if (scale < ZOOMMIN) {
 			zoomBroke = true;
-			scale = ZOOMINITIAL;
+			scale = ZOOMMIN;
 			tooltip("Minimum zoom reached ☹️");
 		}
 		if (zoomBroke) myPanzoom.zoomAbs(x, z, scale);
