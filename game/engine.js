@@ -91,7 +91,7 @@ window.addEventListener("resize", resize);
 resize();
 
 let start = Date.now();
-let tx, to = 0, tick = 0;
+let tx, to = 0;
 export let fps = 0;
 export let time = 0;
 export function tick() {

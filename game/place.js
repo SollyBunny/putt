@@ -41,14 +41,19 @@ export const IDS = {
 
 export const things = new Set();
 
-export const materials = {
+export const materials = {};
+materials.scene = {
 	FLOOR:      new THREE.MeshPhongMaterial({ flatShading: true }), // Used for flat floor
-	FLOORSLOPE: new THREE.MeshPhongMaterial({ flatShading: true }), // Used for bumpy / special floor
+	SLOPE:      new THREE.MeshPhongMaterial({ flatShading: true }), // Used for bumpy / special floor
 	WALL:       new THREE.MeshLambertMaterial({ transparent: true }), // Used for wall
 	OBJ:        new THREE.MeshLambertMaterial(), // Used for obstacles
 	DECOR:      new THREE.MeshLambertMaterial(), // Used for decorations
 	HOLE:       new THREE.MeshLambertMaterial({ side: THREE.BackSide }), // Used for hole
 	START:      new THREE.MeshLambertMaterial({ side: THREE.BackSide, transparent: true, opacity: 0.8 }), // Used for start
+};
+materials.world = {
+	BOUNCY:     new CANNON.Material({ friction: 0.0, restitution: 0.5 }),
+	PLAYER:     new CANNON.Material({ friction: 1, restitution: 1 }),
 };
 
 export let name = "";
@@ -86,12 +91,12 @@ export function fromObj(data) {
 		scene.fogbottom.material.color.set(meta[2]);
 		// scene.fogbottom.material.needsUpdate = true;
 		// Materials
-		materials.FLOOR.color.set(meta[3]);
-		materials.FLOORSLOPE.color.set(materials.FLOOR.color);
-		materials.FLOORSLOPE.color.multiplyScalar(0.5);
-		materials.WALL.color.set(meta[4]);
-		materials.OBJ.color.set(meta[5]);
-		materials.DECOR.color.set(meta[6]);
+		materials.scene.FLOOR.color.set(meta[3]);
+		materials.scene.SLOPE.color.set(materials.FLOOR.color);
+		materials.scene.SLOPE.color.multiplyScalar(0.5);
+		materials.scene.WALL.color.set(meta[4]);
+		materials.scene.OBJ.color.set(meta[5]);
+		materials.scene.DECOR.color.set(meta[6]);
 	}
 	for (const thingData of data.slice(1) ) {
 		const thingConstructor = IDS[thingData[0]];
