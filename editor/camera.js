@@ -3,6 +3,7 @@ import * as undo from "./undo.js";
 import * as binds from "./binds.js";
 import * as context from "./context.js";
 import * as wheel from "./wheel.js";
+import { createElementSVG } from "./things/thing.js";
 
 const MOUSELOCKDEFAULT = 0.5;
 const ZOOMINITIAL = 200;
@@ -12,6 +13,8 @@ const ZOOMMIN = 0.01 * ZOOMINITIAL;
 const e_main = document.getElementById("main"); // get a lot of elements
 const e_draw = document.getElementById("draw");
 const e_ptrs = document.getElementById("ptrs");
+const e_sels = document.getElementById("sels");
+const e_selr = document.getElementById("selr");
 const e_ptr1 = document.getElementById("ptr1");
 const e_ptr2 = document.getElementById("ptr2");
 const e_circ = document.getElementById("circ");
@@ -34,12 +37,117 @@ const e_mouselock = document.getElementById("mouselock");
 const can = document.getElementById("background");
 const ctx = can.getContext("2d");
 
+function selectionPointerDown(event) {
+	if (event.button !== 0) return;
+	if (event.ctrlKey) {
+		if (event.target.desc.thing.pos.length > 3) {
+			event.target.desc.thing.pos.insXYZ(event.target.desc.pos, mouse.x, mouse.y, mouse.z);
+			undo.add(
+				event.target.desc.thing.pos.delXYZ.bind(event.target.desc.thing.pos, event.target.desc.pos),
+				event.target.desc.thing.pos.insXYZ.bind(event.target.desc.thing.pos, mouse.x, mouse.y, mouse.z)
+			);
+		} else {
+			const newthing = event.target.desc.thing.clone();
+			event.target.desc.thing = place.add(newthing);
+			undo.add(
+				place.del.bind(place, event.target.desc.thing),
+				place.add.bind(place, newthing)
+			);
+		}
+	}
+	event.target.desc.dragStart = event.target.desc.thing.pos.getXYZ(event.target.desc.pos);
+	event.target.setPointerCapture(event.pointerId);
+	mouseOld.x = (mouseReal.x - x) / scale;
+	mouseOld.y = mouse.y;
+	mouseOld.z = (mouseReal.y - z) / scale;
+}
+function seelctionPointerMove(event) {
+	if (!event.target.hasPointerCapture(event.pointerId)) return;
+	const oldX = mouse.x;
+	const oldZ = mouse.z;
+	mouseReal.x = event.layerX;
+	mouseReal.y = event.layerY;
+	updateMouse();
+	for (const desc of sel) {
+		desc.thing.pos.translate(desc.pos, mouse.x - oldX, 0, mouse.z - oldZ);
+		sel.update(desc);
+	}
+}
+function selectionPointerUp(event) {
+	event.target.releasePointerCapture(event.pointerId);
+	if (event.target.desc.dragStart) {
+		undo.add(
+			event.target.desc.thing.pos.setXYZ.bind(event.target.desc.thing.pos, event.target.desc.pos, ...event.target.desc.dragStart),
+			event.target.desc.thing.pos.setXYZ.bind(event.target.desc.thing.pos, event.target.desc.pos, mouse.x, mouse.y, mouse.z),
+		);
+	}
+}
+class Selection {
+	constructor() {
+		this.data = new Set();
+	}
+	clear() {
+		for (const desc of this.data)
+			this.remove(desc);
+		return this.data.clear();
+	}
+	add(desc) {
+		if (!desc.el) {
+			desc.el = createElementSVG("circle");
+			desc.el.desc = desc;
+			desc.el.addEventListener("pointerdown", selectionPointerDown);
+			desc.el.addEventListener("pointermove", seelctionPointerMove);
+			desc.el.addEventListener("pointerup", selectionPointerUp);
+			desc.el.addEventListener("pointercancel", selectionPointerUp);
+		}
+		this.update(desc);
+		e_sels.appendChild(desc.el);
+		return this.data.add(desc);
+	}
+	remove(desc) {
+		e_sels.removeChild(desc.el);
+		return this.data.delete(desc);
+	}
+	toggle(desc) {
+		if (this.has(desc))
+			this.remove(desc);
+		else
+			this.add(desc);
+	}
+	has(desc) {
+		return this.data.has(desc);
+	}
+	update(desc) {
+		if (!desc) {
+			for (const desc of this.data)
+				this.update(desc);
+			return;
+		}
+		if (!desc.el) return;
+		const pos = desc.thing.pos.getXYZ(desc.pos);
+		desc.el.setAttribute("cx", pos[0] * scale);
+		desc.el.setAttribute("cy", pos[2] * scale);
+		return desc;
+	}
+	get size() {
+		return this.data.size;
+	}
+	// iterator
+	[Symbol.iterator]() {
+		return this.data[Symbol.iterator]();
+	}
+
+}
+
 export const mouseReal = {x: 0, y: 0};
 export const mouse = {x: 0, y: 0, z: 0};
 export const mouseOld = {x: 0, y: 0, z: 0};
+export const sel = new Selection();
 export let x = 0;
 export let y = 0;
 export let z = 0;
+let click = false;
+let selr = false;
 
 export let scale = 1;
 export let w = can.width;
@@ -48,10 +156,10 @@ let myPanzoom = undefined;
 export { myPanzoom as panzoom };
 
 export function toScreenX(a) { // client x -> screen x
-	return a * scale + x;
+	return Math.round(a * scale + x);
 }
 export function toScreenZ(a) { // client z -> screen z
-	return a * scale + z;
+	return Math.round(a * scale + z);
 }
 export function toScreenTransform(xIn, zIn) { // format client x, z to a transform
 	return `translate(${toScreenX(xIn)}px, ${toScreenZ(zIn)}px)`;
@@ -60,10 +168,10 @@ export function toPadString(n) { // format a number as a padded fixed number
 	return String(Math.round(n * 100) / 100).padStart(2, " ");
 }
 
-let click = false;
-export let drag = undefined;
-
 export function render() {
+	// Sels
+	e_sels.style.transform = `translate(${x}px, ${z}px)`;
+	sel.update();
 	// Set grid line size
 	let size = scale;
 	while (size < 30) size *= 10;
@@ -157,44 +265,64 @@ export function updateMouse() {
 		e_ptr2.children[1].textContent = `${toPadString(mouseOld.x)}, ${toPadString(mouseOld.y)}, ${toPadString(mouseOld.z)}`;
 	}
 	e_ptr2.style.transform = toScreenTransform(mouseOld.x, mouseOld.z);
-	// Circle
-	e_circ.setAttribute("r", hyp);
-	e_circ.style.transform = toScreenTransform(mouseOld.x, mouseOld.z);
-	// Hyp
-	if (hyp < 50 / scale) {
-		e_txth.textContent = "";
+	if (selr) {
+		e_circ.style.display = "none";
+		e_linx.style.display = "none";
+		e_linz.style.display = "none";
+		e_linh.style.display = "none";
+		e_txtx.style.display = "none";
+		e_txtz.style.display = "none";
+		e_txth.style.display = "none";
+		e_selr.style.display = "block";
+		e_selr.setAttribute("d", `M${toScreenX(mouseOld.x)} ${toScreenZ(mouseOld.z)} H${toScreenX(mouse.x)} V${toScreenZ(mouse.z)} H${toScreenX(mouseOld.x)} V${toScreenZ(mouseOld.z)}`);
 	} else {
-		e_txth.style.transform = toScreenTransform((mouse.x + mouseOld.x) / 2, (mouse.z + mouseOld.z) / 2);
-		e_txth.textContent = toPadString(hyp);
+		e_selr.style.display = "none";
+		e_circ.style.display = "block";
+		e_linx.style.display = "block";
+		e_linz.style.display = "block";
+		e_linh.style.display = "block";
+		e_txtx.style.display = "block";
+		e_txtz.style.display = "block";
+		e_txth.style.display = "block";
+		// Circle
+		e_circ.setAttribute("r", hyp * scale);
+		e_circ.style.transform = toScreenTransform(mouseOld.x, mouseOld.z);
+		// Hyp
+		if (hyp < 50 / scale) {
+			e_txth.textContent = "";
+		} else {
+			e_txth.style.transform = toScreenTransform((mouse.x + mouseOld.x) / 2, (mouse.z + mouseOld.z) / 2);
+			e_txth.textContent = toPadString(hyp);
+		}
+		e_linh.setAttribute("x1", toScreenX(mouseOld.x));
+		e_linh.setAttribute("y1", toScreenZ(mouseOld.z));
+		e_linh.setAttribute("x2", toScreenX(mouse.x));
+		e_linh.setAttribute("y2", toScreenZ(mouse.z));
+		// Line X
+		const xDis = Math.abs(mouse.x - mouseOld.x);
+		if (xDis < 50 / scale) {
+			e_txtx.textContent = "";
+		} else {
+			e_txtx.style.transform = toScreenTransform((mouse.x + mouseOld.x) / 2, mouseOld.z);
+			e_txtx.textContent = toPadString(xDis);
+		}
+		e_linx.setAttribute("x1", toScreenX(mouseOld.x));
+		e_linx.setAttribute("y1", toScreenZ(mouseOld.z));
+		e_linx.setAttribute("x2", toScreenX(mouse.x));
+		e_linx.setAttribute("y2", toScreenZ(mouseOld.z));
+		// Line Z
+		const zDis = Math.abs(mouse.z - mouseOld.z);
+		if (zDis < 50 / scale) {
+			e_txtz.textContent = "";
+		} else {
+			e_txtz.style.transform = toScreenTransform(mouse.x, (mouse.z + mouseOld.z) / 2);
+			e_txtz.textContent = toPadString(zDis);
+		}
+		e_linz.setAttribute("x1", toScreenX(mouse.x));
+		e_linz.setAttribute("y1", toScreenZ(mouseOld.z));
+		e_linz.setAttribute("x2", toScreenX(mouse.x));
+		e_linz.setAttribute("y2", toScreenZ(mouse.z));
 	}
-	e_linh.setAttribute("x1", toScreenX(mouseOld.x));
-	e_linh.setAttribute("y1", toScreenZ(mouseOld.z));
-	e_linh.setAttribute("x2", toScreenX(mouse.x));
-	e_linh.setAttribute("y2", toScreenZ(mouse.z));
-	// Line X
-	const xDis = Math.abs(mouse.x - mouseOld.x);
-	if (xDis < 50 / scale) {
-		e_txtx.textContent = "";
-	} else {
-		e_txtx.style.transform = toScreenTransform((mouse.x + mouseOld.x) / 2, mouseOld.z);
-		e_txtx.textContent = toPadString(xDis);
-	}
-	e_linx.setAttribute("x1", toScreenX(mouseOld.x));
-	e_linx.setAttribute("y1", toScreenZ(mouseOld.z));
-	e_linx.setAttribute("x2", toScreenX(mouse.x));
-	e_linx.setAttribute("y2", toScreenZ(mouseOld.z));
-	// Line Z
-	const zDis = Math.abs(mouse.z - mouseOld.z);
-	if (zDis < 50 / scale) {
-		e_txtz.textContent = "";
-	} else {
-		e_txtz.style.transform = toScreenTransform(mouse.x, (mouse.z + mouseOld.z) / 2);
-		e_txtz.textContent = toPadString(zDis);
-	}
-	e_linz.setAttribute("x1", toScreenX(mouse.x));
-	e_linz.setAttribute("y1", toScreenZ(mouseOld.z));
-	e_linz.setAttribute("x2", toScreenX(mouse.x));
-	e_linz.setAttribute("y2", toScreenZ(mouse.z));
 };
 
 export function home() {
@@ -223,52 +351,46 @@ export async function init() {
 		zoomDoubleClickSpeed: 1,
 		smoothScroll: true,
 		smoothPan: true,
+		maxZoom: ZOOMMAX,
+		minZoom: ZOOMMIN,
 		owner: e_main, // transform e_main
 		beforeMouseDown: event => {
-			if (event.button === 1) {
-				return false;
-			}
-			return drag ? true : false;
+			console.log(event.button);
+			return event.button !== 1;
 		},
 		beforeWheel: event => {
-			let thing;
-			if (event.shiftKey){
-				thing = drag || place.at(mouse.x, mouse.y, mouse.z);
-				mouse.y += getMouselock() * Math.sign(event.deltaY);
-				if (thing) {
-					thing.thing.pos.set(thing.pos / 3 + 1, mouse.y);
-				}
+			event.preventDefault(); // no window zooming allowed
+			if (event.shiftKey) {
+				const d = getMouselock() * Math.sign(event.deltaY);
+				mouse.y += d;
 				updateMouse();
+				for (const desc of sel) {
+					desc.thing.pos.translate(desc.pos, 0, d, 0);
+				}
 				return true;
 			} else if (event.ctrlKey) {
-				thing = drag || place.at(mouse.x, mouse.y, mouse.z);
-				if (event.deltaY < 0)
-					thing.thing.elMoveDown(thing.thing.el);
-				else
-					thing.thing.elMoveUp(thing.thing.el);
+				for (const desc of sel) {
+					if (event.deltaY < 0)
+						desc.thing.elMoveDown(desc.thing.el);
+					else
+						desc.thing.elMoveUp(desc.thing.el);
+				}
 				return true;
+			}
+			if (scale >= ZOOMMAX) {
+				tooltip("Maximum zoom reached ☹️");
+			} else if (scale <= ZOOMMIN) {
+				tooltip("Minimum zoom reached ☹️");
 			}
 			return false;
 		}
 	});
 	resize();
 	myPanzoom.on("transform", event => { // on change in transform (pan, zoom or resize)
-		click = false; // the screen has moved, a click isn't possible
 		const transform = event.getTransform();
 		x = transform.x;
 		z = transform.y;
 		scale = transform.scale;
-		let zoomBroke = false;
-		if (scale > ZOOMMAX) {
-			zoomBroke = true;
-			scale = ZOOMMAX;
-			tooltip("Maximum zoom reached ☹️");
-		} else if (scale < ZOOMMIN) {
-			zoomBroke = true;
-			scale = ZOOMMIN;
-			tooltip("Minimum zoom reached ☹️");
-		}
-		if (zoomBroke) myPanzoom.zoomAbs(x, z, scale);
 		render();
 		updateMouse();
 		return false;
@@ -281,9 +403,9 @@ export async function init() {
 		event.preventDefault();
 	});
 	e_main.addEventListener("pointerdown", event => {
-		if (event.button === 2) return;
+		if (event.button !== 0) return; // must be lclick
 		if (event.target !== can) return;
-		click = true; // a click is possible
+		e_selr.style.display = "none";
 		mouseReal.x = event.layerX;
 		mouseReal.y = event.layerY;
 		mouseOld.x = (mouseReal.x - x) / scale;
@@ -292,56 +414,70 @@ export async function init() {
 		const mouselock = getMouselock();
 		mouseOld.x = Math.floor(mouseOld.x / mouselock) * mouselock;
 		mouseOld.z = Math.floor(mouseOld.z / mouselock) * mouselock;
-		// Find drag candidate
-		if (event.button === 1) return; // check if middle click
-		drag = place.at(mouse.x, mouse.y, mouse.z);
-		if (drag) {
-			drag.start = drag.thing.pos.getXYZ(drag.pos);
- 			if (event.ctrlKey) {
-				if (drag.thing.pos.length > 3) {
-					drag.thing.pos.insXYZ(drag.pos, mouse.x, mouse.y, mouse.z);
-					undo.add(
-						drag.thing.pos.delXYZ.bind(drag.thing.pos, drag.pos),
-						drag.thing.pos.insXYZ.bind(drag.thing.pos, mouse.x, mouse.y, mouse.z)
-					)
-				} else {
-					const newthing = drag.thing.clone();
-					drag.thing = place.add(newthing);
-					undo.add(
-						place.del.bind(place, drag.thing),
-						place.add.bind(place, newthing)
-					)
-				}
-			}
+		const hovering = place.at(mouse.x, mouse.y, mouse.z);
+		if (!event.shiftKey) // check if shift
+			sel.clear();
+		if (hovering) {
+			sel.toggle(hovering);
+			selectionPointerDown({ // a bit jank, but it works
+				pointerId: event.pointerId,
+				target: hovering.el,
+				shiftKey: event.shiftKey,
+				ctrlKey: event.ctrlKey
+			});
+			return;
 		}
+		click = true;
+		selr = true; // start the select
 	});
 	e_main.addEventListener("pointerup", event => {
+		e_selr.style.display = "none";
+		if (click) {
+			selr = false;
+			click = false;
+			binds.fire("click");
+			return;
+		}
+		if (selr) {
+			selr = false;
+			if (!event.shiftKey)
+				sel.clear();
+			// Find items in selection
+			const rect = {
+				x1: Math.min(mouseOld.x, mouse.x),
+				z1: Math.min(mouseOld.z, mouse.z),
+				x2: Math.max(mouseOld.x, mouse.x),
+				z2: Math.max(mouseOld.z, mouse.z)
+			};
+			for (const thing of place.things) {
+				const pos = thing.pos.data;
+				for (let i = 0; i < pos.length; i += 3) {
+					if (pos[i] >= rect.x1 && pos[i] <= rect.x2 && pos[i + 2] >= rect.z1 && pos[i + 2] <= rect.z2) {
+						sel.add({
+							thing: thing,
+							pos: i / 3
+						});
+					}
+				}
+			}
+			updateMouse();
+			return;
+		}
+		selr = false;
 		if (event.target === can) {
 			if ((context.isOpen || wheel.isOpen) && event.button !== 2)
 				click = false;
 			context.close();
 			wheel.close();
+			return;
 		}
-		if (drag) {
-			console.log(...drag.start, mouse)
-			undo.add(
-				drag.thing.pos.setXYZ.bind(drag.thing.pos, drag.pos, ...drag.start),
-				drag.thing.pos.setXYZ.bind(drag.thing.pos, drag.pos, mouse.x, mouse.y, mouse.z),
-			);
-			drag = undefined;
-		}
-		if (click === false) return; // check if a mouse up and mouse down occured without any movement imbetween (aka click)
-		click = false;
-		binds.fire("click");
+		
 	});
 	e_main.addEventListener("pointermove", event => {
-		click = false; // drag has occured, so a click isn't possible
+		click = false;
 		if (event.target !== can) return;
 		mouseReal.x = event.layerX;
 		mouseReal.y = event.layerY;
-		if (drag) {
-			drag.thing.pos.setXYZ(drag.pos, mouse.x, mouse.y, mouse.z);
-		}
 		updateMouse();
 	});
 }

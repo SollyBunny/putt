@@ -90,7 +90,7 @@
 				#scaleedge {
 					transition: 0.2s ease transform;
 				}
-			#ptrs, #draw {
+			#ptrs, #draw, #sels {
 				position: absolute;
 				left: 0;
 				top: 0;
@@ -258,6 +258,22 @@
 								shape-rendering: geometricPrecision;
 								stroke-linejoin: round;
 							}
+							#draw .sel {
+								box-shadow: 0 0 50px 20px var(--fg);
+							}
+						</style>
+					</defs>
+				</svg>
+				<svg id="sels" width="1" height="1">
+					<defs>
+						<style>
+							#sels > * {
+								r: 10px;
+								fill: var(--fg);
+								stroke: var(--bg);
+								cursor: grab;
+								pointer-events: all;
+							}
 						</style>
 					</defs>
 				</svg>
@@ -271,6 +287,7 @@
 						<text id="txtx" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
 						<text id="txtz" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
 					</g>
+					<path style="display:none;opacity:0.5" id="selr" stroke="var(--fg)" fill="var(--bg)" />
 					<g id="ptr2" class="ptr" fill="gray" style="transform:scale(0)">
 						<circle cx="1" cy="1" r="5" />
 						<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>

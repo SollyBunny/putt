@@ -164,6 +164,22 @@ class Pos {
 		this.data.splice(n * 3, 0, x, y, z);
 		this.update();
 	}
+	translate(n, x, y, z) {
+		if (x === 0 && y === 0 && z === 0) return;
+		this.data[n * 3] += x;
+		this.data[n * 3 + 1] += y;
+		this.data[n * 3 + 2] += z;
+		this.update();
+	}
+	translateAll(x, y, z) {
+		if (x === 0 && y === 0 && z === 0) return;
+		for (let i = 0; i < this.data.length; i += 3) {
+			this.data[i] += x;
+			this.data[i + 1] += y;
+			this.data[i + 2] += z;
+		}
+		this.update();
+	}
 	raw() {
 		return this.data.slice();
 	}
@@ -205,6 +221,12 @@ export class Thing {
 			this.elUpdate(this.el);
 			this.elUpdateLayer(this.el);
 		}
+	}
+	sel(seled) {
+		if (seled)
+			this.el.classList.add("sel");
+		else
+			this.el.classList.remove("sel");
 	}
 	clone() {
 		const thing = new this.constructor(this.pos.raw());

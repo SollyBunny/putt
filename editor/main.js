@@ -183,11 +183,23 @@ function deleteThing() {
 	}
 }
 
+function escape() {
+	if (wheel.isOpen) {
+		wheel.close();
+		return;
+	}
+	if (context.isOpen) {
+		context.close();
+		return;
+	}
+	camera.sel.clear();
+}
+
 binds.bind("context", onContext);
 binds.bind("z", undo.undo);
 binds.bind("y", undo.redo);
 binds.bind("click", wheel.toggle);
-binds.bind("escape", wheel.close);
+binds.bind("escape", escape);
 binds.bind("enter", wheel.open);
 binds.bind("1", wheel.select.bind(undefined, 1));
 binds.bind("2", wheel.select.bind(undefined, 2));
