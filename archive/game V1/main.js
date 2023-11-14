@@ -182,7 +182,7 @@ let a;
 
 function mapgen(mapdata) {
 	let points, faces, type, geometry;
-	let counthole  = 0;
+	let counthole  = 0; // track hole and start number (only 1 hole/start per course)
 	let countstart = 0;
 	mapdata.forEach(i => {
 		if (a) return;
@@ -191,43 +191,45 @@ function mapgen(mapdata) {
 		switch (type) {
 			case FLOOR: {
 				points = [];
+				
 				for (let m = 0; m < i.length; ++m) {
+					// Generate the lower polygon of the floor
 					points.push(new THREE.Vector3(i[m][0], i[m][2], i[m][1]));
 					i[m][2] -= 60;
+					// Generate the upper polygon of the floor
 					points.push(new THREE.Vector3(i[m][0], i[m][2], i[m][1]));
 				}
-				geometry = new ConvexGeometry(points);
+				geometry = new ConvexGeometry(points); // Convert the set of points into a polyhedron
 				geometry.computeBoundingBox();
-				let x, y;
-				for (let i = 0; i < mapdata.length; ++i) {
+				let x, y; // y refers to z coordinate, x used as found flag
+				for (let i = 0; i < mapdata.length; ++i) { // Find any holes in the floor
 					if (
-						mapdata[i][0] !== HOLE ||
-						geometry.boundingBox.min.x > mapdata[i][1][0] ||
+						mapdata[i][0] !== HOLE || // if the object is a hole
+						geometry.boundingBox.min.x > mapdata[i][1][0] || // AABB collision check
 						mapdata[i][1][0] > geometry.boundingBox.max.x ||
 						geometry.boundingBox.min.y > mapdata[i][1][2] ||
 						mapdata[i][1][2] > geometry.boundingBox.max.y ||
 						geometry.boundingBox.min.z > mapdata[i][1][1] ||
 						mapdata[i][1][1] > geometry.boundingBox.max.z
 					) continue;
-					x = mapdata[i][1][0];
+					x = mapdata[i][1][0]; // set coordinates
 					y = mapdata[i][1][1];
 				}
-				if (x) {
-					for (let m = 0; m < 20; ++m) {
-						points.push(new THREE.Vector3(
+				if (x) { // if a hole is found within the floor
+					for (let m = 0; m < 20; ++m) { // Icosagon (imitation of a circle)
+						points.push(new THREE.Vector3( // Generate points around the hole in a circle
 							x + Math.sin(Math.PI * 2 * (m / 20)) * 0.4,
-							i[0][2] + 120.5,
+							i[0][2] + 120.5, // raise these poinst into the air, use the +0.5 offset to show these points represent those around the hole
 							y + Math.cos(Math.PI * 2 * (m / 20)) * 0.4
 						));
 					}
-					geometry = mergeVertices(new ConvexGeometry(points)); // can't use 0 precision, faces get misplaced (probably floating point precision bug)
+					geometry = mergeVertices(new ConvexGeometry(points)); // convert points into convex geometry
 					points = [];
 					
-					for (let i = 0; i < geometry.attributes.position.count; ++i) { // gather point indexes for hole
+					for (let i = 0; i < geometry.attributes.position.count; ++i) { // Gather point indexes for hole
 						pt = Math.round(geometry.attributes.position.array[i * 3 + 1] % 1 * 10);
 						if (pt === 5) { // if so it is hole interior
-							// filter out faces
-							geometry.attributes.position.array[i * 3 + 1] -= 60.5;
+							geometry.attributes.position.array[i * 3 + 1] -= 60.5; // set height of them back down
 							points.push(i);
 						}
 					}
@@ -239,6 +241,7 @@ function mapgen(mapdata) {
 							points.indexOf(geometry.index.array[i * 3 + 1]) !== -1 &&
 							points.indexOf(geometry.index.array[i * 3 + 2]) !== -1
 						) continue; // these faces are inside the hole, so ignore them
+						// copy over vertices and faces
 						newpoints = newpoints.concat([
 							geometry.index.array[i * 3 + 0],
 							geometry.index.array[i * 3 + 1],
@@ -250,7 +253,7 @@ function mapgen(mapdata) {
 							geometry.index.array[i * 3 + 2],
 						]);
 					}
-					geometry.index.array = new Uint16Array(newpoints);
+					geometry.index.array = new Uint16Array(newpoints); // set verticies
 					geometry.index.count = geometry.index.array.length;
 				} else {
 					geometry = mergeVertices(geometry, 0);
@@ -265,8 +268,8 @@ function mapgen(mapdata) {
 				}
 
 				const mesh = new THREE.Mesh(geometry, materialfloor);
-				points = []; // reformat point data back into vec3
-				for (let i = 0; i < geometry.attributes.position.count; ++i) { // .count already / 3
+				points = []; // reformat point data back into vec3 for body
+				for (let i = 0; i < geometry.attributes.position.count; ++i) {
 					points.push(new CANNON.Vec3(
 						geometry.attributes.position.array[i * 3 + 0],
 						geometry.attributes.position.array[i * 3 + 1],
@@ -274,7 +277,9 @@ function mapgen(mapdata) {
 					));
 				}
 				if (x) {
-					geometry.computeVertexNormals(); // TODO only calculate normals you must, this adds 0.5s to loading
+					// If the geometry was edited by the hole cutting, then we must recalculte the normals for proper lighting
+					// TODO only calculate normals you must, this adds 0.5s to loading per floor
+					geometry.computeVertexNormals(); 
 				}
 				scene.add(mesh);
 				const phi = new CANNON.Body({
@@ -289,21 +294,21 @@ function mapgen(mapdata) {
 				world.addBody(phi)
 				break;
 			} case WALL: {
-				for (let m = 0; m < i.length - 1; ++m) {
-					const geometry = new THREE.BoxGeometry(
+				for (let m = 0; m < i.length - 1; ++m) { // for each adjacent pair of points (segment)
+					const geometry = new THREE.BoxGeometry( // create a box
 						0.5, 60,
-						Math.sqrt(
+						Math.sqrt( // dist(p1, p2)
 							(i[m][0] - i[m + 1][0]) ** 2 +
 							(i[m][1] - i[m + 1][1]) ** 2 +
 							(i[m][2] - i[m + 1][2]) ** 2
 						) + 0.5
 					);
 					const mesh = new THREE.Mesh(geometry, materialwall);
-					mesh.position.x = i[m][0] - (i[m][0] - i[m + 1][0]) / 2;
+					mesh.position.x = i[m][0] - (i[m][0] - i[m + 1][0]) / 2; // set position of segment to mid(p1, p2)
 					mesh.position.y = i[m][2] - (i[m][2] - i[m + 1][2]) / 2;
 					mesh.position.z = i[m][1] - (i[m][1] - i[m + 1][1]) / 2;
-					mesh.lookAt(i[m + 1][0], i[m + 1][2], i[m + 1][1]);
-					mesh.position.y -= 29.5;
+					mesh.lookAt(i[m + 1][0], i[m + 1][2], i[m + 1][1]); // rotate wall facing p2
+					mesh.position.y -= 29.5; // center in y axis
 					mesh.castShadow = true;
 					scene.add(mesh);
 					const shape = new CANNON.Box(new CANNON.Vec3(
@@ -311,7 +316,7 @@ function mapgen(mapdata) {
 						geometry.parameters.height / 2,
 						geometry.parameters.depth / 2,
 					));
-					const phi = new CANNON.Body({
+					const phi = new CANNON.Body({ // create body using data from mesh
 						mass: 0,
 						shape: shape,
 						position: new CANNON.Vec3(
@@ -331,63 +336,69 @@ function mapgen(mapdata) {
 				}
 				break;
 			} case HOLE: {
-				const light = new THREE.PointLight(0xFFFFFF, 0.1);
-				light.position.set(i[0][0], i[0][2] + 50, i[0][1]);
-				scene.add(light);
-				geometry = new THREE.CylinderGeometry(0.4, 0.4, 1.6, 20, 1, true);
-				let mesh = new THREE.Mesh(
-					geometry, 
-					materialhole
-				); // open cylinder
-				mesh.position.x = i[0][0];
-				mesh.position.y = i[0][2] - 0.8;
-				mesh.position.z = i[0][1];
-				scene.add(mesh);
-				mesh = new THREE.Mesh(
-					new THREE.CircleGeometry(0.4, 20), 
-					materialhole
-				); // open cylinder
-				mesh.position.x = i[0][0];
-				mesh.position.y = i[0][2] - 1.6;
-				mesh.position.z = i[0][1];
-				mesh.rotation.x = Math.PI / 2;
-				scene.add(mesh); // TODO stick position and rotation into constructor
-				
-			    var points = [
-			        new CANNON.Vec3(-0.5, -0.8, -0.5),
-			        new CANNON.Vec3( 0.5, -0.8, -0.5),
-			        new CANNON.Vec3( 0.5,  0,   -0.5),
-			        new CANNON.Vec3(-0.5,  0,   -0.5),
-			        new CANNON.Vec3(-0.5, -0.8,  0.5),
-			        new CANNON.Vec3( 0.5, -0.8,  0.5),
-			        new CANNON.Vec3( 0.5,  0,    0.5),
-			        new CANNON.Vec3(-0.5,  0,    0.5),
-			    ];
-			    var faces = [
-			        [0,1,2,3], // -z
-			        [3,2,1,0], // -z
-			        [7,6,5,4], // +z
-			        [4,5,6,7], // +z
-			        [0,4,7,3], // -x
-			        [3,7,4,0], // -x
-			        [1,2,6,5], // +x
-			        [5,6,2,1], // +x
-			        [1,0,4,5], // -y
-			    ];
-
-				const phi = new CANNON.Body({
-					mass: 0,
-					shape: new CANNON.ConvexPolyhedron(
-						points, faces
-					),
-					position: new CANNON.Vec3(i[0][0], i[0][2], i[0][1]),
-					name: "hello"
-				});
-				phi.id = counthole + 20;//`hole${counthole + 1}`;
-				world.add(phi);
+				{
+					// Make the hole glow with a light
+					// TODO: make it colored
+					const light = new THREE.PointLight(0xFFFFFF, 0.1);
+					light.position.set(i[0][0], i[0][2] + 50, i[0][1]);
+					scene.add(light);
+				}
+				{
+					// Open cylinder (top face missing) for the cup of the hole
+					let mesh = new THREE.Mesh(
+						new THREE.CylinderGeometry(0.4, 0.4, 1.6, 20, 1, true), 
+						materialhole
+					);
+					mesh.position.x = i[0][0];
+					mesh.position.y = i[0][2] - 0.8;
+					mesh.position.z = i[0][1];
+					scene.add(mesh);
+					mesh = new THREE.Mesh(
+						new THREE.CircleGeometry(0.4, 20), 
+						materialhole
+					);
+					mesh.position.x = i[0][0];
+					mesh.position.y = i[0][2] - 1.6;
+					mesh.position.z = i[0][1];
+					mesh.rotation.x = Math.PI / 2;
+					scene.add(mesh); // TODO stick position and rotation into constructor
+				}
+				{
+					// Open rectangle (top face missing) with faces pointed inwards for the collison of the cup of the hole
+				    var points = [
+						new CANNON.Vec3(-0.5, -0.8, -0.5),
+						new CANNON.Vec3( 0.5, -0.8, -0.5),
+						new CANNON.Vec3( 0.5,  0,   -0.5),
+						new CANNON.Vec3(-0.5,  0,   -0.5),
+						new CANNON.Vec3(-0.5, -0.8,  0.5),
+						new CANNON.Vec3( 0.5, -0.8,  0.5),
+						new CANNON.Vec3( 0.5,  0,    0.5),
+						new CANNON.Vec3(-0.5,  0,    0.5),
+				    ];
+				    var faces = [
+						[0,1,2,3], // -z
+						[3,2,1,0], // -z
+						[7,6,5,4], // +z
+						[4,5,6,7], // +z
+						[0,4,7,3], // -x
+						[3,7,4,0], // -x
+						[1,2,6,5], // +x
+						[5,6,2,1], // +x
+						[1,0,4,5], // -y
+				    ];
+					const phi = new CANNON.Body({
+						mass: 0,
+						shape: new CANNON.ConvexPolyhedron(
+							points, faces
+						),
+						position: new CANNON.Vec3(i[0][0], i[0][2], i[0][1]),
+						name: "hello"
+					});
+					phi.id = counthole + 20;
+					world.add(phi);
+				}
 				counthole += 1;
 				break;
-				
 			} case SQUARE: {
 				const shape = new THREE.Shape();
 				shape.moveTo(-1, -1);
@@ -406,12 +417,13 @@ function mapgen(mapdata) {
 				const mesh = new THREE.Mesh(
 					geometry,
 					materialnonbouncy
-				); // TODO merge position init
+				);
 				mesh.rotation.x = Math.PI / 2;
 				mesh.position.x = i[0][0];
 				mesh.position.y = i[0][2];
 				mesh.position.z = i[0][1];
 				scene.add(mesh);
+				// TODO: add collision
 				break;
 			}
 		}
