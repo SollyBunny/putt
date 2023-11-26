@@ -201,7 +201,18 @@ module.exports.close = ws => {
 	}
 };
 
+setInterval(() => {
+	Object.values(rooms).forEach(i => {
+		i.tick = Date.now() - i.start;
+		i.players.forEach(m => {
+			m.send(JSON.stringify([Messages.TICKSYNC, i.tick]))
+		})
+	})
+}, 5000);
+
 module.exports.handle = (req, res) => {
+	const url = req.url.path.slice(req.url.path.indexOf("/"));
+	console.log(url);
 	res.writeHead(200, {
 		"Content-Type": "text/json",
 		"Access-Control-Allow-Origin": "*",
@@ -216,12 +227,3 @@ module.exports.handle = (req, res) => {
 	])));
 	res.end();
 };
-
-setInterval(() => {
-	Object.values(rooms).forEach(i => {
-		i.tick = Date.now() - i.start;
-		i.players.forEach(m => {
-			m.send(JSON.stringify([Messages.TICKSYNC, i.tick]))
-		})
-	})
-}, 5000);

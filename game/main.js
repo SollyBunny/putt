@@ -23,9 +23,16 @@ window.scene = scene;
 window.world = world;
 window.render = render;
 window.camera = camera;
+window.place = place;
 
 window.THREE = THREE;
 window.CANNON = CANNON;
+
+window.onmessage = event => {
+	console.log(event.data)
+	if (event.data[0] !== "MAIN") return;
+	place.multi.playtest(event.data[1]);
+};
 
 // // NOTE: xyz is used when possible
 
@@ -424,9 +431,3 @@ window.CANNON = CANNON;
 // 		window.THREE = THREE;
 // 	}
 // });
-
-// window.onmessage = event => {
-// 	console.log(event.data)
-// 	if (event.data[0] !== "MAIN") return;
-// 	place.multi.playtest(event.data[1]);
-// };

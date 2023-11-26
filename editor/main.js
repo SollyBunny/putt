@@ -7,7 +7,7 @@ import * as undo from "./undo.js";
 import * as binds from "./binds.js";
 import * as context from "./context.js";
 import * as modifiers from "./modifiers.js";
-import { make as tooltip } from "../lib/tooltip.js";
+import tooltip from "../lib/tooltip.js";
 
 wheel.init();
 camera.init();
@@ -59,110 +59,48 @@ function onContext() {
 		context.open(el);
 		return;
 	}
-	const modifiercontainer = document.createElement("div");
-	const modifierslist = thing.thing.modifiers; // this is a set
-	{ // Modifiers
-		const title = document.createElement("h2");
-		title.innerHTML = "Modifiers";
-		title.title = "Do things to the things";
-		el.appendChild(title);
-		for (let modifier of modifierslist) {
-			const input = things.createElementInputModifier("Modifier", modifier);
-			modifiercontainer.appendChild(input);
-			const button = document.createElement("button");
-			button.textContent = "Delete";
-			button.addEventListener("click", modifierslist.delete.bind(modifierslist, modifier));
-			button.addEventListener("click", modifiercontainer.removeChild.bind(modifiercontainer, input));
-			button.addEventListener("click", modifiercontainer.removeChild.bind(modifiercontainer, button));
-			modifiercontainer.appendChild(button);
-		}
-	}
-	{
-		let newmodifier = new modifiers.Modifier(modifiers.rotate, modifiers.still);
-		let input = things.createElementInputModifier("New Modifier", newmodifier);
-		modifiercontainer.appendChild(input);
-		const button = document.createElement("button");
-		button.textContent = "Add Modifier";
-		button.addEventListener("click", () => {
-			const deletebutton = document.createElement("button");
-			deletebutton.textContent = "Delete";
-			deletebutton.addEventListener("click", modifierslist.delete.bind(modifierslist, newmodifier));
-			deletebutton.addEventListener("click", modifiercontainer.removeChild.bind(modifiercontainer, input));
-			deletebutton.addEventListener("click", modifiercontainer.removeChild.bind(modifiercontainer, deletebutton));
-			input.children[0].textContent = "Modifier";
-			modifierslist.add(newmodifier);
-			newmodifier = new modifiers.Modifier(modifiers.rotate, modifiers.still);
-			input = things.createElementInputModifier("New Modifier", newmodifier);
-			modifiercontainer.appendChild(deletebutton);
-			modifiercontainer.appendChild(input);
-			modifiercontainer.appendChild(button);
-		});
-		modifiercontainer.appendChild(button);
-	}
+	// const modifiercontainer = document.createElement("div");
+	// const modifierslist = thing.thing.modifiers; // this is a set
+	// { // Modifiers
+	// 	const title = document.createElement("h2");
+	// 	title.innerHTML = "Modifiers";
+	// 	title.title = "Do things to the things";
+	// 	el.appendChild(title);
+	// 	for (let modifier of modifierslist) {
+	// 		const input = things.createElementInputModifier("Modifier", modifier);
+	// 		modifiercontainer.appendChild(input);
+	// 		const button = document.createElement("button");
+	// 		button.textContent = "Delete";
+	// 		button.addEventListener("click", modifierslist.delete.bind(modifierslist, modifier));
+	// 		button.addEventListener("click", modifiercontainer.removeChild.bind(modifiercontainer, input));
+	// 		button.addEventListener("click", modifiercontainer.removeChild.bind(modifiercontainer, button));
+	// 		modifiercontainer.appendChild(button);
+	// 	}
+	// }
+	// {
+	// 	let newmodifier = new modifiers.Modifier(modifiers.rotate, modifiers.still);
+	// 	let input = things.createElementInputModifier("New Modifier", newmodifier);
+	// 	modifiercontainer.appendChild(input);
+	// 	const button = document.createElement("button");
+	// 	button.textContent = "Add Modifier";
+	// 	button.addEventListener("click", () => {
+	// 		const deletebutton = document.createElement("button");
+	// 		deletebutton.textContent = "Delete";
+	// 		deletebutton.addEventListener("click", modifierslist.delete.bind(modifierslist, newmodifier));
+	// 		deletebutton.addEventListener("click", modifiercontainer.removeChild.bind(modifiercontainer, input));
+	// 		deletebutton.addEventListener("click", modifiercontainer.removeChild.bind(modifiercontainer, deletebutton));
+	// 		input.children[0].textContent = "Modifier";
+	// 		modifierslist.add(newmodifier);
+	// 		newmodifier = new modifiers.Modifier(modifiers.rotate, modifiers.still);
+	// 		input = things.createElementInputModifier("New Modifier", newmodifier);
+	// 		modifiercontainer.appendChild(deletebutton);
+	// 		modifiercontainer.appendChild(input);
+	// 		modifiercontainer.appendChild(button);
+	// 	});
+	// 	modifiercontainer.appendChild(button);
+	// }
 	el.appendChild(modifiercontainer);
 	context.open(el);
-	// window.contexteventpos = (event, n) => {
-	// 	const value = parseFloat(event.target.value);
-	// 	if (isNaN(value)) return; // check if value is bad number
-	// 	thing.thing.pos.set(thing.pos * 3 + n, event.target.value);
-	// };
-	// let data =`
-	// 	<center>${thing.thing.constructor.name}</center><br>
-	// 	<div class="combinedinput" title="X Position (left / right)"><input oninput="contexteventpos(event, 0)" id="contextx" type="number" value="${thing.thing.pos.get(thing.pos * 3)}" placeholder="${thing.thing.pos.get(thing.pos * 3)}"><label for="contextx"> X </label></div>
-	// 	<div class="combinedinput" title="Y Position (up / down)"><input oninput="contexteventpos(event, 1)" id="contexty" type="number" value="${thing.thing.pos.get(thing.pos * 3 + 1)}" placeholder="${thing.thing.pos.get(thing.pos * 3 + 1)}"><label for="contexty"> Y </label></div>
-	// 	<div class="combinedinput" title="Z Position (forward / backward)"><input oninput="contexteventpos(event, 2)" id="contextz" type="number" value="${thing.thing.pos.get(thing.pos * 3 + 2)}" placeholder="${thing.thing.pos.get(thing.pos * 3 + 2)}"><label for="contexty"> Z </label></div>
-	// `;
-	// if (thing.thing.context)
-	// 	data += thing.thing.context();
-	// if (thing.thing.modifiers)
-	// data += `
-	// 	<h2> Modifiers </h2>
-	// `;
-	// // TODO clean this up, use constants and objects etc
-	// // TODO allow reordering
-	// const modifiernames = [
-	// 	"Scale", "Rotation", "Translation",
-	// 	"Grow", "Spin", "Move"
-	// ];
-	// window.contexteventdelmodifier = event => {
-
-	// };
-	// window.contexteventmodifierpos = (event, n) => {
-		
-	// }
-	// let i = 0;
-	// for (let modifier of thing.thing.modifiers) {
-	// 	i += 1;
-	// 	data += `
-	// 	<div>
-	// 		<h3> ${modifiernames[modifier[0] * 3 + modifier[1]]} </h3>
-	// 		<div class="combinedinput" title="X Position (left / right)"><input oninput="contexteventmodifierpos(event, 0)" id="contextxmodifier${i}" type="number" value="${modifier[2]}" placeholder="${modifier[2]}"><label for="contextxmodifier${i}"> X </label></div>
-	// 		<div class="combinedinput" title="Y Position (up / down)"><input oninput="contexteventmodifierpos(event, 0)" id="contextxmodifier${i}" type="number" value="${modifier[2]}" placeholder="${modifier[2]}"><label for="contextxmodifier${i}"> X </label></div>
-			
-	// 		<button onclick="contexteventdelmodifier()"> Delete </button>
-	// 	</div>
-	// 	`;
-	// }
-	// // TODO allow editing timing speed
-	// window.contexteventaddmodifier = (timefn, modifier) => {
-	// 	thing.thing.modifiers.push([timefn, modifier, 0, 0, 0, 1]);
-	// }
-	// // TODO add getgoldenkey timing function, allow choose timing function & modifier seperatly
-	// data += `
-	// 	<h2> Add Modifier </h2>
-	// 	<h3 title="Are not dependant on time"> Static </h3> 
-	// 	<button onclick="contexteventaddmodifier(0,0)"> Add Scale </button>
-	// 	<button onclick="contexteventaddmodifier(0,1)"> Add Rotation </button>
-	// 	<button onclick="contexteventaddmodifier(0,3)"> Add Translate </button>
-	// 	<h3 title="Are dependant on time"> Dynamic </h3>
-	// 	<button onclick="contexteventaddmodifier(1,0)"> Add Grow </button>
-	// 	<button onclick="contexteventaddmodifier(1,1)"> Add Spin </button>
-	// 	<button onclick="contexteventaddmodifier(1,2)"> Add Move </button>
-
-
-	// `
-	// context.open(data);
-	// console.log("context", thing)
 }
 function deleteThing() {
 	const thing = place.at(camera.mouse.x, camera.mouse.y, camera.mouse.z);

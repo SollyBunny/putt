@@ -15,6 +15,11 @@ export const camera = new THREE.PerspectiveCamera(Settings.FOV, can.width / can.
 
 { // Scene
 	scene.background = new THREE.Color(0x222222);
+	{
+		const light = new THREE.HemisphereLight(0xFFFFFF, 0x000000, 1)
+		light.position.set(0, 100, 0);
+		scene.add(light);
+	}
 }
 
 scene.fogbottom = new Lazy(() => {
@@ -76,7 +81,6 @@ scene.dust = new Lazy(() => {
 	camera.dir = [0, 0];
 	camera.zoom = 20;
 	camera.zoomtarget = 20;
-	camera.start = undefined;
 	camera.shoot = undefined;
 	camera.frustum = new THREE.Frustum();
 	camera.target = new THREE.Vector3();
@@ -91,16 +95,17 @@ window.addEventListener("resize", resize);
 resize();
 
 let start = Date.now();
-let tx, to = 0;
+let tx, to = 0, tt;
 export let fps = 0;
 export let time = 0;
 export function tick() {
 	// Time
+		tt = Date.now();
 		tx = tt - to;
 		fps = 1000 / tx;
 		if (Settings.MAXFPS > 0 && fps > Settings.MAXFPS) return;
 		to = tt;
-		place.tick = Date.now() - start;
+		time = Date.now() - start;
 	if (Settings.FOG) scene.fogbottom.get(); // TODO move this to a on settings
 	else scene.fogbottom.unload();
 	if (Settings.DUST) { // Dust
@@ -169,6 +174,34 @@ can.addEventListener("wheel", event => {
 	camera.zoomtarget += event.deltaY / 10;
 	if (camera.zoomtarget < 5)
 		camera.zoomtarget = 5;
-	else if (camera.zoomtarget > Settings.RENDERDISTANCE / 2)
-		camera.zoomtarget = Settings.RENDERDISTANCE / 2;
+	else if (camera.zoomtarget > Settings.RENDERDISTANCE)
+		camera.zoomtarget = Settings.RENDERDISTANCE;
 }, { passive : true });
+
+const dragStart = [0, 0];
+function onPointermove(event) {
+	camera.dir[0] = dragStart[0] - event.offsetX;
+	camera.dir[1] = dragStart[1] - event.offsetY;
+	if (camera.dir[1] > -0.1) {
+		camera.dir[1] = -0.1;
+		dragStart[1] = event.layerY + camera.dir[1];
+	} else if (camera.dir[1] * Settings.SENSITIVITY < Math.PI / -2 + 0.1) {
+		camera.dir[1] = (Math.PI / -2 + 0.1) / Settings.SENSITIVITY;
+		dragStart[1] = event.layerY + camera.dir[1];
+	}
+}
+function onPointerup(event) {
+	can.removeEventListener("pointermove", onPointermove);
+	can.removeEventListener("pointerup", onPointerup);
+	can.removeEventListener("pointercancel", onPointerup);
+	can.releasePointerCapture(event.pointerId);
+}
+can.addEventListener("pointerdown", event => {
+	// TODO: check scene for collide and fire event
+	can.setPointerCapture(event.pointerId);
+	can.addEventListener("pointermove", onPointermove);
+	can.addEventListener("pointerup", onPointerup);
+	can.addEventListener("pointercancel", onPointerup);
+	dragStart[0] = camera.dir[0] + event.offsetX;
+	dragStart[1] = camera.dir[1] + event.offsetY;
+});

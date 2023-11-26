@@ -29,10 +29,10 @@ export function connect(roomcode) { return new Promise(resolve => {
 	roomcode = roomcode || document.location.search.slice(1);
 	roomcode = roomcode || "-tutorial";
 	if (this.roomcode === "playtest") resolve();
-	place.fromObj(Maps["test"]);
+	place.fromObj(Map());
 	resolve();
 })};
-		
+
 // 		if (this.roomcode.startsWith("-")) { // offline
 // 			this.setmap(this.roomcode.slice(1));
 // 			this.online = false;

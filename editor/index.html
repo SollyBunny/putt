@@ -198,20 +198,6 @@
 	</head>
 	<body>
 		<script type="module" src="main.js"></script>
-		<script defer>
-			const e_help = document.getElementById('help');
-			function help() {
-				e_help.style.display = e_help.style.display === 'none' ? 'block' : 'none';
-			}
-			function play() {
-				if (window.self === window.top) {
-					tooltip("You must be in the embedded editor to use this");
-					return;
-				}
-				const data = place.toObj();
-				window.top.postMessage(["EDITOR", data], "*");
-			}
-		</script>
 		<nav>
 			<div class="dropdown">
 				<div><button title="Save"> Save 💾 </button></div>
@@ -377,6 +363,20 @@
 						The settings are in the sidebar<br>
 						Hover over each item to see a description<br>
 			</div>
+			<script defer>
+				const e_help = document.getElementById('help');
+				function help() {
+					e_help.style.display = e_help.style.display === 'none' ? 'block' : 'none';
+				}
+				function play() {
+					if (window.self === window.top) {
+						tooltip("You must be in the embedded editor to use this");
+						return;
+					}
+					const data = place.toObj();
+					window.top.postMessage(["EDITOR", data], "*");
+				}
+			</script>
 		</div>
 		<svg width="0" height="0">
 			<defs>
