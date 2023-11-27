@@ -98,7 +98,7 @@ input, button, select {
 	input[type="color"] {
 		padding: 0;
 		height: calc(4vmin + 1em);
-		width: calc(100% - 2vmin);
+		width: calc(100% - 2vmin) !important;
 		overflow: clip;
 	}
 	input:hover, input:focus, button:hover, select:focus, select:hover, label:hover button, input:checked+label button {
@@ -164,10 +164,18 @@ input, button, select {
 	top: 0;
 	left: 2vmin;
 	transform: translateY(-50%);
-	font-size: 20%;
+	font-size: 50%;
 }
-.combinedinput > input {
+.combinedinput > input, .combinedinput > button {
 	width: calc(100% - 6vmin);
+}
+.combinedinput > select {
+	width: calc(100% - 2vmin);
+}
+.combinedinput > input[type="checkbox"] {
+	height: 10vmin;
+	box-shadow: none;
+	width: calc(100% - 2vmin);
 }
 .combinedinput:before {
 	content: "";

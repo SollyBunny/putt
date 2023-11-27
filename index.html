@@ -66,29 +66,13 @@
 						position: relative;
 					}
 				#menugrid {
-					display: grid;
-					grid-template-columns: min-content 1fr;
-					grid-template-rows: repeat(auto-fit, min-content);
-					grid-gap: 1vmin;
 					height: calc(100% - 20vh);
 					padding: 2vmin;
+					padding-left: 30vmin;
+					padding-right: 30vmin;
 					overflow-y: scroll;
 				}
-					#menugrid > label {
-						text-align: left;
-						overflow: hidden;
-						text-overflow: ellipsis;
-						white-space: nowrap;
-					}
-					#menugrid > input {
-						text-align: right;
-					}
-					#menugrid > input[type="checkbox"] {
-						height: calc(4vmin + 1em);
-						aspect-ratio: 1;
-						margin: auto;
-					}
-					#menugrid > h3, #menusettingsreset {
+					#menusettingsreset {
 						grid-area: 1 span / 2 span;
 						margin-top: 1vmin;
 						padding: 0;
@@ -149,8 +133,6 @@
 							margin: 0 !important;
 							padding: 1vmin;
 							margin-left: 1vmin !important;
-							width: 5vmin;
-							height: 5vmin;
 						}
 				#game, #editor {
 					border: none;
@@ -216,21 +198,21 @@
 					<h2> Settings </h2>
 					<div id="menugrid">
 						<h3 class="hs"> General </h3>
-						<label for="Name"> Username </label> <input id="Name" attr="0" oninput="settingsset()" type="text" placeholder="Noob1234">
-						<label for="Color"> Player Color </label> <input id="Color" attr="1" oninput="settingsset()" type="color" value="#FF0000">
-						<h3 class="hs"> Gameplay </h3>
-						<label for="Mouse Sensitivity"> Sensitivity </label> <input id="Sensitivity" attr="2" oninput="settingsset()" type="number">
-						<label for="Arrow Distance"> Arrow Distance </label> <input id="Arrow Distance" attr="3" oninput="settingsset()" type="number">
-						<h3 class="hs"> Rendering </h3>
-						<label for="FoV" > FoV </label> <input id="FoV" attr="4" oninput="settingsset()" type="number">
-						<label for="Render Dis"> Render Distance </label> <input id="Render Dis" attr="5" oninput="settingsset()" type="number">
-						<h3 class="hs"> Peformance </h3>
-						<label for="Max FPS"> Max FPS </label> <input id="Max FPS" attr="6" oninput="settingsset()" type="number">
-						<label for="Fog"> Fog </label> <input id="Fog" attr="7" oninput="settingsset()" type="checkbox">
-						<label for="Dust"> Dust </label> <input id="Dust" attr="8" oninput="settingsset()" type="checkbox">
-						<label for="Lighting"> Lighting </label> <input id="Lighting" attr="9" oninput="settingsset()" type="checkbox">
-						<label for="Hi Poly Ball"> Hi Poly Ball </label> <input id="Hi Poly Ball" attr="10" oninput="settingsset()" type="checkbox">
-						<h3 class="hs" style="color:red"> Danger Zone </h3>
+						<div class="combinedinput"><label for="Name"> Username </label><input id="Name" attr="0" oninput="if (settingspreventweirdtext()) settingsset()" type="text" placeholder="Noob1234" minlength="3" maxlength="12"></div>
+						<div class="combinedinput"><label for="Color"> Player Color </label><input id="Color" attr="1" oninput="settingsset()" type="color" value="#FF0000"></div>
+						<br><h3 class="hs"> Gameplay </h3>
+						<div class="combinedinput"><label for="Mouse Sensitivity"> Sensitivity </label> <input id="Sensitivity" attr="2" oninput="if (settingspreventweirdnumber()) settingsset()" type="number" max="1000" min="1" step="1"></div>
+						<div class="combinedinput"><label for="Arrow Distance"> Arrow Distance </label> <input id="Arrow Distance" attr="3" oninput="if (settingspreventweirdnumber()) settingsset()" type="number" min="10" max="200" step="1"></div>
+						<br><h3 class="hs"> Rendering </h3>
+						<div class="combinedinput"><label for="FoV" > FoV </label> <input id="FoV" attr="4" oninput="if (settingspreventweirdnumber()) settingsset()" type="number" max="170" min="20" step="1"></div>
+						<div class="combinedinput"><label for="Render Dis"> Render Distance </label> <input id="Render Dis" attr="5" oninput="if (settingspreventweirdnumber()) settingsset()" type="number" min="10" step="1"></div>
+						<br><h3 class="hs"> Peformance </h3>
+						<div class="combinedinput"><label for="Max FPS"> Max FPS </label> <input id="Max FPS" attr="6" oninput="if (settingspreventweirdnumber()) settingsset()" type="number" min="1" step="1"></div>
+						<div class="combinedinput"><label for="Fog"> Fog </label> <input id="Fog" attr="7" oninput="settingsset()" type="checkbox"></div>
+						<div class="combinedinput"><label for="Dust"> Dust </label> <input id="Dust" attr="8" oninput="settingsset()" type="checkbox"></div>
+						<div class="combinedinput"><label for="Lighting"> Lighting </label> <input id="Lighting" attr="9" oninput="settingsset()" type="checkbox"></div>
+						<div class="combinedinput"><label for="Hi Poly Ball"> Hi Poly Ball </label> <input id="Hi Poly Ball" attr="10" oninput="settingsset()" type="checkbox"></div>
+						<br><h3 class="hs" style="color:red"> Danger Zone </h3>
 						<button id="menusettingsreset" style="background:red;color:white" onclick="settingsreset()"> Reset to Default </button>
 					</div>
 					<button class="menushortcut left"  onclick="page(0)" title="Credits"> 💳 </button>
@@ -242,25 +224,35 @@
 						<div id="menumainleft">
 							<h3 class="hs"> Create Room </h3>
 							<div>
-								<button onclick="roomsel()" id="roomtutorial" class="roomsel" value="tutorial"> <h4 class="hs"> Tutorial </h4> Learn the basics of Putt Party with this short tutorial </button>
-								<button onclick="roomsel()" id="roomoffline" value="offline"> <h4 class="hs"> Offline </h4> Play the game offline, you can also playtest maps from the editor </button>
-								<button onclick="roomsel()" value="online"> <h4 class="hs"> Online </h4> Create a new online room </button>
+								<div class="combinedinput">
+									<label for="roomtutorial"> Tutorial </label>
+									<button onclick="roomsel()" id="roomtutorial" class="roomsel" value="tutorial"> Learn the basics of Putt Party with this short tutorial </button>
+								</div>
+								<div class="combinedinput">
+									<label for="roomoffline"> Offline </label>
+									<button onclick="roomsel()" id="roomoffline" value="offline"> Play the game offline, you can also playtest maps from the editor</button>
+								</div>
+								<div class="combinedinput">
+									<label for="roomonline"> Online </label>
+									<button onclick="roomsel()" id="roomonline" value="online"> Create a new online room </button>
+								</div>
 							</div>
 							<h3 class="hs"> Room List <button id="menumainroomrefresh" onclick="event.preventDefault();roomrefresh()" title="Refresh Rooms"> ♻️ </button> </h3>
 							<div id="rrooms"></div>
 						</div>
 						<div id="menumainright">
 							<br> <br>
-							<label for="rmapname" class="hs"> Map Name </label><br>
-							<select id="rmapname" oninput="mapsel()">
-								<option value="tutorial"> Tutorial </option>
-								<option value="spinnington"> Spinnington </option>
-								<option value="bumpington"> Bumpington </option>
-								<option value="cityscape"> Cityscape </option>
-							</select>
+							<div class="combinedinput" title="What the map is called">
+								<label for="rmapname"> Map Name </label>
+								<select id="rmapname" oninput="mapsel()">
+									<option value="tutorial"> Tutorial </option>
+									<option value="spinnington"> Spinnington </option>
+									<option value="bumpington"> Bumpington </option>
+									<option value="cityscape"> Cityscape </option>
+								</select>
+							</div>
 							<br> <br>
-							<label for="menubutton" class="hs"> Here we go! </label><br>
-							<button onclick="play()" id="menubutton"> Go! </button>
+							<button onclick="play()" id="menubutton"> Play! 🏌️ </button>
 						</div>
 					</div>
 					<button class="menushortcut left"  onclick="page(-1)" title="Settings"> ⚙️ </button>
@@ -291,13 +283,31 @@
 			// settings
 			function settingsset() {
 				if (event.target.type === "checkbox") {
-					settings[event.target.getAttribute("attr")] = event.target.checked ? 1 : 0									
+					settings[event.target.getAttribute("attr")] = event.target.checked ? 1 : 0
 				} else {
 					settings[event.target.getAttribute("attr")] = event.target.value
 				}
 				localStorage["s"] = settings.map(i => {
 					return window.encodeURIComponent(i);
 				}).join(",");
+			}
+			function settingspreventweirdtext() {
+				const value = event.target.value;
+				const valuenew = value.replace(/[^a-zA-Z0-9_]/g, "");
+				if (value === valuenew) return true;
+				event.target.value = valuenew;
+				return false;
+			}
+			function settingspreventweirdnumber() {
+				const min = parseFloat(event.target.min) || -Infinity;
+				const max = parseFloat(event.target.max) || Infinity;
+				const value = event.target.value;
+				if (value < min || value > max) {
+					event.target.classList.add("error");
+					return false;
+				}
+				event.target.classList.remove("error");
+				return true;
 			}
 			function settingsdefault() {
 				settings = [
@@ -317,12 +327,14 @@
 			function settingspopulate() {
 				let count = 0;
 				Object.values(e_menugrid.children).forEach(i => {
-					let attr = i.getAttribute("attr");
+					if (!i.classList.contains("combinedinput")) return;
+					const target = i.children[1];
+					const attr = target.getAttribute("attr");
 					if (attr === null) return;
-					if (i.type === "checkbox") {
-						i.checked = settings[attr] && settings[attr] !== "0" ? true : false;
+					if (target.type === "checkbox") {
+						target.checked = settings[attr] && settings[attr] !== "0" ? true : false;
 					} else {
-						i.value = settings[attr];
+						target.value = settings[attr];
 					}
 					++count;
 				});
