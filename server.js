@@ -1,4 +1,4 @@
-// TODO clean this code
+// ZISS USCRIPT
 
 const Messages = {
 	WARN       : -2,

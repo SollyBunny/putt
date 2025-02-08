@@ -428,7 +428,7 @@
 				e_menu.style.transform = "translateY(-150vh)";
 			}
 			function roomrefresh() {
-				fetch("server").then(res => res.json()).then(data => {
+				fetch("server.js").then(res => res.json()).then(data => {
 					e_rrooms.innerHTML = "";
 					data.forEach(i => {
 						const el = document.createElement("button");
