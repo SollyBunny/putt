@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Putt Party </title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+			}
+			#can {
+				width: 100vw;
+				height: 100vh;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="can" oncontextmenu="event.preventDefault();"> Your browser doesn't support Canvas API </canvas>
+		<script src="three.min.js"> </script>
+		<script src="three.ext.js"> </script>
+		<script src="cannon.min.js"> </script>
+		<script src="three.dbg.js"> </script>
+		<script defer src="main.js"> </script>
+	</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Putt Party Editor </title>
+		<meta name="description" content="A small webapp to play golf with your friends">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="assets/style.css">
+		<style>
+			body {
+				display: flex;
+				flex-direction: column;
+			}
+			nav {
+				display: flex;
+				z-index: 200;
+				background: var(--bg);
+				align-items: center;
+				padding-left: 1vmin;
+				padding-right: 1vmin;
+			}
+				nav h1 {
+					padding-left: 1vmin;
+					padding-right: 1vmin;
+					text-align: center;
+					height: min-content;
+				}
+				nav input {
+					flex-grow: 1;
+				}
+			.vec3 {
+				width: 100%;
+				display: flex;
+			}
+				.vec3 input {
+					flex-grow: 1;
+				}
+				.vec3 input:nth-child(1) {
+					border-radius: 2vmin 0 0 2vmin;
+					margin-right: 0;
+				}
+				.vec3 input:nth-child(2) {
+					border-radius: 0;
+				}
+				.vec3 input:nth-child(3) {
+					border-radius: 0 2vmin 2vmin 0;
+					margin-left: 0;
+					margin-right: 0;
+				}
+			#body {
+				flex-grow: 1;
+				display: flex;
+				overflow: hidden;
+			}
+				#menu {
+					padding: 1vmin;
+					box-sizing: border-box;
+					overflow: hidden;
+					z-index: 100;
+					background: var(--bg);
+					position: relative;
+					height: 100%;
+				}
+					#menudrag {
+						width: 10px;
+						line-height: 10px;
+						font-size: 20px;
+						font-weight: 900;
+						cursor: ew-resize;
+						border-radius: 0;
+						padding: 0;
+						margin: 0;
+						outline: none !important;
+						z-index: 100;
+					}
+					#menuobject, #menusurface {
+						flex-wrap: wrap;
+					}
+						#menuobject > label, #menusurface > label {
+							flex-grow: 1;
+							justify-content: center;
+							align-items: center;
+							background-repeat: no-repeat;
+							background-position: center center;
+							background-size: cover;
+						}
+					#menu > div {
+						margin-top: 6vmin;
+						height: calc(100% - 6vmin);
+						overflow-y: auto;
+						overflow-x: hidden;
+						box-sizing: border-box;
+					}
+					#menu h2 {
+						position: absolute;
+						top: 1vmin;
+						left: 0;
+						width: calc(100% - 1vmin);
+						text-align: center;
+						height: 5vmin;
+						line-height: 5vmin;
+						border-radius: 0 2vmin 2vmin 0;
+						white-space: nowrap;
+						text-overflow: ellipsis;
+						overflow: hidden;
+					}
+						#menu h2 > div {
+							float: left;
+						}
+				#main {
+					flex-grow: 1;
+					position: relative;
+					background-image: linear-gradient(
+						var(--bgh) 0, var(--bgh) 2px, transparent 2px,
+						transparent 199px
+					), linear-gradient(90deg,
+						var(--bgh) 0, var(--bgh) 2px, transparent 2px,
+						transparent 199px
+					), linear-gradient(
+						transparent 20px, var(--bgd) 20px, var(--bgd) 22px, transparent 22px,
+						transparent 40px, var(--bgd) 40px, var(--bgd) 42px, transparent 42px,
+						transparent 60px, var(--bgd) 60px, var(--bgd) 62px, transparent 62px,
+						transparent 80px, var(--bgd) 80px, var(--bgd) 82px, transparent 82px,
+						transparent 100px, var(--bgl) 100px, var(--bgl) 102px, transparent 102px,
+						transparent 120px, var(--bgd) 120px, var(--bgd) 122px, transparent 122px,
+						transparent 140px, var(--bgd) 140px, var(--bgd) 142px, transparent 142px,
+						transparent 160px, var(--bgd) 160px, var(--bgd) 162px, transparent 162px,
+						transparent 180px, var(--bgd) 180px, var(--bgd) 182px, transparent 182px,
+						transparent 199px
+					), linear-gradient(90deg,
+						transparent 20px, var(--bgd) 20px, var(--bgd) 22px, transparent 22px,
+						transparent 40px, var(--bgd) 40px, var(--bgd) 42px, transparent 42px,
+						transparent 60px, var(--bgd) 60px, var(--bgd) 62px, transparent 62px,
+						transparent 80px, var(--bgd) 80px, var(--bgd) 82px, transparent 82px,
+						transparent 100px, var(--bgl) 100px, var(--bgl) 102px, transparent 102px,
+						transparent 120px, var(--bgd) 120px, var(--bgd) 122px, transparent 122px,
+						transparent 140px, var(--bgd) 140px, var(--bgd) 142px, transparent 142px,
+						transparent 160px, var(--bgd) 160px, var(--bgd) 162px, transparent 162px,
+						transparent 180px, var(--bgd) 180px, var(--bgd) 182px, transparent 182px,
+						transparent 199px
+					);
+					background-size: 200px 200px;
+					background-repeat: repeat;
+				}
+					#draw {
+						overflow: visible;
+					}
+						.ptr, .ptr * {
+							pointer-events: none;
+							white-space: pre;
+							user-select: none;
+						}
+					#tools {
+						position: absolute;
+						bottom: 0;
+						left: 0;
+						right: 0;
+						z-index: 100;
+						user-select: none;
+						pointer-events: none;
+						display: flex;
+						align-items: center;
+					}
+						#ry {
+							flex-grow: 1;
+							pointer-events: all;
+						}
+		</style>
+	</head>
+	<body>
+		<nav>
+			<div class="dropdown">
+				<div><button title="Save"> Save 💾 </button></div>
+				<div><button onclick="saveJSON(false)" title="Copy JSON (ctrl-s)"> Copy JSON 📋🧬 </button></div>
+				<div><button onclick="saveJSON(true)" title="Save JSON (ctrl-shift-s)"> Save JSON 💾🧬 </button></div>
+				<div><button onclick="saveSVG(false)" title="Copy SVG (ctrl-e)"> Copy SVG 📋🖼️ </button></div>
+				<div><button onclick="saveSVG(true)" title="Save SVG (ctrl-shift-e)"> Save JSON 💾🖼️ </button></div>
+			</div>
+			<div class="dropdown">
+				<div><button title="Save"> Load 📂 </button></div>
+				<div><button title="From Clipboard (ctrl-o)"> From Clipboard 📋 </button></div>
+				<div><button title="From File (ctrl-shift-o)"> From File 📄 </button></div>
+				<div><button title="From URL"> From URL 🔗 </button></div>
+			</div>
+			<button onclick="reset()" title="Reset (ctrl-n)"> Reset 🔄 </button>
+			<button onclick="play()" title="Playtest (ctrl-p)"> Playtest 🎮 </button>
+			<input id="rname" type="text" placeholder="Noob's Place">
+			<h1> Putt Party Editor </h1>
+		</nav>
+		<div id="body">
+			<div id="menu" style="width: 30vmin">
+				<div id="menuselect">
+					<h2 style="background-color: #aaa" title="Selecting"> <div> 🖱️ </div> Selecting </h2>
+					<label for="rid"><h3> ID </h3></label>
+					<input min="0" id="rid" type="number"><br>
+					<div id="menuselectcontent" style="display:none">
+						<label for="rtype"><h3> Type </h3></label>
+						<select id="rtype">
+							<optgroup label="Extra-Cool Objects">
+								<option value="0"> Player </option>
+								<option value="1"> Start </option>
+								<option value="2"> Hole </option>
+								<option value="3"> Powerup </option>
+							</optgroup>
+							<optgroup label="Objects">
+								<option value="4"> Box </option>
+								<option value="5"> Sphere </option>
+								<option value="6"> Cylinder </option>
+								<option value="7"> Cone </option>
+								<option value="8"> Tetrahedron </option>
+								<option value="9"> Octahedron </option>
+								<option value="10"> Dodecahedron </option>
+								<option value="11"> Icosehedron </option>
+								<option value="12"> Cross </option>
+								<option value="13"> Tee </option>
+								<option value="14"> Why </option>
+							</optgroup>
+							<optgroup label="Surfaces" id="typesurfaces">
+								<option value="15"> Floor </option>
+								<option value="16"> Bumpy Floor </option>
+								<option value="17"> Wall </option>
+								<option value="18"> Bumpy Wall </option>
+								<option value="19"> Platform </option>
+								<option value="20"> Bumpy Platform </option>
+							</optgroup>
+						</select>
+						<h3> Position </h3>
+						<div id="rpos"></div>
+						<h3> Modifiers </h3>
+						<div id="rpos"></div>
+					</div>
+				</div>
+				<div id="menuobject" style="display: none">
+					<h2 style="background-color: #0d8" title="Placing Object"> <div> 🖊️ </div> Placing Object </h2>
+				</div>
+				<div id="menusurface" style="display: none">
+					<h2 style="background-color: #08d" title="Placing Surface"> <div> 🧱 </div> Placing Surface </h2>
+				</div>
+				<div id="menudelete" style="display: none">
+					<h2 style="background-color: #80d" title="Deleting"> <div> 🗑 </div> Deleting </h2>
+				</div>
+				<div id="menusettings" style="display: none" title="Settings">
+					<h2 style="background-color: #acf"> <div> ⚙️ </div> Settings </h2>
+					<label for="rcolsky"><h3> Sky Color </h3></label>
+					<input id="rcolsky" type="text" placeholder="00aaff"><br>
+					<label for="rcolfloor"><h3> Floor Color </h3></label>
+					<input id="rcolfloor" type="text" placeholder="5c8eed"><br>
+					<label for="rcolwall"><h3> Wall Color </h3></label>
+					<input id="rcolwall" type="text" placeholder="9CDE5E"><br>
+					<label for="rcolbounce"><h3> Bounce Color </h3></label>
+					<input id="rcolbounce" type="text" placeholder="505D6B"><br>
+				</div>
+			</div>
+			<button id="menudrag">
+				.<br>.<br>.
+			</button>
+			<div id="main" oncontextmenu="return false;">
+				<svg id="draw" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10">
+					Your browser doesn't support SVG
+					<defs>
+						<filter x="0" y="0" width="1" height="1" id="bgfill">
+							<feFlood flood-color="var(--bg)" />
+							<feComposite in="SourceGraphic" />
+						</filter>
+					</defs>
+					<g id="things">
+
+					</g>
+					<g id="lins" style="display: none;">
+						<circle id="circ" stroke="gray" fill="transparent" stroke-width="0.25" />
+						<line id="linh" stroke="gray" />
+						<line id="linx" stroke="white" />
+						<line id="liny" stroke="white" />
+						<text id="txth" filter="url(#bgfill)" fill="gray" dominant-baseline="middle" text-anchor="middle"></text>
+						<text id="txtx" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
+						<text id="txty" filter="url(#bgfill)" fill="white" dominant-baseline="middle" text-anchor="middle"></text>
+					</g>
+					<g id="ptr2" class="ptr" fill="gray" style="transform:scale(0)">
+						<circle cx="1" cy="1" r="5" />
+						<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
+					</g>
+					<g id="ptr1" class="ptr" fill="white">
+						<circle cx="1" cy="1" r="5" />
+						<text dx="-5" dy="-5" text-anchor="end" font-family="monospace"></text>
+					</g>
+				</svg>
+				<div id="tools">
+					<input id="toolsselect" name="tool" type="radio">
+					<label for="toolsselect" onclick="toolSet(0)" title="Select (escape)"><button style="background:#fd8"> 🖱️ </button></label>
+					<input id="toolsnewobj" name="tool" type="radio">
+					<label for="toolsnewobj" onclick="toolSet(1)" title="New Object (ctrl-1)"><button style="background:#0d8"> 🖊️ </button></label>
+					<input id="toolsnewsrf" name="tool" type="radio">
+					<label for="toolsnewsrf" onclick="toolSet(2)"  title="New Surface (ctrl-2)"><button style="background:#08d"> 🧱 </button></label>
+					<input id="toolsdelete" name="tool" type="radio">
+					<label for="toolsdelete" onclick="toolSet(3)" title="Delete (ctrl-3)"><button style="background:#80a"> 🗑 </button></label>
+					<input id="toolssettings" name="tool" type="radio">
+					<label for="toolssettings" onclick="toolSet(4)" title="Settings (ctrl-4)"><button style="background:#aaa"> ⚙️ </button></label>
+					<input id="ry" type="number" step="any" placeholder="0" value="0">
+					<label for="ry"><h3> Y </h3></label>
+				</div>
+			</div>
+		</div>
+		<script defer async src="./main.js" type="module"></script>
+	</body>
