@@ -2,7 +2,8 @@
 A recreation of the discord activity putt party
 
 ## Playing
-This game can be played [here](https://sollybunny.xyz/putt)
+~~This game can be played [here](https://sollybunny.xyz/putt)~~
+Offline version can be played [here](https://sollybunny.github.io/putt/)
 
 It breaks with anti canvas fingerprinting extensions, you may need to disable them.
 
